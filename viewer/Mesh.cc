@@ -174,6 +174,8 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
                 d0 = normalizeDistance(distV(i0), min, max);
                 d1 = normalizeDistance(distV(i1), min, max);
                 d2 = normalizeDistance(distV(i2), min, max);
+                if (d0>thresholdMin && d0 < thresholdMax)
+                {
                 //cout << d0 << " " << d1 << " " << d2 << endl;
                 setColorError(d0, colorError[0]);
                 setColorError(d1, colorError[1]);
@@ -184,11 +186,12 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
                 glVertex3f (v1(0), v1(1), v1(2));
                 glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
                 glVertex3f (v2(0), v2(1), v2(2));
+                }
 
             }
         glEnd(); 
     }
-    if (mode == FLAT)
+    if (mode == FLAT )
     {
 
         glEnable (GL_DEPTH_TEST);
@@ -314,7 +317,7 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
         glPointSize(4.0);
         Vector3f color (0.5,0.5,1.0);       // generic mesh color
         
-    if ( mode == FLAT)
+    if ( mode == FLAT || mode == SMOOTH)
     {
         glEnable (GL_DEPTH_TEST);
         glEnable(GL_LIGHTING);
@@ -328,6 +331,13 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
             
             for (int i = 0; i < F.rows(); i++)
             {
+                // debug
+                if (i == faceInMinPoint) // faccia con distanza minore
+                    glColor3f(0,1,0); 
+                else if (i == faceInMaxPoint) // faccia con distanza minore
+                    glColor3f(1,0,0); 
+                else glColor3f(color(0),color(1),color(2));
+                // end debug
                 if (F.cols() != 4 || V.cols() != 3)
                     fprintf (stderr, "VF:draw(): only cube in 3D are supported\n");
 
@@ -399,6 +409,13 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
             glBegin (GL_LINES);
             for (int i = 0; i < F.rows(); i++)
             {
+                 // debug
+                if (i == faceInMinPoint) // faccia con distanza minore
+                    glColor3f(0,1,0); 
+                else if (i == faceInMaxPoint) // faccia con distanza minore
+                    glColor3f(1,0,0); 
+                else glColor3f(color(0),color(1),color(2));
+                // end debug
             int i0,i1,i2,i3;
             i0 = i1 = i2 = i3 = 0;
 
@@ -452,12 +469,13 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
                 D(CageV.row(quad[3]));
         Vector3d U = (B-A)/(B-A).norm();
         Vector3d V = (D-A)/(D-A).norm();
+
         Vector3d v_map = U*p(0) + V*p(1);
         Vector3d v = MeshV.row(i);
-        /*double d = sqrt(
+        double d = sqrt(
             pow(v(0)-v_map(0), 2)+pow(v(1)-v_map(1), 2)+pow(v(2)-v_map(2), 2)
-            );*/
-        double d = (v-v_map).norm();
+            );
+        //double d = (v-v_map).norm();
 
         /*if (d<10)
         {
@@ -474,6 +492,7 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
         distV = VectorXd(V.rows());
         for (unsigned int i = 0; i < V.rows(); i++)
             distV[i] = computeDistanceCageMesh(i);
+
     }
     void Mesh::bb ()
     {
@@ -510,5 +529,29 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
         double min, max;
         min = distV.minCoeff();
         max = distV.maxCoeff();
-        cout << diagonal << " " << min << " "<< max <<endl;
+        cout << "Distance: *Min="<< min << " | *Max=" << max << " " << endl;
+        for (int i=0; i<distV.rows(); i++)
+        {
+            if (min == distV[i])
+            {
+                faceInMinPoint = MeshParF[i];
+                cout << "MIN" << endl;
+                cout << "Position ("<<i<<") Vertex = ("<<(MeshV.row(i))[0]<<","<<
+                (MeshV.row(i))[1]<<","<<(MeshV.row(i))[2]<<")" << 
+                " VertexPar = ("<<
+                    (MeshParV.row(i))[0]<<","<<(MeshParV.row(i))[1]<<")"<<endl;
+                cout << " quality = " << MeshParF[i] << endl<<endl;
+            }
+            if (max == distV[i])
+            {
+                faceInMaxPoint = MeshParF[i];
+                cout << "MAX" << endl;
+                cout << "Position ("<<i<<") Vertex = ("<<(MeshV.row(i))[0]<<","<<
+                (MeshV.row(i))[1]<<","<<(MeshV.row(i))[2]<<")" << 
+                " VertexPar = ("<<
+                    (MeshParV.row(i))[0]<<","<<(MeshParV.row(i))[1]<<")"<<endl;
+                cout << " quality = " << MeshParF[i] << endl<<endl;
+            }
+        }
+        //cout << normalizeDistance(distV[0], min, max) << endl;
     }

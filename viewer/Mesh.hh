@@ -61,15 +61,19 @@ private:
     // #Fx3[4]: in the ith row, stores the indices of the vertices of the ith face
     MatrixXi CageF;
     // #Vx3: Stores the vertex coordinates, one vertex per row
-    MatrixXd MeshV;
-    MatrixXd MeshParV;
+    MatrixXd MeshV; // Vx3
+    MatrixXd MeshParV; // Vx2
 
     // #param.Fx3[4]: in the ith row, stores the indices of the vertices of the ith face
-    MatrixXi MeshF;
-    // #param.Vx1: in the ith row, stores the distance of the vertices of the ith vertex
-    VectorXi MeshParF;
+    MatrixXi MeshF; // Fx3
+    // in the ith row, stores "quality" param of ith vertex
+    VectorXi MeshParF; 
 
     // #dist.Vx1: in the ith row, stores the distance of the vertices of the ith vertex
     VectorXd distV;
+
+    //debug
+    int faceInMinPoint = -1;
+    int faceInMaxPoint = -1;
 };
 #endif

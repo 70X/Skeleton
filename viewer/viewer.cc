@@ -34,7 +34,7 @@ double thresholdMin = 0;
 double thresholdMax = 0.1;
 
 Mesh::draw_mode_t mesh_draw_mode = Mesh::SMOOTH;
-Mesh::draw_mode_t cage_draw_mode = Mesh::WIRE;
+Mesh::draw_mode_t cage_draw_mode = Mesh::FLAT;
 
 
 // Mesh:
