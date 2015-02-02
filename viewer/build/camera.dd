@@ -1,0 +1,1 @@
+build/camera.oo build/camera.dd : camera.cc camera.hh trackball.hh
