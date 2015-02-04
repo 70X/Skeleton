@@ -73,7 +73,10 @@ private:
     VectorXd distV;
 
     //debug
+public:
     int faceInMinPoint = -1;
     int faceInMaxPoint = -1;
+    int onlyFace = -1;
+    int cagenumF = 0;
 };
 #endif

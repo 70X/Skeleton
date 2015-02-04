@@ -31,9 +31,11 @@ Camera camera;
 int width = W;
 int height = H;
 double thresholdMin = 0;
-double thresholdMax = 0.1;
+double thresholdMax = 1;
+bool showMesh = true;
+bool showCage = true;
 
-Mesh::draw_mode_t mesh_draw_mode = Mesh::SMOOTH;
+Mesh::draw_mode_t mesh_draw_mode = Mesh::POINTS;
 Mesh::draw_mode_t cage_draw_mode = Mesh::FLAT;
 
 
@@ -63,7 +65,9 @@ void display()
     glViewport(0, 0, (GLsizei) width, (GLsizei) height);
     // draw GUI
     camera.display_begin();
+    if (showMesh)
     m.drawMesh(mesh_draw_mode, thresholdMin, thresholdMax);
+    if (showCage)
     m.drawCage(cage_draw_mode);
     //m.drawMeshPar(mesh_draw_mode);
     camera.display_end();
@@ -165,6 +169,16 @@ void TW_CALL getFocalLength (void *value, void *)
     *(double *) value = camera.gCamera.focalLength;
 }
 
+void TW_CALL setEnableCageFace (const void *value, void *)
+{
+    m.onlyFace = *(const double *) value;
+    glutPostRedisplay();
+}
+
+void TW_CALL getEnableCageFace (void *value, void *)
+{
+    *(double *) value = m.onlyFace;
+}
 
 void TW_CALL setThresholdMin (const void *value, void *)
 {
@@ -265,10 +279,20 @@ int main (int argc, char *argv[])
     TwAddVarCB(cBar, "camera focus", TW_TYPE_DOUBLE, setFocalLength, getFocalLength,
 	       NULL, "group = 'Scene' min=0.00 max=100.00 step=0.1");
     
+    TwAddVarRW(cBar, "show mesh", TW_TYPE_BOOLCPP, &showMesh, 
+        "group = 'Mesh'");
     TwAddVarRW(cBar, "DrawMeshMode", draw_modeT, &mesh_draw_mode,
            "group = 'Mesh'" " keyIncr='<' keyDecr='>'"); 
+    TwAddVarRW(cBar, "show cage", TW_TYPE_BOOLCPP, &showCage, 
+        "group = 'Cage'");
     TwAddVarRW(cBar, "DrawCageMode", draw_modeC, &cage_draw_mode,
            "group = 'Cage'" " keyIncr='<' keyDecr='>'");
+    
+  char str[50];
+
+  sprintf(str, "group = 'Debug' min=-1 max=%d step=1", m.cagenumF-1);
+    TwAddVarCB(cBar, "only face", TW_TYPE_DOUBLE, setEnableCageFace, getEnableCageFace,
+           NULL, str);
 
     TwAddVarCB(cBar, "threshold min", TW_TYPE_DOUBLE, setThresholdMin, getThresholdMin,
            NULL, "min=0.00 max=1.00 step=0.001");
@@ -278,3 +302,4 @@ int main (int argc, char *argv[])
     
     exit (-1);
 }
+

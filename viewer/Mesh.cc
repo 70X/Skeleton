@@ -37,7 +37,7 @@
     
         CageV = MatrixXd (vnum, 3);
         CageF = MatrixXi (fnum, 4);
-
+        cagenumF = fnum;
         for (int i = 0; i < CageV.rows(); i++)
             r = fscanf (fp, "%lf %lf %lf\n", &CageV(i,0), &CageV(i,1), &CageV(i,2));    
         for (int i = 0; i < CageF.rows(); i++)
@@ -122,11 +122,12 @@
             color[1] = color[2] = (-2*d)+2;
         }
     }
-void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
+void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, 
+    double thresholdMax)
     {
         MatrixXd V = MeshV;
         MatrixXi F = MeshF;  
-              
+        
         double min, max;
         min = distV.minCoeff();
         max = distV.maxCoeff();
@@ -141,6 +142,8 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
         glTranslatef (-center[0], -center[1], -center[2]);
         glPointSize(4.0);
         Vector3f color (0,1,0);       // generic mesh color
+
+        VectorXi mpf = MeshParF; 
     if (mode == SMOOTH)
     {
         glEnable (GL_DEPTH_TEST);
@@ -171,11 +174,12 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
                 Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
                 Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
                 double d0, d1, d2;
+
                 d0 = normalizeDistance(distV(i0), min, max);
                 d1 = normalizeDistance(distV(i1), min, max);
                 d2 = normalizeDistance(distV(i2), min, max);
-                if (d0>thresholdMin && d0 < thresholdMax)
-                {
+                //if (d0>thresholdMin && d0 < thresholdMax)
+                //{
                 //cout << d0 << " " << d1 << " " << d2 << endl;
                 setColorError(d0, colorError[0]);
                 setColorError(d1, colorError[1]);
@@ -186,7 +190,7 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
                 glVertex3f (v1(0), v1(1), v1(2));
                 glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
                 glVertex3f (v2(0), v2(1), v2(2));
-                }
+                //}
 
             }
         glEnd(); 
@@ -251,20 +255,24 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
 
         double d;
         for (unsigned int i = 0; i < V.rows(); i++){
+            
+            if(onlyFace != -1 && onlyFace != mpf[i]) continue;
             d = normalizeDistance(distV[i], min, max);
             if (d>thresholdMin && d < thresholdMax)
             {
                 glColor3f(1,0,0);
                 glVertex3f (V(i,0), V(i,1), V(i,2));
             }
-            else if (mode==POINTS)
+            /*else if (mode==POINTS)
             {
                 glColor3f(color(0),color(1),color(2));
                 glVertex3f (V(i,0), V(i,1), V(i,2));
-            }
+            }*/
+
         }
         glEnd();                    
     }
+    
 
     if (mode == WIRE)
     {
@@ -331,13 +339,7 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
             
             for (int i = 0; i < F.rows(); i++)
             {
-                // debug
-                if (i == faceInMinPoint) // faccia con distanza minore
-                    glColor3f(0,1,0); 
-                else if (i == faceInMaxPoint) // faccia con distanza minore
-                    glColor3f(1,0,0); 
-                else glColor3f(color(0),color(1),color(2));
-                // end debug
+                if(onlyFace != -1 && onlyFace != i) continue;
                 if (F.cols() != 4 || V.cols() != 3)
                     fprintf (stderr, "VF:draw(): only cube in 3D are supported\n");
 
@@ -409,13 +411,7 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
             glBegin (GL_LINES);
             for (int i = 0; i < F.rows(); i++)
             {
-                 // debug
-                if (i == faceInMinPoint) // faccia con distanza minore
-                    glColor3f(0,1,0); 
-                else if (i == faceInMaxPoint) // faccia con distanza minore
-                    glColor3f(1,0,0); 
-                else glColor3f(color(0),color(1),color(2));
-                // end debug
+                
             int i0,i1,i2,i3;
             i0 = i1 = i2 = i3 = 0;
 
@@ -472,11 +468,26 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax)
 
         Vector3d v_map = U*p(0) + V*p(1);
         Vector3d v = MeshV.row(i);
-        double d = sqrt(
-            pow(v(0)-v_map(0), 2)+pow(v(1)-v_map(1), 2)+pow(v(2)-v_map(2), 2)
-            );
-        //double d = (v-v_map).norm();
+        double d = (v-v_map).norm();
+        /*if (quality == 0 && i == 695)
+        {
+            cout << "------------------------"<<endl;
+            cout << "(" << i << ")" << endl;
+            cout << quad(0) << "," <<quad(1) << ","<<quad(2)<<","<<quad(3)<<endl;
+            
+            cout << A(0) << "," <<A(1) << "," <<A(2) << endl;
+            cout << B(0) << "," <<B(1) << "," <<B(2) << endl;
+            cout << C(0) << "," <<C(1) << "," <<C(2) << endl;
+            cout << D(0) << "," <<D(1) << "," <<D(2) << endl;
 
+            cout << v(0) << " - "<<v_map(0) <<endl;
+            cout << v(1) << " - "<<v_map(1) <<".norm() = "<<d << endl;
+            cout << v(2) << " - "<<v_map(2) <<endl;
+            cout << U(0) << "," <<U(1) << "," <<U(2) << endl;
+            cout << V(0) << "," <<V(1) << "," <<V(2) << endl;
+            cout << "------------------------"<<endl;
+
+        }*/
         /*if (d<10)
         {
             std::cout << "(" <<i<<")" << std::endl;
