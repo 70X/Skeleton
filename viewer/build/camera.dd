@@ -1,1 +1,2 @@
-build/camera.oo build/camera.dd : camera.cc camera.hh trackball.hh
+build/camera.oo build/camera.dd : camera.cc camera.hh \
+ /System/Library/Frameworks/GLUT.framework/Headers/glut.h trackball.hh

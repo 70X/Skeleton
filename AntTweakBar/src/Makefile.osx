@@ -3,12 +3,12 @@
 SO_EXT		= .dylib
 
 #---- Release
-CXXCFG   	= -O3 -arch i386 -arch x86_64
-LFLAGS		= -arch i386 -arch x86_64
+CXXCFG   	= -O3 -arch x86_64
+LFLAGS		= -arch x86_64
 OUT_DIR		= ../lib
 #---- Debug
-#CXXCFG   	= -g -D_DEBUG -arch i386 -arch x86_64
-#LFLAGS		= -arch i386 -arch x86_64
+#CXXCFG   	= -g -D_DEBUG -arch x86_64
+#LFLAGS		= -arch x86_64
 #OUT_DIR	= ../lib/debug
 
 #BASE		= /Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks

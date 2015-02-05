@@ -1,4 +1,6 @@
-build/Mesh.oo build/Mesh.dd : Mesh.cc Mesh.hh ../eigen3/Eigen/Core \
+build/Mesh.oo build/Mesh.dd : Mesh.cc Mesh.hh \
+ /System/Library/Frameworks/GLUT.framework/Headers/glut.h \
+ ../eigen3/Eigen/Core \
  ../eigen3/Eigen/src/Core/util/DisableStupidWarnings.h \
  ../eigen3/Eigen/src/Core/util/Macros.h \
  ../eigen3/Eigen/src/Core/util/MKL_support.h \
