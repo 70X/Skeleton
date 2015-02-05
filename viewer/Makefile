@@ -24,8 +24,8 @@ BUILD_DIR = build
 BASELIBS_DIR = ..
 
 # C, CXX compiler
-CXXC = /usr/local/Cellar/gcc49/4.9.2_1/bin/g++-4.9
-CC = /usr/local/Cellar/gcc49/4.9.2_1/bin/gcc-4.9
+CXXC = g++
+CC = gcc
 
 # file extensions for C++ files, their objects and dependencies. (.c,
 # .o and .d are always used for C files)
