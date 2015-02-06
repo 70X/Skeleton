@@ -82,6 +82,7 @@
         float x,y,z,u,v,quality;
 
         MeshV = MatrixXd (vnum, 3);
+        mapV = MatrixXd (vnum, 3);
         MeshParV = MatrixXd (vnum, 2);
         MeshF = MatrixXi (fnum, 3);
         MeshParF = VectorXi (vnum);
@@ -272,7 +273,20 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin,
         }
         glEnd();                    
     }
-    
+     glBegin (GL_LINES);
+
+            double d0;
+        for (unsigned int i = 0; i < V.rows(); i++){
+            if(onlyFace != -1 && onlyFace != mpf[i]) continue;
+            d0 = normalizeDistance(distV[i], min, max);
+            if (d0>thresholdMin && d0 < thresholdMax)
+            {
+                glColor3f(0,1,0);
+                glVertex3f (V(i,0), V(i,1), V(i,2));
+                glVertex3f (mapV(i,0), mapV(i,1), mapV(i,2));
+            }
+        }
+    glEnd();
 
     if (mode == WIRE)
     {
@@ -469,6 +483,8 @@ void Mesh::drawMesh (draw_mode_t mode, double thresholdMin,
         Vector3d v_map = U*p(0) + V*p(1);
         Vector3d v = MeshV.row(i);
         double d = (v-v_map).norm();
+        
+        mapV.row(i) = v_map;
         /*if (quality == 0 && i == 695)
         {
             cout << "------------------------"<<endl;

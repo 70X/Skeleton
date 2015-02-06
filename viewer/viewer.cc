@@ -183,7 +183,7 @@ void TW_CALL getEnableCageFace (void *value, void *)
 void TW_CALL setThresholdMin (const void *value, void *)
 {
     thresholdMin = *(const double *) value;
-    glutPostRedisplay();
+    //glutPostRedisplay();
 }
 
 void TW_CALL getThresholdMin (void *value, void *)
@@ -193,7 +193,7 @@ void TW_CALL getThresholdMin (void *value, void *)
 void TW_CALL setThresholdMax (const void *value, void *)
 {
     thresholdMax = *(const double *) value;
-    glutPostRedisplay();
+    //glutPostRedisplay();
 }
 
 void TW_CALL getThresholdMax (void *value, void *)

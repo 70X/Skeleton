@@ -78,5 +78,6 @@ public:
     int faceInMaxPoint = -1;
     int onlyFace = -1;
     int cagenumF = 0;
+    MatrixXd mapV;
 };
 #endif
