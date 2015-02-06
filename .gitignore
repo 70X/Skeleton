@@ -1,1 +1,10 @@
 viewer/viewer
+viewer/build/camera.dd
+viewer/build/camera.oo
+viewer/build/Mesh.dd
+viewer/build/Mesh.oo
+viewer/build/trackball.dd
+viewer/build/trackball.oo
+viewer/build/viewer.dd
+viewer/build/viewer.oo
+viewer/viewer
