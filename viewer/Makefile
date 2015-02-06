@@ -23,9 +23,20 @@ BUILD_DIR = build
 # Directory where external libs are
 BASELIBS_DIR = ..
 
-# C, CXX compiler
+#
+# cino: hack to pick the right compiler on my machine…
+#
+PC_OR_MAC := $(shell uname)
+ifeq ($(PC_OR_MAC),Darwin)
+CXXC = /usr/local/Cellar/gcc49/4.9.2_1/bin/g++-4.9
+CC   = /usr/local/Cellar/gcc49/4.9.2_1/bin/gcc-4.9
+else
 CXXC = g++
 CC = gcc
+endif
+#
+# cino: hack to pick the right compiler on my machine…
+#
 
 # file extensions for C++ files, their objects and dependencies. (.c,
 # .o and .d are always used for C files)
