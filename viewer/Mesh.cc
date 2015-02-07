@@ -166,11 +166,12 @@
         MatrixXd V = MeshV;
 
         distV = VectorXd(V.rows());
+        for (unsigned int i = 0; i < V.rows(); i++)
+            distV[i] = computeDistanceCageMesh(i);
         min = distV.minCoeff();
         max = distV.maxCoeff();
         for (unsigned int i = 0; i < V.rows(); i++)
-            distV[i] = normalizeDistance(computeDistanceCageMesh(i), min, max);
-
+            distV[i] = normalizeDistance(distV[i], min, max);
     }
 
     double Mesh::normalizeDistance(double d, double min, double max)

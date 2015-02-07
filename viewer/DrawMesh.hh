@@ -37,9 +37,9 @@ public:
 	double* getCenter();
 	double getDiagonal();
 	// set command from GUI
-	double thresholdMin;
-	double thresholdMax;
-	int onlyFace;
+	double thresholdMin = 0;
+	double thresholdMax = 1;
+	int onlyFace = -1;
 private:
 	void setColorError(double d, double *color);
 	double center[3];

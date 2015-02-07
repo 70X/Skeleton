@@ -217,7 +217,9 @@ int main (int argc, char *argv[])
     m.read(strcat(argv[1],".domain.off"));
     drawing.bb(m.getMeshV(), m.getMeshF());
     m.distanceBetweenMeshCage();
-    m.debug();
+    #define __VIEWER__DEBUG
+    #ifdef __VIEWER__DEBUG
+    //m.debug();
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -296,5 +298,6 @@ int main (int argc, char *argv[])
     glutMainLoop();
     
     exit (-1);
+    #endif
 }
 

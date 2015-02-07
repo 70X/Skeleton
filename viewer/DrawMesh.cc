@@ -63,7 +63,7 @@ void DrawMesh::drawMesh (draw_mode_t mode, Mesh m)
         VectorXd distV = m.getDistBetweenVVmap();
         VectorXi MeshParF = m.getMeshParToFaceCage();
 		MatrixXd mapV = m.mapV;
-		
+
         double min, max;
         min = distV.minCoeff();
         max = distV.maxCoeff();
@@ -79,13 +79,14 @@ void DrawMesh::drawMesh (draw_mode_t mode, Mesh m)
         glPointSize(4.0);
         Vector3f color (0,1,0);       // generic mesh color
 
-        VectorXi mpf = MeshParF; 
-    if (mode == SMOOTH)
+    if (mode == SMOOTH || mode == FLAT)
     {
         glEnable (GL_DEPTH_TEST);
         glEnable(GL_LIGHTING);
-        glShadeModel(GL_SMOOTH);
-        glBegin (GL_TRIANGLES);
+        if (mode == SMOOTH) glShadeModel(GL_SMOOTH);
+        else if (mode == FLAT) glShadeModel(GL_FLAT); 
+        glBegin (GL_TRIANGLES); 
+        glColor3f(0,1,0);
             for (int i = 0; i < F.rows(); i++)
             {
                 if (F.cols() != 3 || V.cols() != 3)
@@ -109,6 +110,12 @@ void DrawMesh::drawMesh (draw_mode_t mode, Mesh m)
                 Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
                 Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
                 Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
+                Vector3d u,v,n;
+                u = v1 - v0;
+                v = v2 - v0;
+                n = (u.cross(v));
+                glNormal3f (n(0), n(1), n(2));
+
                 double d0, d1, d2;
 
                 d0 = distV(i0);
@@ -117,72 +124,20 @@ void DrawMesh::drawMesh (draw_mode_t mode, Mesh m)
                 //if (d0>thresholdMin && d0 < thresholdMax)
                 //{
                 //cout << d0 << " " << d1 << " " << d2 << endl;
-                setColorError(d0, colorError[0]);
+                /*setColorError(d0, colorError[0]);
                 setColorError(d1, colorError[1]);
                 setColorError(d2, colorError[2]);
-                glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);
+                glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);*/
                 glVertex3f (v0(0), v0(1), v0(2));
-                glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
+                //glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
                 glVertex3f (v1(0), v1(1), v1(2));
-                glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
+                //glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
                 glVertex3f (v2(0), v2(1), v2(2));
-                //}
 
             }
         glEnd(); 
     }
-    if (mode == FLAT )
-    {
-
-        glEnable (GL_DEPTH_TEST);
-        glEnable(GL_LIGHTING);
-        glShadeModel(GL_FLAT); 
-         
-        glBegin (GL_TRIANGLES);
-            glColor3f(color(0),color(1),color(2));  // same color for all triangles
-            for (int i = 0; i < F.rows(); i++)
-            {
-                if (F.cols() != 3 || V.cols() != 3)
-                    fprintf (stderr, "VF:draw(): only triangles in 3D are supported\n");
-
-                int i0,i1,i2;
-                i0 = i1 = i2 = 0;
-                if (i0 < 0 || i0 >= V.rows())
-                    fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
-                         i,0,F(i,0));
-                if (i1 < 0 || i1 >= V.rows())
-                    fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
-                         i,1,F(i,1));
-                if (i2 < 0 || i2 >= V.rows())
-                    fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
-                         i,2,F(i,2));
-                // indexes of vertices of face i
-                i0 = F(i,0);
-                i1 = F(i,1);
-                i2 = F(i,2);
-                
-                // coords of vertices of face i
-                Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
-                Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
-                Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
-                // normal per face (flat shading)
-                Vector3d u,v,n;
-                u = v1 - v0;
-                v = v2 - v0;
-                n = (u.cross(v));
-
-                glNormal3f (n(0), n(1), n(2));
-                //cout << "Vertices: "<<v0<<","<<v1<<","<<v2<<endl;
-                // triangle
-                
-                glVertex3f (v0(0), v0(1), v0(2));
-                glVertex3f (v1(0), v1(1), v1(2));
-                glVertex3f (v2(0), v2(1), v2(2));
-
-            }
-        glEnd();            
-    }
-
+    
     if (mode == POINTS)
     {
         glDisable (GL_DEPTH_TEST);
@@ -192,7 +147,7 @@ void DrawMesh::drawMesh (draw_mode_t mode, Mesh m)
         double d;
         for (unsigned int i = 0; i < V.rows(); i++){
             
-            if(onlyFace != -1 && onlyFace != mpf[i]) continue;
+            if(onlyFace != -1 && onlyFace != MeshParF[i]) continue;
             d = distV[i];
             if (d>thresholdMin && d < thresholdMax)
             {
@@ -208,15 +163,14 @@ void DrawMesh::drawMesh (draw_mode_t mode, Mesh m)
         }
         glEnd();                    
     }
-     glBegin (GL_LINES);
-
+    glBegin (GL_LINES);
+    glColor3f(0.5,0.5,0.5);
             double d0;
         for (unsigned int i = 0; i < V.rows(); i++){
-            if(onlyFace != -1 && onlyFace != mpf[i]) continue;
+            if(onlyFace != -1 && onlyFace != MeshParF[i]) continue;
             d0 = distV[i];
             if (d0>thresholdMin && d0 < thresholdMax)
             {
-                glColor3f(0,1,0);
                 glVertex3f (V(i,0), V(i,1), V(i,2));
                 glVertex3f (mapV(i,0), mapV(i,1), mapV(i,2));
             }
