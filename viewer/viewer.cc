@@ -59,10 +59,15 @@ void display()
     glViewport(0, 0, (GLsizei) width, (GLsizei) height);
     // draw GUI
     camera.display_begin();
-    if (showMesh)
+    /*if (showMesh)
         drawing.drawMesh(mesh_draw_mode, m);
     if (showCage)
         drawing.drawCage(cage_draw_mode, m);
+*/
+    if (showMesh)
+       drawing.drawMeshDebug(m);
+    if (showCage)
+        drawing.drawCageDebug(m);
     //m.drawMeshPar(mesh_draw_mode);
     camera.display_end();
     // draw GUI
@@ -199,7 +204,16 @@ void TW_CALL call_quit(void *clientData)
 { 
     quit();
 }
-
+void debug()
+{
+    Vector3d A(2,3,1);
+    Vector3d B(0,-1,4);
+    Vector3d C = (B-A);
+    cout << (B-A)/(B-A).norm() << endl<<endl;
+    cout << C/(sqrt(
+        pow(C(0), 2)+pow(C(1),2) + pow(C(2),2) 
+        )) << endl;
+}
 
 //////////
 // MAIN //
@@ -215,11 +229,10 @@ int main (int argc, char *argv[])
 
     m.read(argv[1]);
     m.read(strcat(argv[1],".domain.off"));
-    drawing.bb(m.getMeshV(), m.getMeshF());
+    drawing.bb(m.getCageV(), m.getCageF());
     m.distanceBetweenMeshCage();
     #define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG
-    //m.debug();
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);

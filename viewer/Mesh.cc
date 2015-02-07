@@ -132,25 +132,28 @@
         double d = (v-v_map).norm();
         
         mapV.row(i) = v_map;
-        /*if (quality == 0 && i == 695)
+
+        //if (p(0) < 0 || p(0) > 1 || p(1) < 0 || p(1) > 1)
+        //if (quality == 0 && i == 695)
         {
             cout << "------------------------"<<endl;
-            cout << "(" << i << ")" << endl;
-            cout << quad(0) << "," <<quad(1) << ","<<quad(2)<<","<<quad(3)<<endl;
+            cout << "ith (" << i << ")" << endl;
+            cout << "ith face: " << quad(0) << "," <<quad(1) << ","<<quad(2)<<","<<quad(3)<<endl;
             
-            cout << A(0) << "," <<A(1) << "," <<A(2) << endl;
-            cout << B(0) << "," <<B(1) << "," <<B(2) << endl;
-            cout << C(0) << "," <<C(1) << "," <<C(2) << endl;
-            cout << D(0) << "," <<D(1) << "," <<D(2) << endl;
+            cout << "A ("<<A(0) << "," <<A(1) << "," <<A(2) <<")"<< endl;
+            cout << "B ("<<B(0) << "," <<B(1) << "," <<B(2) <<")"<< endl;
+            cout << "C ("<<C(0) << "," <<C(1) << "," <<C(2) <<")"<<endl;
+            cout << "D ("<<D(0) << "," <<D(1) << "," <<D(2) <<")"<< endl;
 
-            cout << v(0) << " - "<<v_map(0) <<endl;
-            cout << v(1) << " - "<<v_map(1) <<".norm() = "<<d << endl;
-            cout << v(2) << " - "<<v_map(2) <<endl;
-            cout << U(0) << "," <<U(1) << "," <<U(2) << endl;
-            cout << V(0) << "," <<V(1) << "," <<V(2) << endl;
+            cout << "| v(0): "<<v(0) << " - v_map(0): "<<v_map(0) <<"|"<<endl;
+            cout << "| v(1): "<<v(1) << " - v_map(1): "<<v_map(1) <<"\t|\t.norm() = "<<d << endl;
+            cout << "| v(2): "<<v(2) << " - v_map(2): "<<v_map(2) <<"|"<<endl<<endl;
+            cout << "U: ("<<U(0) << "," <<U(1) << "," <<U(2) <<")"<<endl;
+            cout << "V: ("<<V(0) << "," <<V(1) << "," <<V(2) <<")"<< endl;
+            cout << "uv: "<<p(0)<<"," <<p(1) << endl;
             cout << "------------------------"<<endl;
 
-        }*/
+        }
         /*if (d<10)
         {
             std::cout << "(" <<i<<")" << std::endl;
@@ -164,12 +167,12 @@
     {
         double min, max;
         MatrixXd V = MeshV;
-
         distV = VectorXd(V.rows());
         for (unsigned int i = 0; i < V.rows(); i++)
             distV[i] = computeDistanceCageMesh(i);
         min = distV.minCoeff();
         max = distV.maxCoeff();
+
         for (unsigned int i = 0; i < V.rows(); i++)
             distV[i] = normalizeDistance(distV[i], min, max);
     }

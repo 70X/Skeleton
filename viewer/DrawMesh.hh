@@ -33,7 +33,8 @@ public:
 
 	void drawCage (draw_mode_t mode, Mesh m);
 	void drawMesh (draw_mode_t mode, Mesh m);
-	
+	void drawMeshDebug (Mesh m);
+	void drawCageDebug (Mesh m);
 	double* getCenter();
 	double getDiagonal();
 	// set command from GUI
