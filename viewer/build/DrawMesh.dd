@@ -1,5 +1,4 @@
-build/viewer.oo build/viewer.dd : viewer.cc ../AntTweakBar/include/AntTweakBar.h Mesh.hh \
- ../eigen3/Eigen/Core \
+build/DrawMesh.oo build/DrawMesh.dd : DrawMesh.cc DrawMesh.hh ../eigen3/Eigen/Core \
  ../eigen3/Eigen/src/Core/util/DisableStupidWarnings.h \
  ../eigen3/Eigen/src/Core/util/Macros.h \
  ../eigen3/Eigen/src/Core/util/MKL_support.h \
@@ -83,7 +82,7 @@ build/viewer.oo build/viewer.dd : viewer.cc ../AntTweakBar/include/AntTweakBar.h
  ../eigen3/Eigen/src/Core/../plugins/ArrayCwiseBinaryOps.h \
  ../eigen3/Eigen/src/Core/ArrayWrapper.h \
  ../eigen3/Eigen/src/Core/GlobalFunctions.h \
- ../eigen3/Eigen/src/Core/util/ReenableStupidWarnings.h \
+ ../eigen3/Eigen/src/Core/util/ReenableStupidWarnings.h Mesh.hh \
  ../eigen3/Eigen/Geometry ../eigen3/Eigen/Core ../eigen3/Eigen/SVD \
  ../eigen3/Eigen/QR ../eigen3/Eigen/Cholesky \
  ../eigen3/Eigen/src/misc/Solve.h ../eigen3/Eigen/src/Cholesky/LLT.h \
@@ -115,5 +114,4 @@ build/viewer.oo build/viewer.dd : viewer.cc ../AntTweakBar/include/AntTweakBar.h
  ../eigen3/Eigen/src/Geometry/ParametrizedLine.h \
  ../eigen3/Eigen/src/Geometry/AlignedBox.h \
  ../eigen3/Eigen/src/Geometry/Umeyama.h \
- ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h DrawMesh.hh camera.hh \
- trackball.hh
+ ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h

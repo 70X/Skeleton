@@ -23,39 +23,33 @@ using namespace std;
 #ifndef _MESH_CLASS
 #define _MESH_CLASS
 
-#ifndef MIN
-	#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
-#ifndef MAX
-	#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
 
 class Mesh
 {
 public:
 	Mesh();
 	~Mesh();
-	#define VF_DRAW_MODE_NUM 4 
-		typedef enum {SMOOTH, FLAT, POINTS, WIRE} draw_mode_t;
+	
 
 	void read(char *str);
 	void readOFF (char* meshfile);
 	void readPLY (char* meshfile);
 
-	
-	void bb();
-	void drawCage (draw_mode_t mode);
-	void drawMesh (draw_mode_t mode, double thresholdMin, double thresholdMax);
-	void distanceBetweenMeshCage();
+	MatrixXd getMeshV(){ return MeshV; };
+	MatrixXd getCageV(){ return CageV; };
+
+	MatrixXi getMeshF(){ return MeshF; };
+	MatrixXi getCageF(){ return CageF; };
+
+	VectorXi getMeshParToFaceCage(){ return MeshParF; };
+	VectorXd getDistBetweenVVmap(){ return distV; };
 	// Variable 
-	double center[3];
-    double diagonal;
+
+	void distanceBetweenMeshCage();
     void debug();
 private:
 	double computeDistanceCageMesh(int i);
 	double normalizeDistance(double d, double min, double max);
-	void setColorError(double d, double *color);
     // #Vx3: Stores the vertex coordinates, one vertex per row
     MatrixXd CageV;
     // #Fx3[4]: in the ith row, stores the indices of the vertices of the ith face
@@ -74,10 +68,6 @@ private:
 
     //debug
 public:
-    int faceInMinPoint = -1;
-    int faceInMaxPoint = -1;
-    int onlyFace = -1;
-    int cagenumF = 0;
     MatrixXd mapV;
 };
 #endif

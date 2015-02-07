@@ -9,15 +9,9 @@
 
 #include <AntTweakBar.h>
 
-//#include "VF.hh"                    // VF data structure
 #include "Mesh.hh"
+#include "DrawMesh.hh"
 #include "camera.hh"                // viewing controls
-#include "patch.hh"   // harmonic parametrization
-//#include "utility.hh"
-//#include "GLutils.hh"
-//#include "cotmatrix_addins/cotmatrix.h"
-//#include "cotmatrix_addins/massmatrix.h"
-//#include <Eigen/SparseCholesky>
 
 /////////////
 // GLOBALS //
@@ -35,13 +29,13 @@ double thresholdMax = 1;
 bool showMesh = true;
 bool showCage = true;
 
-Mesh::draw_mode_t mesh_draw_mode = Mesh::POINTS;
-Mesh::draw_mode_t cage_draw_mode = Mesh::FLAT;
+DrawMesh::draw_mode_t mesh_draw_mode = DrawMesh::POINTS;
+DrawMesh::draw_mode_t cage_draw_mode = DrawMesh::FLAT;
 
 
 // Mesh:
 Mesh m;
-
+DrawMesh drawing;
 //////////
 // QUIT //
 //////////
@@ -66,9 +60,9 @@ void display()
     // draw GUI
     camera.display_begin();
     if (showMesh)
-    m.drawMesh(mesh_draw_mode, thresholdMin, thresholdMax);
+        drawing.drawMesh(mesh_draw_mode, m);
     if (showCage)
-    m.drawCage(cage_draw_mode);
+        drawing.drawCage(cage_draw_mode, m);
     //m.drawMeshPar(mesh_draw_mode);
     camera.display_end();
     // draw GUI
@@ -171,34 +165,34 @@ void TW_CALL getFocalLength (void *value, void *)
 
 void TW_CALL setEnableCageFace (const void *value, void *)
 {
-    m.onlyFace = *(const double *) value;
+    drawing.onlyFace = *(const double *) value;
     glutPostRedisplay();
 }
 
 void TW_CALL getEnableCageFace (void *value, void *)
 {
-    *(double *) value = m.onlyFace;
+    *(double *) value = drawing.onlyFace;
 }
 
 void TW_CALL setThresholdMin (const void *value, void *)
 {
-    thresholdMin = *(const double *) value;
+    drawing.thresholdMin = *(const double *) value;
     //glutPostRedisplay();
 }
 
 void TW_CALL getThresholdMin (void *value, void *)
 {
-    *(double *) value = thresholdMin;
+    *(double *) value = drawing.thresholdMin;
 }
 void TW_CALL setThresholdMax (const void *value, void *)
 {
-    thresholdMax = *(const double *) value;
+    drawing.thresholdMax = *(const double *) value;
     //glutPostRedisplay();
 }
 
 void TW_CALL getThresholdMax (void *value, void *)
 {
-    *(double *) value = thresholdMax;
+    *(double *) value = drawing.thresholdMax;
 }
 
 void TW_CALL call_quit(void *clientData)
@@ -221,9 +215,10 @@ int main (int argc, char *argv[])
 
     m.read(argv[1]);
     m.read(strcat(argv[1],".domain.off"));
-    m.bb();
+    drawing.bb(m.getMeshV(), m.getMeshF());
     m.distanceBetweenMeshCage();
     m.debug();
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(W, H);
@@ -240,7 +235,7 @@ int main (int argc, char *argv[])
 
     camera.SetLighting(4);
 
-    camera.gCameraReset(m.diagonal, m.center);
+    camera.gCameraReset(drawing.getDiagonal(), drawing.getCenter());
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
@@ -259,11 +254,11 @@ int main (int argc, char *argv[])
 
     TwAddButton(cBar, "Quit", call_quit, NULL, "");
 
-    TwEnumVal draw_modeEV[VF_DRAW_MODE_NUM] = {
-        { Mesh::SMOOTH, "Smooth" }, { Mesh::FLAT, "Flat" }, { Mesh::POINTS, "Points" }, { Mesh::WIRE, "Wire" } }; 
+    TwEnumVal draw_modeEV[MESH_DRAW_MODE_NUM] = {
+        { DrawMesh::SMOOTH, "Smooth" }, { DrawMesh::FLAT, "Flat" }, { DrawMesh::POINTS, "Points" }, { DrawMesh::WIRE, "Wire" } }; 
 
-    TwType draw_modeT = TwDefineEnum("drawModeType", draw_modeEV, VF_DRAW_MODE_NUM);
-    TwType draw_modeC = TwDefineEnum("drawCageModeType", draw_modeEV, VF_DRAW_MODE_NUM);
+    TwType draw_modeT = TwDefineEnum("drawModeType", draw_modeEV, MESH_DRAW_MODE_NUM);
+    TwType draw_modeC = TwDefineEnum("drawCageModeType", draw_modeEV, MESH_DRAW_MODE_NUM);
     
     // info
     TwAddVarRW(cBar, "show camera help", TW_TYPE_BOOLCPP, &camera.gShowHelp, "group = 'Scene'");
@@ -289,8 +284,8 @@ int main (int argc, char *argv[])
            "group = 'Cage'" " keyIncr='<' keyDecr='>'");
     
   char str[50];
-
-  sprintf(str, "group = 'Debug' min=-1 max=%d step=1", m.cagenumF-1);
+  int fnum = m.getCageF().rows();
+  sprintf(str, "group = 'Debug' min=-1 max=%d step=1", fnum-1);
     TwAddVarCB(cBar, "only face", TW_TYPE_DOUBLE, setEnableCageFace, getEnableCageFace,
            NULL, str);
 
