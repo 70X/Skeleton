@@ -35,6 +35,7 @@ public:
 	void drawMesh (draw_mode_t mode, Mesh m);
 	void drawMeshDebug (Mesh m);
 	void drawCageDebug (Mesh m);
+	void drawQuadProjection(Mesh m);
 	double* getCenter();
 	double getDiagonal();
 	// set command from GUI

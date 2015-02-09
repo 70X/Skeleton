@@ -469,3 +469,34 @@ void DrawMesh::drawMesh (draw_mode_t mode, Mesh m)
         glPopMatrix();
         return; 
     }
+
+    void DrawMesh::drawQuadProjection(Mesh m)
+    {
+    		/*int i = 1;
+    		VectorXi mpf = m.getMeshParToFaceCage();
+    		int quality = mpf[i];*/
+    		MatrixXd cv = m.getCageV();
+    		MatrixXi cf = m.getCageF();
+    		Vector4i quad = cf.row(3);
+    		Vector3d A(cv.row(quad[0])),
+                B(cv.row(quad[1])),
+                C(cv.row(quad[2])),
+                D(cv.row(quad[3]));
+
+    		glMatrixMode(GL_PROJECTION);
+			glPushMatrix();
+
+			glPointSize(4.0);
+			glDisable (GL_DEPTH_TEST);
+		    glDisable(GL_LIGHTING);
+		    glColor3f(1, 0,0);
+
+		    glBegin (GL_QUADS);
+		    	glVertex3f(A(0), A(1), A(2));
+		    	glVertex3f(B(0), B(1), B(2));
+		    	glVertex3f(C(0), C(1), C(2));
+		    	glVertex3f(D(0), D(1), D(2));
+		    glEnd();
+		    
+		    glPopMatrix();
+    }

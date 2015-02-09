@@ -133,6 +133,7 @@
         
         mapV.row(i) = v_map;
 
+        /*
         //if (p(0) < 0 || p(0) > 1 || p(1) < 0 || p(1) > 1)
         //if (quality == 0 && i == 695)
         {
@@ -184,7 +185,8 @@
 
     void Mesh::debug()
     {
-        double min, max;
+
+        /*double min, max;
         min = distV.minCoeff();
         max = distV.maxCoeff();
         cout << "Distance: *Min="<< min << " | *Max=" << max << " " << endl;
@@ -209,5 +211,5 @@
                 cout << " quality = " << MeshParF[i] << endl<<endl;
             }
         }
-        //cout << normalizeDistance(distV[0], min, max) << endl;
+        //cout << normalizeDistance(distV[0], min, max) << endl;*/
     }
