@@ -43,6 +43,7 @@ public:
 
 	VectorXi getMeshParToFaceCage(){ return MeshParF; };
 	VectorXd getDistBetweenVVmap(){ return distV; };
+
 	// Variable 
 
 	void distanceBetweenMeshCage();

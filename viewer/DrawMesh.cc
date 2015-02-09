@@ -75,17 +75,24 @@ void DrawMesh::drawMeshDebug(Mesh m)
     double d;
     for (unsigned int i = 0; i < V.rows(); i++){
         if(onlyFace != -1 && onlyFace != MeshParF[i]) continue;
-        glColor3f(1,0,0);
-        glVertex3f (V(i,0), V(i,1), V(i,2));
+        d = distV[i]; 
+        if (d>thresholdMin && d < thresholdMax)
+        {
+	        glColor3f(1,0,0);
+	        glVertex3f (V(i,0), V(i,1), V(i,2));
+	    }
     }
     glEnd(); 
     glBegin (GL_LINES);
     glColor3f(0.5,0.5,0.5);
-            double d0;
         for (unsigned int i = 0; i < V.rows(); i++){
             if(onlyFace != -1 && onlyFace != MeshParF[i]) continue;
-        glVertex3f (V(i,0), V(i,1), V(i,2));
-        glVertex3f (mapV(i,0), mapV(i,1), mapV(i,2));
+            d = distV[i];
+            if (d>thresholdMin && d < thresholdMax)
+            {
+		        glVertex3f (V(i,0), V(i,1), V(i,2));
+		        glVertex3f (mapV(i,0), mapV(i,1), mapV(i,2));
+		    }
         }
     glEnd();  
 
@@ -240,14 +247,14 @@ void DrawMesh::drawMesh (draw_mode_t mode, Mesh m)
                 //if (d0>thresholdMin && d0 < thresholdMax)
                 //{
                 //cout << d0 << " " << d1 << " " << d2 << endl;
-                /*setColorError(d0, colorError[0]);
+                setColorError(d0, colorError[0]);
                 setColorError(d1, colorError[1]);
                 setColorError(d2, colorError[2]);
-                glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);*/
+                glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);
                 glVertex3f (v0(0), v0(1), v0(2));
-                //glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
+                glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
                 glVertex3f (v1(0), v1(1), v1(2));
-                //glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
+                glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
                 glVertex3f (v2(0), v2(1), v2(2));
 
             }
@@ -279,7 +286,7 @@ void DrawMesh::drawMesh (draw_mode_t mode, Mesh m)
         }
         glEnd();                    
     }
-    glBegin (GL_LINES);
+    /*glBegin (GL_LINES);
     glColor3f(0.5,0.5,0.5);
             double d0;
         for (unsigned int i = 0; i < V.rows(); i++){
@@ -291,7 +298,7 @@ void DrawMesh::drawMesh (draw_mode_t mode, Mesh m)
                 glVertex3f (mapV(i,0), mapV(i,1), mapV(i,2));
             }
         }
-    glEnd();
+    glEnd();*/
 
     if (mode == WIRE)
     {

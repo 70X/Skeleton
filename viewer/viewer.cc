@@ -59,15 +59,15 @@ void display()
     glViewport(0, 0, (GLsizei) width, (GLsizei) height);
     // draw GUI
     camera.display_begin();
-    /*if (showMesh)
+    if (showMesh)
         drawing.drawMesh(mesh_draw_mode, m);
     if (showCage)
         drawing.drawCage(cage_draw_mode, m);
-*/
-    if (showMesh)
+
+   /* if (showMesh)
        drawing.drawMeshDebug(m);
     if (showCage)
-        drawing.drawCageDebug(m);
+        drawing.drawCageDebug(m);*/
     //m.drawMeshPar(mesh_draw_mode);
     camera.display_end();
     // draw GUI
@@ -229,7 +229,7 @@ int main (int argc, char *argv[])
 
     m.read(argv[1]);
     m.read(strcat(argv[1],".domain.off"));
-    drawing.bb(m.getCageV(), m.getCageF());
+    drawing.bb(m.getMeshV(), m.getMeshF());
     m.distanceBetweenMeshCage();
     #define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG

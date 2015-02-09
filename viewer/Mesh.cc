@@ -110,11 +110,6 @@
     }
     
 
-
-
-
-
-
     double Mesh::computeDistanceCageMesh(int i)
     {
         int quality = MeshParF(i);
@@ -124,18 +119,18 @@
                 B(CageV.row(quad[1])),
                 C(CageV.row(quad[2])),
                 D(CageV.row(quad[3]));
-        Vector3d U = (B-A)/(B-A).norm();
-        Vector3d V = (D-A)/(D-A).norm();
+        Vector3d U = (B-A);
+        Vector3d V = (D-A);
 
-        Vector3d v_map = U*p(0) + V*p(1);
+        Vector3d v_map = A + U*p(0) + V*p(1);
         Vector3d v = MeshV.row(i);
         double d = (v-v_map).norm();
         
         mapV.row(i) = v_map;
 
-        /*
+        
         //if (p(0) < 0 || p(0) > 1 || p(1) < 0 || p(1) > 1)
-        //if (quality == 0 && i == 695)
+        /*if (quality == 1)
         {
             cout << "------------------------"<<endl;
             cout << "ith (" << i << ")" << endl;
@@ -153,7 +148,8 @@
             cout << "V: ("<<V(0) << "," <<V(1) << "," <<V(2) <<")"<< endl;
             cout << "uv: "<<p(0)<<"," <<p(1) << endl;
             cout << "------------------------"<<endl;
-
+            cout << U.cross(V) << endl<<endl;
+            cout << V.cross(U) << endl;
         }
         /*if (d<10)
         {
