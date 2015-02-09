@@ -49,7 +49,7 @@ public:
 	void distanceBetweenMeshCage();
     void debug();
 private:
-	double computeDistanceCageMesh(int i);
+	double computeDistanceCageMesh(int i, bool normalized);
 	double normalizeDistance(double d, double min, double max);
     // #Vx3: Stores the vertex coordinates, one vertex per row
     MatrixXd CageV;

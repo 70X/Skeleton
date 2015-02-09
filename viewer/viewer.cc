@@ -29,7 +29,7 @@ double thresholdMax = 1;
 bool showMesh = true;
 bool showCage = true;
 
-DrawMesh::draw_mode_t mesh_draw_mode = DrawMesh::POINTS;
+DrawMesh::draw_mode_t mesh_draw_mode = DrawMesh::FLAT;
 DrawMesh::draw_mode_t cage_draw_mode = DrawMesh::FLAT;
 
 

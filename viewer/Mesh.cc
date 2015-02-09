@@ -61,6 +61,7 @@
 
         string line;
         unsigned found;
+        bool flag = false;
         while(getline(fp, line))
         {
             if (line.find("element vertex") != std::string::npos)
@@ -73,6 +74,10 @@
                 found = line.find_last_of(" ");
                 fnum = atoi(line.substr(found+1).c_str());
             }
+            if (line.find("int flags") != std::string::npos)
+            {
+                flag = true;
+            }
             if (line == "end_header")
                 break;
         }
@@ -80,6 +85,7 @@
         //std::cout << vnum << " " << fnum << endl;
 
         float x,y,z,u,v,quality;
+        int flags;
 
         MeshV = MatrixXd (vnum, 3);
         mapV = MatrixXd (vnum, 3);
@@ -91,8 +97,11 @@
         {
             getline(fp, line);
             stringstream linestream(line);
-            linestream >> x >> y >> z >> quality >>
-                u >> v;
+            if(flag)
+                linestream >> x >> y >> z >> flags >> quality >>
+                                    u >> v;
+            else linestream >> x >> y >> z >> quality >> 
+                                    u >> v;
             MeshV.row(i) = Vector3d(x,y,z);
             MeshParV.row(i) = Vector2d(u,v);
             MeshParF[i] = quality;
@@ -110,7 +119,7 @@
     }
     
 
-    double Mesh::computeDistanceCageMesh(int i)
+    double Mesh::computeDistanceCageMesh(int i, bool normalized = true)
     {
         int quality = MeshParF(i);
         Vector2d p = MeshParV.row(i);
@@ -119,8 +128,14 @@
                 B(CageV.row(quad[1])),
                 C(CageV.row(quad[2])),
                 D(CageV.row(quad[3]));
+
         Vector3d U = (B-A);
         Vector3d V = (D-A);
+        if (!normalized )
+        {
+                U /= U.norm();
+                V /= V.norm();
+        }
 
         Vector3d v_map = A + U*p(0) + V*p(1);
         Vector3d v = MeshV.row(i);
@@ -130,7 +145,7 @@
 
         
         //if (p(0) < 0 || p(0) > 1 || p(1) < 0 || p(1) > 1)
-        /*if (quality == 1)
+        if (i == 0)
         {
             cout << "------------------------"<<endl;
             cout << "ith (" << i << ")" << endl;
@@ -165,8 +180,18 @@
         double min, max;
         MatrixXd V = MeshV;
         distV = VectorXd(V.rows());
+
+        bool normalized = true;
+        Vector2d minPar = MeshParV.colwise().minCoeff();
+        Vector2d maxPar = MeshParV.colwise().maxCoeff();
+        if (minPar(0) >= 0 && minPar(1) <= 1 &&
+            maxPar(0) >= 0 && maxPar(1) <= 1)
+            normalized = false;
+        /*cout << "normalized: "<< normalized << endl;
+        cout << minPar << endl<<endl;
+        cout << maxPar <<endl;*/
         for (unsigned int i = 0; i < V.rows(); i++)
-            distV[i] = computeDistanceCageMesh(i);
+            distV[i] = computeDistanceCageMesh(i, normalized);
         min = distV.minCoeff();
         max = distV.maxCoeff();
 
