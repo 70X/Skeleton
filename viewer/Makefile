@@ -34,7 +34,7 @@ DEP_EXT = dd
 OBJ_EXT = oo
 
 ### files to compile. add C++ sources and C sources to the right variable
-CPPSOURCES = viewer.cc camera.cc trackball.cc Mesh.cc DrawMesh.cc
+CPPSOURCES = viewer.cc camera.cc trackball.cc Mesh.cc DrawMesh.cc Cage.cc Process.cc Polychords.cc
 CSOURCES =
 
 # generic compilation configuration, to be used for both C++ and C

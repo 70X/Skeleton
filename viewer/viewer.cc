@@ -9,7 +9,8 @@
 
 #include <AntTweakBar.h>
 
-#include "Mesh.hh"
+#include "Process.hh"
+#include "Polychords.hh"
 #include "DrawMesh.hh"
 #include "camera.hh"                // viewing controls
 
@@ -34,7 +35,7 @@ DrawMesh::draw_mode_t cage_draw_mode = DrawMesh::FLAT;
 
 
 // Mesh:
-Mesh m;
+Process p;
 DrawMesh drawing;
 //////////
 // QUIT //
@@ -60,15 +61,10 @@ void display()
     // draw GUI
     camera.display_begin();
     if (showMesh)
-        drawing.drawMesh(mesh_draw_mode, m);
+        drawing.drawMesh(mesh_draw_mode, p);
     if (showCage)
-        drawing.drawCage(cage_draw_mode, m);
+        drawing.drawCage(cage_draw_mode, p);
 
-   /* if (showMesh)
-       drawing.drawMeshDebug(m);
-    if (showCage)
-        drawing.drawCageDebug(m);*/
-    //m.drawMeshPar(mesh_draw_mode);
     camera.display_end();
     // draw GUI
     TwDraw();
@@ -227,11 +223,16 @@ int main (int argc, char *argv[])
 	exit (-1);
     }
 
-    m.read(argv[1]);
-    m.read(strcat(argv[1],".domain.off"));
-    drawing.bb(m.getMeshV(), m.getMeshF());
-    m.distanceBetweenMeshCage();
-    #define __VIEWER__DEBUG
+    p.read(argv[1]);
+    p.read(strcat(argv[1],".domain.off"));
+    drawing.bb(p.m.V, p.m.F);
+    p.distancesBetweenMeshCage();
+
+    Polychords polychords(p.c);
+    polychords.computePolychords();
+    for(vector<int>::const_iterator i = polychords.P[2].begin(); i != polychords.P[2].end(); ++i)
+    std::cout << *i << ' ';
+    //#define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG
 
     glutInit(&argc, argv);
@@ -299,7 +300,7 @@ int main (int argc, char *argv[])
            "group = 'Cage'" " keyIncr='<' keyDecr='>'");
     
   char str[50];
-  int fnum = m.getCageF().rows();
+  int fnum = p.c.Q.rows();
   sprintf(str, "group = 'Debug' min=-1 max=%d step=1", fnum-1);
     TwAddVarCB(cBar, "only face", TW_TYPE_DOUBLE, setEnableCageFace, getEnableCageFace,
            NULL, str);

@@ -1,4 +1,5 @@
-build/DrawMesh.oo build/DrawMesh.dd : DrawMesh.cc DrawMesh.hh ../eigen3/Eigen/Core \
+build/DrawMesh.oo build/DrawMesh.dd : DrawMesh.cc DrawMesh.hh Process.hh Mesh.hh \
+ ../eigen3/Eigen/Core \
  ../eigen3/Eigen/src/Core/util/DisableStupidWarnings.h \
  ../eigen3/Eigen/src/Core/util/Macros.h \
  ../eigen3/Eigen/src/Core/util/MKL_support.h \
@@ -82,7 +83,7 @@ build/DrawMesh.oo build/DrawMesh.dd : DrawMesh.cc DrawMesh.hh ../eigen3/Eigen/Co
  ../eigen3/Eigen/src/Core/../plugins/ArrayCwiseBinaryOps.h \
  ../eigen3/Eigen/src/Core/ArrayWrapper.h \
  ../eigen3/Eigen/src/Core/GlobalFunctions.h \
- ../eigen3/Eigen/src/Core/util/ReenableStupidWarnings.h Mesh.hh \
+ ../eigen3/Eigen/src/Core/util/ReenableStupidWarnings.h \
  ../eigen3/Eigen/Geometry ../eigen3/Eigen/Core ../eigen3/Eigen/SVD \
  ../eigen3/Eigen/QR ../eigen3/Eigen/Cholesky \
  ../eigen3/Eigen/src/misc/Solve.h ../eigen3/Eigen/src/Cholesky/LLT.h \
@@ -114,4 +115,4 @@ build/DrawMesh.oo build/DrawMesh.dd : DrawMesh.cc DrawMesh.hh ../eigen3/Eigen/Co
  ../eigen3/Eigen/src/Geometry/ParametrizedLine.h \
  ../eigen3/Eigen/src/Geometry/AlignedBox.h \
  ../eigen3/Eigen/src/Geometry/Umeyama.h \
- ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h
+ ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Cage.hh

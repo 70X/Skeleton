@@ -3,7 +3,7 @@
 #else
 #include <GL/glut.h>
 #endif
-
+#include "Process.hh"
 #include <Eigen/Core>
 //#include <Eigen/Geometry>
 #include <iostream>
@@ -12,7 +12,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "Mesh.hh"
 
 using namespace Eigen;
 using namespace std;
@@ -31,11 +30,8 @@ public:
 
 	void bb(MatrixXd MeshV, MatrixXi MeshF);
 
-	void drawCage (draw_mode_t mode, Mesh m);
-	void drawMesh (draw_mode_t mode, Mesh m);
-	void drawMeshDebug (Mesh m);
-	void drawCageDebug (Mesh m);
-	void drawQuadProjection(Mesh m);
+	void drawCage (draw_mode_t mode, Process p);
+	void drawMesh (draw_mode_t mode, Process p);
 	double* getCenter();
 	double getDiagonal();
 	// set command from GUI
