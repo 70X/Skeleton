@@ -115,4 +115,4 @@ build/DrawMesh.oo build/DrawMesh.dd : DrawMesh.cc DrawMesh.hh Process.hh Mesh.hh
  ../eigen3/Eigen/src/Geometry/ParametrizedLine.h \
  ../eigen3/Eigen/src/Geometry/AlignedBox.h \
  ../eigen3/Eigen/src/Geometry/Umeyama.h \
- ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Cage.hh
+ ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Cage.hh Polychords.hh

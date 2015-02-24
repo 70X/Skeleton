@@ -37,6 +37,7 @@ DrawMesh::draw_mode_t cage_draw_mode = DrawMesh::FLAT;
 // Mesh:
 Process p;
 DrawMesh drawing;
+Polychords polychords;
 //////////
 // QUIT //
 //////////
@@ -63,7 +64,7 @@ void display()
     if (showMesh)
         drawing.drawMesh(mesh_draw_mode, p);
     if (showCage)
-        drawing.drawCage(cage_draw_mode, p);
+        drawing.drawCage(cage_draw_mode, p, polychords);
 
     camera.display_end();
     // draw GUI
@@ -164,6 +165,18 @@ void TW_CALL getFocalLength (void *value, void *)
     *(double *) value = camera.gCamera.focalLength;
 }
 
+void TW_CALL setIDPolychord (const void *value, void *)
+{
+    drawing.IDPolychord = *(const double *) value;
+    glutPostRedisplay();
+}
+
+void TW_CALL getIDPolychord (void *value, void *)
+{
+    *(double *) value = drawing.IDPolychord;
+}
+
+
 void TW_CALL setEnableCageFace (const void *value, void *)
 {
     drawing.onlyFace = *(const double *) value;
@@ -228,11 +241,10 @@ int main (int argc, char *argv[])
     drawing.bb(p.m.V, p.m.F);
     p.distancesBetweenMeshCage();
 
-    Polychords polychords(p.c);
+    polychords = Polychords(p.c);
     polychords.computePolychords();
-    for(vector<int>::const_iterator i = polychords.P[2].begin(); i != polychords.P[2].end(); ++i)
-    std::cout << *i << ' ';
-    //#define __VIEWER__DEBUG
+
+    #define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG
 
     glutInit(&argc, argv);
@@ -303,6 +315,8 @@ int main (int argc, char *argv[])
   int fnum = p.c.Q.rows();
   sprintf(str, "group = 'Debug' min=-1 max=%d step=1", fnum-1);
     TwAddVarCB(cBar, "only face", TW_TYPE_DOUBLE, setEnableCageFace, getEnableCageFace,
+           NULL, str);
+    TwAddVarCB(cBar, "# polychord", TW_TYPE_DOUBLE, setIDPolychord, getIDPolychord,
            NULL, str);
 
     TwAddVarCB(cBar, "threshold min", TW_TYPE_DOUBLE, setThresholdMin, getThresholdMin,

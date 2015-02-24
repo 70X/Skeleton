@@ -10,11 +10,12 @@ using namespace std;
 class Polychords
 {
 	public:
+	Polychords(){};
 	Polychords(Cage c);
 	~Polychords(){};
 
 	void computePolychords();
-	void expandPolychords(int id, int q_start, int q_next);
+	void expandPolychords(vector<int> *polychord, int q_start, int q_next);
 
 	vector<vector<int>> P;
 	Cage C;

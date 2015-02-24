@@ -213,7 +213,8 @@ void DrawMesh::drawMesh (draw_mode_t mode, Process p)
 
 
 
-    void DrawMesh::drawCage (draw_mode_t mode, Process p)
+    void DrawMesh::drawCage (draw_mode_t mode, Process p,
+        Polychords pc)
     {
         
         MatrixXd V = p.c.V;
@@ -309,35 +310,76 @@ void DrawMesh::drawMesh (draw_mode_t mode, Process p)
             glDisable (GL_LIGHTING);
             glColor3f(color(0),color(1),color(2)); // same color for all edges
             
-            glBegin (GL_LINES);
-            for (int i = 0; i < F.rows(); i++)
-            {
+            
+            
+            if (IDPolychord != -1 && IDPolychord < pc.P.size())
+                {
+                    glColor3f(1,0,0);
+            
+                glShadeModel(GL_FLAT);
+         
+                glBegin (GL_QUADS);
+                    for(vector<int>::const_iterator it = pc.P[IDPolychord].begin(); it != pc.P[IDPolychord].end(); ++it)
+                    {
+                        cout << *it << endl;
+                        int i0,i1,i2,i3;
+                        i0 = i1 = i2 = i3 = 0;
+                        int i = *it;
+                        i0 = F(i,0);
+                        i1 = F(i,1);
+                        i2 = F(i,2);
+                        i3 = F(i,3);
+                        
+                        Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
+                        Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
+                        Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
+                        Vector3d v3 (V(i3,0), V(i3,1), V(i3,2));
+                        
+                        // triangle
+
+                        glVertex3f (v0(0), v0(1), v0(2));
+                        glVertex3f (v1(0), v1(1), v1(2));
+                        glVertex3f (v1(0), v1(1), v1(2));
+                        glVertex3f (v2(0), v2(1), v2(2));
+                        glVertex3f (v2(0), v2(1), v2(2));
+                        glVertex3f (v3(0), v3(1), v3(2));
+                        glVertex3f (v3(0), v3(1), v3(2));
+                        glVertex3f (v0(0), v0(1), v0(2));
+
                 
-            int i0,i1,i2,i3;
-            i0 = i1 = i2 = i3 = 0;
+                    }
+                }
+            else
+            {
+                glBegin (GL_LINES);
+                for (int i = 0; i < F.rows(); i++)
+                {
+                int i0,i1,i2,i3;
+                i0 = i1 = i2 = i3 = 0;
 
-            i0 = F(i,0);
-            i1 = F(i,1);
-            i2 = F(i,2);
-            i3 = F(i,3);
-            
-            Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
-            Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
-            Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
-            Vector3d v3 (V(i3,0), V(i3,1), V(i3,2));
-            
-            // triangle
+                i0 = F(i,0);
+                i1 = F(i,1);
+                i2 = F(i,2);
+                i3 = F(i,3);
+                
+                Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
+                Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
+                Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
+                Vector3d v3 (V(i3,0), V(i3,1), V(i3,2));
+                
+                // triangle
 
-            glVertex3f (v0(0), v0(1), v0(2));
-            glVertex3f (v1(0), v1(1), v1(2));
-            glVertex3f (v1(0), v1(1), v1(2));
-            glVertex3f (v2(0), v2(1), v2(2));
-            glVertex3f (v2(0), v2(1), v2(2));
-            glVertex3f (v3(0), v3(1), v3(2));
-            glVertex3f (v3(0), v3(1), v3(2));
-            glVertex3f (v0(0), v0(1), v0(2));
+                glVertex3f (v0(0), v0(1), v0(2));
+                glVertex3f (v1(0), v1(1), v1(2));
+                glVertex3f (v1(0), v1(1), v1(2));
+                glVertex3f (v2(0), v2(1), v2(2));
+                glVertex3f (v2(0), v2(1), v2(2));
+                glVertex3f (v3(0), v3(1), v3(2));
+                glVertex3f (v3(0), v3(1), v3(2));
+                glVertex3f (v0(0), v0(1), v0(2));
 
-            
+                
+                }
             }
             glEnd();            
         }

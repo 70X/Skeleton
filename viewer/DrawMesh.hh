@@ -4,6 +4,8 @@
 #include <GL/glut.h>
 #endif
 #include "Process.hh"
+#include "Polychords.hh"
+
 #include <Eigen/Core>
 //#include <Eigen/Geometry>
 #include <iostream>
@@ -30,7 +32,7 @@ public:
 
 	void bb(MatrixXd MeshV, MatrixXi MeshF);
 
-	void drawCage (draw_mode_t mode, Process p);
+	void drawCage (draw_mode_t mode, Process p, Polychords pc);
 	void drawMesh (draw_mode_t mode, Process p);
 	double* getCenter();
 	double getDiagonal();
@@ -38,6 +40,7 @@ public:
 	double thresholdMin = 0;
 	double thresholdMax = 1;
 	int onlyFace = -1;
+	int IDPolychord = -1;
 private:
 	void setColorError(double d, double *color);
 	double center[3];
