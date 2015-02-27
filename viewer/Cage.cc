@@ -3,8 +3,8 @@
 
 Vector3d Cage::getVMapping(int i)
 {
-		int quality = ParQ(i);
-        Vector2d p = ParV.row(i);
+		int quality = QVpar(i);
+        Vector2d p = Vpar.row(i);
         Vector4i quad = Q.row(quality);
         Vector3d 	A(V.row(quad[0])),
                 	B(V.row(quad[1])),

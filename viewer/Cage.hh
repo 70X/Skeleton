@@ -16,8 +16,8 @@ public:
     MatrixXd V;
     // #Fx3[4]: in the ith row, stores the indices of the vertices of the ith face
     MatrixXi Q;
-    MatrixXd ParV; // Vx2
-    VectorXi ParQ;
+    MatrixXd Vpar; // Vx2
+    VectorXi QVpar;
     // relation adjacents of Cage
     MatrixXi QQ;
 

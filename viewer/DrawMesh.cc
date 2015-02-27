@@ -58,10 +58,10 @@
 
 void DrawMesh::drawMesh (draw_mode_t mode, Process p)
     { 
-        MatrixXd V = p.m.V;
-        MatrixXi F = p.m.F;  
+        MatrixXd V = p.M.V;
+        MatrixXi F = p.M.F;  
         VectorXd distV = p.distancesMeshCage;
-        VectorXi MeshParF = p.c.ParQ;
+        VectorXi MeshParF = p.C.QVpar;
 
         double* colorError[3];
         colorError[0] = new double[3];
@@ -213,12 +213,12 @@ void DrawMesh::drawMesh (draw_mode_t mode, Process p)
 
 
 
-    void DrawMesh::drawCage (draw_mode_t mode, Process p,
-        Polychords pc)
+    void DrawMesh::drawCage (draw_mode_t mode, Process p)
     {
         
-        MatrixXd V = p.c.V;
-        MatrixXi F = p.c.Q;
+        MatrixXd V = p.C.V;
+        MatrixXi F = p.C.Q;
+        Polychords pc = p.P;
         glColor3f (0.0,0.0,0.0);
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
@@ -312,7 +312,7 @@ void DrawMesh::drawMesh (draw_mode_t mode, Process p)
             
             
             
-            if (IDPolychord != -1 && IDPolychord < pc.P.size())
+            if (IDPolychord != -1 && IDPolychord < pc.getSize())
                 {
                     glColor3f(1,0,0);
             
@@ -321,7 +321,6 @@ void DrawMesh::drawMesh (draw_mode_t mode, Process p)
                 glBegin (GL_QUADS);
                     for(vector<int>::const_iterator it = pc.P[IDPolychord].begin(); it != pc.P[IDPolychord].end(); ++it)
                     {
-                        cout << *it << endl;
                         int i0,i1,i2,i3;
                         i0 = i1 = i2 = i3 = 0;
                         int i = *it;

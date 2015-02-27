@@ -1,6 +1,45 @@
 #include "Process.hh"
 
+    VectorXd Process::computeQuadsError()
+    {
+        VectorXd QuadsError(C.Q.rows());
+        for (unsigned int i=0; i<C.Vpar.rows(); i++)
+            QuadsError[C.QVpar[i]] += distancesMeshCage[i];
 
+        // print
+        /*for (unsigned int i=0; i<QuadsError.rows(); i++)
+            cout << "q = " <<i<<" = "<<QuadsError[i] << endl; 
+        */
+        return QuadsError;
+    }
+    void Process::raffinementQuadLayout()
+    {
+        while(1)
+        {
+            VectorXd QuadsError = computeQuadsError();
+            double maxError = 0;
+            int worstPolychord = -1;
+            // Find polychord with the greatest error
+            for (unsigned int id=0; id<P.getSize(); id++)
+            {
+                double currentError = 0;
+                for(vector<int>::const_iterator q = P.P[id].begin(); q != P.P[id].end(); ++q)
+                    currentError += QuadsError[*q];
+                
+                //cout << "id: "<<id<<" error: "<<currentError<<endl;
+                if (currentError > maxError)
+                {
+                    maxError = currentError;
+                    worstPolychord = id;
+                }
+            }
+            cout << worstPolychord << endl;
+            break;
+            // Split polychord found and cage 
+            // Reinitialize relation adj.
+            // moveCage towards mesh triangle
+        }
+    }
 
     double Process::normalizeDistance(double d, double min, double max)
     {
@@ -15,17 +54,17 @@
     void Process::distancesBetweenMeshCage()
     {
         double min, max;
-        MatrixXd V = m.V;
+        MatrixXd V = M.V;
         distancesMeshCage = VectorXd(V.rows());
         /*
         bool normalized = false;
-        Vector2d maxPar = c.ParV_2D.colwise().maxCoeff();
+        Vector2d maxPar = C.ParV_2D.colwise().maxCoeff();
         if (maxPar(0) >= 0 && maxPar(1) <= 1)
             normalized = true;
         cout << "normalized: "<< normalized << endl;
         */
         for (unsigned int i = 0; i < V.rows(); i++)
-            distancesMeshCage[i] = computeDistance(V.row(i), c.getVMapping(i));
+            distancesMeshCage[i] = computeDistance(V.row(i), C.getVMapping(i));
         
         min = distancesMeshCage.minCoeff();
         max = distancesMeshCage.maxCoeff();
@@ -45,11 +84,11 @@
         if (!strcmp(p, ".off") || !strcmp(p, ".OFF"))
         {
             readOFF (str);
-            fprintf (stdout, "Loaded mesh `%s\'.\n#vertices: %d.\n#faces: %d.\n", str, (int)c.V.rows(), (int)c.Q.rows());
+            fprintf (stdout, "Loaded mesh `%s\'.\n#vertices: %d.\n#faces: %d.\n", str, (int)C.V.rows(), (int)C.Q.rows());
         } else if (!strcmp(p, ".ply") || !strcmp(p, ".PLY"))
         {
             readPLY (str);
-            fprintf (stdout, "Loaded mesh `%s\'.\n#vertices: %d.\n#faces: %d.\n", str, (int)m.V.rows(), (int)m.F.rows());
+            fprintf (stdout, "Loaded mesh `%s\'.\n#vertices: %d.\n#faces: %d.\n", str, (int)M.V.rows(), (int)M.F.rows());
         }else {
             fprintf (stdout, "File format not supported!\n");
             return;
@@ -68,22 +107,22 @@
         int r = 0;
         r = fscanf (fp, "OFF\n%d %d 0\n",  &vnum, &fnum);
     
-        c.V = MatrixXd (vnum, 3);
-        c.Q = MatrixXi (fnum, 4);
+        C.V = MatrixXd (vnum, 3);
+        C.Q = MatrixXi (fnum, 4);
 
-        for (int i = 0; i < c.V.rows(); i++)
-            r = fscanf (fp, "%lf %lf %lf\n", &(c.V)(i,0), &(c.V)(i,1), &(c.V)(i,2));    
-        for (int i = 0; i < c.Q.rows(); i++)
-            r = fscanf (fp, "4 %d %d %d %d\n", &(c.Q)(i,0), &(c.Q)(i,1), &(c.Q)(i,2), &(c.Q)(i,3));
-        for (int i = 0; i < c.Q.rows(); i++)
+        for (int i = 0; i < C.V.rows(); i++)
+            r = fscanf (fp, "%lf %lf %lf\n", &(C.V)(i,0), &(C.V)(i,1), &(C.V)(i,2));    
+        for (int i = 0; i < C.Q.rows(); i++)
+            r = fscanf (fp, "4 %d %d %d %d\n", &(C.Q)(i,0), &(C.Q)(i,1), &(C.Q)(i,2), &(C.Q)(i,3));
+        for (int i = 0; i < C.Q.rows(); i++)
             for (int j = 0; j < 4; j++)
-                if (c.Q(i,j) >= c.V.rows())
+                if (C.Q(i,j) >= C.V.rows())
                     fprintf (stderr, "readOFF(): warning vertex: %d"
                              " in face: %d has value: %d, greater than #v: %d\n",
-                             j,i,c.Q(i,j),(int)c.V.rows());
+                             j,i,C.Q(i,j),(int)C.V.rows());
         fclose (fp);
 		r=r; // remove warnings
-        c.computeQQ();
+        C.computeQQ();
         
     }
 
@@ -122,10 +161,10 @@
         float x,y,z,u,v,quality;
         int flags;
 
-        m.V = MatrixXd (vnum, 3);
-        m.F = MatrixXi (fnum, 3);
-        c.ParV = MatrixXd (vnum, 2);
-        c.ParQ = VectorXi (vnum);
+        M.V = MatrixXd (vnum, 3);
+        M.F = MatrixXi (fnum, 3);
+        C.Vpar = MatrixXd (vnum, 2);
+        C.QVpar = VectorXi (vnum);
 
         for(int i=0; i<vnum; i++)
         {
@@ -136,9 +175,9 @@
                                     u >> v;
             else linestream >> x >> y >> z >> quality >> 
                                     u >> v;
-            m.V.row(i) = Vector3d(x,y,z);
-            c.ParV.row(i) = Vector2d(u,v);
-            c.ParQ[i] = quality;
+            M.V.row(i) = Vector3d(x,y,z);
+            C.Vpar.row(i) = Vector2d(u,v);
+            C.QVpar[i] = quality;
 
         }
         int tmp, v0,v1,v2; // 3
@@ -147,7 +186,7 @@
             getline(fp, line);
             stringstream linestream(line);
             linestream >> tmp >> v0 >> v1 >> v2;
-            m.F.row(i) = Vector3i(v0,v1,v2);
+            M.F.row(i) = Vector3i(v0,v1,v2);
         }
         
     }

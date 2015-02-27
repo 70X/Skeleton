@@ -4,7 +4,6 @@
 #include <GL/glut.h>
 #endif
 #include "Process.hh"
-#include "Polychords.hh"
 
 #include <Eigen/Core>
 //#include <Eigen/Geometry>
@@ -32,7 +31,7 @@ public:
 
 	void bb(MatrixXd MeshV, MatrixXi MeshF);
 
-	void drawCage (draw_mode_t mode, Process p, Polychords pc);
+	void drawCage (draw_mode_t mode, Process p);
 	void drawMesh (draw_mode_t mode, Process p);
 	double* getCenter();
 	double getDiagonal();

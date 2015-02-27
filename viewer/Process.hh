@@ -10,6 +10,7 @@
 
 #include "Mesh.hh"
 #include "Cage.hh"
+#include "Polychords.hh"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -38,9 +39,12 @@ public:
 	void distancesBetweenMeshCage();
 	double computeDistance(Vector3d v, Vector3d v_map);
 
+	VectorXd computeQuadsError();
+	void raffinementQuadLayout();
 
-	Mesh m;
-	Cage c;
+	Mesh M;
+	Cage C;
+	Polychords P;
     // #dist.Vx1: in the ith row, stores the distance of the vertices of the ith vertex
     VectorXd distancesMeshCage;
 };

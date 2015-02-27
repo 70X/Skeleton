@@ -64,7 +64,7 @@ void display()
     if (showMesh)
         drawing.drawMesh(mesh_draw_mode, p);
     if (showCage)
-        drawing.drawCage(cage_draw_mode, p, polychords);
+        drawing.drawCage(cage_draw_mode, p);
 
     camera.display_end();
     // draw GUI
@@ -238,12 +238,14 @@ int main (int argc, char *argv[])
 
     p.read(argv[1]);
     p.read(strcat(argv[1],".domain.off"));
-    drawing.bb(p.m.V, p.m.F);
+    drawing.bb(p.M.V, p.M.F);
     p.distancesBetweenMeshCage();
 
-    polychords = Polychords(p.c);
+    polychords = Polychords(p.C);
     polychords.computePolychords();
+    p.P = polychords;
 
+    p.raffinementQuadLayout();
     #define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG
 
@@ -312,7 +314,7 @@ int main (int argc, char *argv[])
            "group = 'Cage'" " keyIncr='<' keyDecr='>'");
     
   char str[50];
-  int fnum = p.c.Q.rows();
+  int fnum = p.C.Q.rows();
   sprintf(str, "group = 'Debug' min=-1 max=%d step=1", fnum-1);
     TwAddVarCB(cBar, "only face", TW_TYPE_DOUBLE, setEnableCageFace, getEnableCageFace,
            NULL, str);

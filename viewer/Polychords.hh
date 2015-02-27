@@ -13,6 +13,7 @@ class Polychords
 	Polychords(){};
 	Polychords(Cage c);
 	~Polychords(){};
+	int getSize()	{	return P.size();	};
 
 	void computePolychords();
 	void expandPolychords(vector<int> *polychord, int q_start, int q_next);
