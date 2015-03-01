@@ -24,9 +24,14 @@ public:
     Vector3d getVMapping(int i);
     void computeQQ();
     bool isManifold();
+
+    int appendV(Vector3d v);
+    int appendQ(Vector4i q);
     /*
     * return edge of the quad d from the quad s
     */
     int getEdgeQuadAdjacent(int s, int d);
+
+    void split(int q, int e0, int e1);
 };
 #endif

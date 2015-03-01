@@ -11,7 +11,7 @@ class Polychords
 {
 	public:
 	Polychords(){};
-	Polychords(Cage c);
+	Polychords(Cage *c);
 	~Polychords(){};
 	int getSize()	{	return P.size();	};
 
@@ -19,9 +19,13 @@ class Polychords
 	void expandPolychords(vector<int> *polychord, int q_start, int q_next);
 
 	vector<vector<int>> P;
-	Cage C;
+	Cage *C;
 	private:
+	void clear();
+
 	vector<int> counter;
 	vector<int> from;
+
+
 };
 #endif

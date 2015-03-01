@@ -241,7 +241,7 @@ int main (int argc, char *argv[])
     drawing.bb(p.M.V, p.M.F);
     p.distancesBetweenMeshCage();
 
-    polychords = Polychords(p.C);
+    polychords = Polychords(&(p.C));
     polychords.computePolychords();
     p.P = polychords;
 

@@ -5,16 +5,12 @@
         VectorXd QuadsError(C.Q.rows());
         for (unsigned int i=0; i<C.Vpar.rows(); i++)
             QuadsError[C.QVpar[i]] += distancesMeshCage[i];
-
-        // print
-        /*for (unsigned int i=0; i<QuadsError.rows(); i++)
-            cout << "q = " <<i<<" = "<<QuadsError[i] << endl; 
-        */
         return QuadsError;
     }
     void Process::raffinementQuadLayout()
     {
-        while(1)
+        int times = 0;
+        while(times < 3)
         {
             VectorXd QuadsError = computeQuadsError();
             double maxError = 0;
@@ -33,11 +29,30 @@
                     worstPolychord = id;
                 }
             }
-            cout << worstPolychord << endl;
-            break;
-            // Split polychord found and cage 
+
+            // Split found polychord and cage 
+            int q_next, q_start = P.P[worstPolychord][0];
+            for(vector<int>::const_iterator q = P.P[worstPolychord].begin(); q != P.P[worstPolychord].end(); ++q)
+            {
+                q_next = *(q+1);
+                if (q+1 == P.P[worstPolychord].end())
+                    q_next = q_start;
+                int e = C.getEdgeQuadAdjacent(*q, q_next);
+                C.split(*q, e, (e+2)%4);
+            }
+            
+            C.computeQQ();
+            P.computePolychords(); 
+            /*
+            for (int i=0; i<C.Q.rows(); i++)
+                cout << "["<<i<<"]"<< C.Q.row(i)<<endl;
+            cout << "QQ" <<endl;
+            for(int i=0; i<C.QQ.rows(); i++)
+                cout << "["<<i<<"]"<< C.QQ.row(i) << endl;
+            cout << endl;*/
             // Reinitialize relation adj.
             // moveCage towards mesh triangle
+            times++;
         }
     }
 
