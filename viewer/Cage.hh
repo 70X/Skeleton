@@ -17,21 +17,25 @@ public:
     // #Fx3[4]: in the ith row, stores the indices of the vertices of the ith face
     MatrixXi Q;
     MatrixXd Vpar; // Vx2
-    VectorXi QVpar;
+    VectorXi VparQ;
     // relation adjacents of Cage
     MatrixXi QQ;
 
-    Vector3d getVMapping(int i);
+    Vector3d getVMapping(int q, Vector2d p);
     void computeQQ();
     bool isManifold();
 
     int appendV(Vector3d v);
     int appendQ(Vector4i q);
+
+    vector<int> getQVpar(int q);
     /*
     * return edge of the quad d from the quad s
     */
     int getEdgeQuadAdjacent(int s, int d);
 
     void split(int q, int e0, int e1);
+private:
+	void updateQV(int q, int q_new, int to_axis);
 };
 #endif

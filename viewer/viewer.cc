@@ -245,6 +245,8 @@ int main (int argc, char *argv[])
     polychords.computePolychords();
     p.P = polychords;
 
+    //cout << p.computeErrorsGrid(1) << endl;
+
     p.raffinementQuadLayout();
     #define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG

@@ -2,6 +2,8 @@
 #include <Eigen/Geometry>
 #include <iostream>
 
+#define BUFFER_VT_AND_VV 45
+
 using namespace Eigen;
 using namespace std;
 
@@ -20,6 +22,18 @@ public:
     MatrixXd V; // Vx3
     // #param.Fx3[4]: in the ith row, stores the indices of the vertices of the ith face
     MatrixXi F; // Fx3
+    MatrixXi TT;
+    
+    // #V: Stores partial Vertex-Triangle relation
+    VectorXi VT;
+
+    bool isManifold();
+    void initTT();
+    VectorXi getVT(int i);
+	
+private:
+    
+    bool TTVTflag;  // true iff TV* and TT are up-to-date
 
 };
 #endif

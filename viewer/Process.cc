@@ -1,35 +1,149 @@
 #include "Process.hh"
+    
+    vector<vector<int>> Process::updateTQ()
+    {
+        vector<vector<int>> listTQ(C.Q.rows());
+        int count_v_orphan = 0;
+        for(int i=0; i<M.F.rows(); i++)
+        {
+            int i0 = M.F(i,0);
+            int i1 = M.F(i,1);
+            int i2 = M.F(i,2);
+            if (C.VparQ(i0) == C.VparQ(i1)
+                && C.VparQ(i1) == C.VparQ(i2))
+            {
+                listTQ[C.VparQ(i0)].push_back(i);
+            }
+            else 
+            {
+                count_v_orphan++;
+            }
+        }
+        cout << "orphan vertices : "<<count_v_orphan <<endl;
+        TQ = listTQ;
+        return listTQ;
+    }
 
+
+    Vector3i Process::findTriangle(int q, Vector2d s)
+    {
+        int countTimes = 0;
+        Vector3i ABC;
+        
+        for(vector<int>::const_iterator idF = TQ[q].begin(); idF != TQ[q].end(); ++idF)
+        {
+            Vector2d _A = C.Vpar.row(M.F(*idF,0));
+            Vector2d _B = C.Vpar.row(M.F(*idF,1));
+            Vector2d _C = C.Vpar.row(M.F(*idF,2));
+            if (isInside(_A, _B, s) &&
+                isInside(_B, _C, s) &&
+                isInside(_C, _A, s) )
+            {
+                countTimes++;
+                ABC = Vector3i(M.F(*idF,0), M.F(*idF,1), M.F(*idF,2) );
+                //return Vector3i(F(idF,0), F(idF,1), F(idF,2) );
+            }
+        }
+        if (countTimes > 1)
+            cout <<"["<<q<<"] triangles found "<< countTimes << " for s " << s(0) << " " << s(1) << endl;
+        return ABC;
+    }
+
+
+    bool Process::isInside(Vector2d P0, Vector2d P1, Vector2d s)
+    {
+        Matrix2d m;
+        m << P1(0)-P0(0), s(0)-P0(0),
+             P1(1)-P1(1), s(1)-P1(1);
+
+        return m.determinant() > 0;
+    }
+
+    double Process::areaTriangle(Vector2d A, Vector2d B, Vector2d C)
+    {
+        double a = ( 
+                (B(0) - A(0) )*(C(1) - A(1) ) -
+                (C(0) - A(0) )*(B(1) - A(1) )
+            ) / 2;
+    return (a > 0.0) ? a : -a;
+    }
+
+    double Process::computeErrorSample(int q, Vector2d s)
+    {
+        Vector3i ABC = findTriangle(q, s);
+        Vector2d _A = C.Vpar.row(ABC(0));
+        Vector2d _B = C.Vpar.row(ABC(1));
+        Vector2d _C = C.Vpar.row(ABC(2));
+        
+        double alpha = areaTriangle(s,_B,_C)/areaTriangle(_A,_B,_C);
+        double beta  = areaTriangle(_A,s,_C)/areaTriangle(_A,_B,_C);
+        double gamma = areaTriangle(_A,_B,s)/areaTriangle(_A,_B,_C);
+
+        Vector3d VA = M.V.row(ABC(0));
+        Vector3d VB = M.V.row(ABC(1));
+        Vector3d VC = M.V.row(ABC(2));
+        Vector3d Vs = alpha * VA + beta * VB + gamma * VC;
+        return computeDistance(Vs, C.getVMapping(q, s));
+    }
+
+    double Process::computeErrorsGrid(int q, int r, int c)
+    {
+        double E = 0;
+        double domain = PARAMETER_SPACE;
+        double step_x = domain/r;
+        double step_y = domain/c;
+        for (int i=1; i<r; i++)
+        {
+            for (int j=1; j<c; j++)
+                E += computeErrorSample(q, Vector2d(step_x*i, step_y*j));
+        }
+        return E;
+    }
+/*
     VectorXd Process::computeQuadsError()
     {
         VectorXd QuadsError(C.Q.rows());
         for (unsigned int i=0; i<C.Vpar.rows(); i++)
-            QuadsError[C.QVpar[i]] += distancesMeshCage[i];
+            QuadsError[C.VparQ[i]] += distancesMeshCage[i];
         return QuadsError;
+    }*/
+    VectorXd Process::computeErrorPolychords()
+    {
+        updateTQ();
+        double E;
+        VectorXd polychordsError(P.getSize());
+        for (int i=0; i<P.getSize(); i++)
+        {
+            E = 0;
+            for(vector<int>::const_iterator q = P.P[i].begin(); q != P.P[i].end(); ++q)
+            {
+                E += computeErrorsGrid(*q);
+            }
+            polychordsError[i] = E*((double) P.P[i].size() / (double) C.Q.rows() );
+        }
+        return polychordsError;
     }
     void Process::raffinementQuadLayout()
     {
         int times = 0;
         while(times < 3)
         {
-            VectorXd QuadsError = computeQuadsError();
+            VectorXd polychordsError = computeErrorPolychords();
             double maxError = 0;
             int worstPolychord = -1;
             // Find polychord with the greatest error
-            for (unsigned int id=0; id<P.getSize(); id++)
+            for (unsigned int id=0; id<polychordsError.rows(); id++)
             {
-                double currentError = 0;
-                for(vector<int>::const_iterator q = P.P[id].begin(); q != P.P[id].end(); ++q)
-                    currentError += QuadsError[*q];
-                
-                //cout << "id: "<<id<<" error: "<<currentError<<endl;
-                if (currentError > maxError)
+                double currentError = polychordsError[id];
+                cout << currentError << endl;
+                 if (currentError > maxError)
                 {
                     maxError = currentError;
                     worstPolychord = id;
                 }
             }
-
+            cout << worstPolychord << endl;
+            //worstPolychord = 1;
             // Split found polychord and cage 
             int q_next, q_start = P.P[worstPolychord][0];
             for(vector<int>::const_iterator q = P.P[worstPolychord].begin(); q != P.P[worstPolychord].end(); ++q)
@@ -40,9 +154,12 @@
                 int e = C.getEdgeQuadAdjacent(*q, q_next);
                 C.split(*q, e, (e+2)%4);
             }
-            
             C.computeQQ();
             P.computePolychords(); 
+
+            // Reinitialize relation adj.
+            // moveCage towards mesh triangle
+            
             /*
             for (int i=0; i<C.Q.rows(); i++)
                 cout << "["<<i<<"]"<< C.Q.row(i)<<endl;
@@ -50,8 +167,6 @@
             for(int i=0; i<C.QQ.rows(); i++)
                 cout << "["<<i<<"]"<< C.QQ.row(i) << endl;
             cout << endl;*/
-            // Reinitialize relation adj.
-            // moveCage towards mesh triangle
             times++;
         }
     }
@@ -79,7 +194,11 @@
         cout << "normalized: "<< normalized << endl;
         */
         for (unsigned int i = 0; i < V.rows(); i++)
-            distancesMeshCage[i] = computeDistance(V.row(i), C.getVMapping(i));
+        {
+            int quality = C.VparQ(i);
+            Vector2d p = C.Vpar.row(i);
+            distancesMeshCage[i] = computeDistance(V.row(i), C.getVMapping(quality, p));
+        }
         
         min = distancesMeshCage.minCoeff();
         max = distancesMeshCage.maxCoeff();
@@ -179,7 +298,7 @@
         M.V = MatrixXd (vnum, 3);
         M.F = MatrixXi (fnum, 3);
         C.Vpar = MatrixXd (vnum, 2);
-        C.QVpar = VectorXi (vnum);
+        C.VparQ = VectorXi (vnum);
 
         for(int i=0; i<vnum; i++)
         {
@@ -192,7 +311,7 @@
                                     u >> v;
             M.V.row(i) = Vector3d(x,y,z);
             C.Vpar.row(i) = Vector2d(u,v);
-            C.QVpar[i] = quality;
+            C.VparQ[i] = quality;
 
         }
         int tmp, v0,v1,v2; // 3

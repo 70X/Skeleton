@@ -7,7 +7,7 @@ int Cage::appendV(Vector3d v)
         if (v(0) == V(j,0) && v(1) == V(j,1)
             && v(2) == V(j,2))
         {
-            cout << "v already exists: "<<j<<endl;
+            //cout << "v already exists: "<<j<<endl;
             return j;
         }
     }
@@ -26,28 +26,110 @@ int Cage::appendQ(Vector4i q)
 
 void Cage::split(int q, int e0, int e1)
 {
+    e0 = (e0 == 0 || e0 == 2) ? 0 : 1;
+    e1 = (e0 == 0 || e0 == 2) ? 2 : 3;
+    Vector4i relQ = Q.row(q);
+    MatrixXd relV(4,3);
+    relV.row(0) << V.row(relQ(0));
+    relV.row(1) << V.row(relQ(1));
+    relV.row(2) << V.row(relQ(2));
+    relV.row(3) << V.row(relQ(3));
+
+    Vector3d P0 = (relV.row(e0) + relV.row((e0+1)%4))/2;
+    Vector3d P1 = (relV.row(e1) + relV.row((e1+1)%4))/2;
+
+    int iP0 = appendV(P0);
+    int iP1 = appendV(P1);
+    /*cout << relQ(0) <<" " << relQ(1) <<" " 
+         << relQ(2) <<" " << relQ(3) << endl;*/
+    
+    int q_new;
+    if (e0 == 0 || e0 == 2)
+    {
+        /*cout << relQ(0) <<" " << iP0 <<" " 
+             << iP1 <<" " << relQ(3) << endl;
+
+        cout << iP0 <<" " << relQ(1) <<" " 
+             << relQ(2) <<" " << iP1 << endl;*/
+        Q.row(q) =      Vector4i(relQ(0), iP0, iP1, relQ(3));
+        q_new = appendQ(Vector4i(iP0, relQ(1), relQ(2), iP1));
+    }
+    else
+    {
+        /*cout << relQ(0) <<" " << relQ(1) <<" " 
+             << iP0 <<" " << iP1 << endl;
+
+        cout << iP1 <<" " << iP0 <<" " 
+             << relQ(2) <<" " << relQ(3) << endl;*/
+
+        Q.row(q) =      Vector4i(relQ(0), relQ(1), iP0, iP1)  ;
+        q_new = appendQ(Vector4i(iP1, iP0, relQ(2), relQ(3)) );
+    }
+    //cout << q << " - " << q_new << " to " << e0 << endl;
+    updateQV(q, q_new, e0);
+}
+
+/*
+void Cage::split(int q, int e0, int e1)
+{
+    Vector4i boh = Q.row(q);
+    cout << boh(0) <<" " << boh(1) <<" " << boh(2) <<" " << boh(3) << endl;
     int iA = Q(q, e0),
         iB = Q(q, (e0+1)%4),
         iC = Q(q, e1),
         iD = Q(q, (e1+1)%4);
+    cout << e0 << " -- " << e1 << endl;
+    cout << iA << " " << iB <<" " << iC << " " <<iD << endl<< endl;
     Vector3d A = V.row(iA),
              B = V.row(iB),
              C = V.row(iC),
              D = V.row(iD);
     Vector3d P0 = (B+A)/2;
     Vector3d P1 = (D+C)/2;
-
+    
     int iP0 = appendV(P0);
     int iP1 = appendV(P1);
 
     Q.row(q) = Vector4i(iA, iP0, iP1, iD);
-    appendQ(Vector4i(iP0, iB, iC, iP1));
+    int q_new = appendQ(Vector4i(iP0, iB, iC, iP1));
+
+    cout << q << " - " << q_new << " to " << e0 << endl;
+    //updateQV(q, q_new, e0);
+}
+*/
+
+
+vector<int> Cage::getQVpar(int q)
+{
+    vector<int> listVertices;
+    for(int i=0; i<Vpar.rows(); i++)
+    {
+        if (VparQ(i) == q)
+            listVertices.push_back(i);
+    }
+    return listVertices;
 }
 
+void Cage::updateQV(int q, int q_new, int to_axis)
+{
+    vector<int> VQ = getQVpar(q);
+    int XY = (to_axis == 0 || to_axis == 2) ? 0 : 1;
+     for(vector<int>::const_iterator i = VQ.begin(); i != VQ.end(); ++i)
+    {
+        if (Vpar(*i, XY) > 0.5)
+        {
+            Vpar(*i, XY) -= 0.5;
+            VparQ(*i) = q_new;
+        }
+        // update vertex into new smaller quad
+        Vpar(*i, XY) /= 0.5;
+    }
+}
 
+/*
 Vector3d Cage::getVMapping(int i)
 {
-		int quality = QVpar(i);
+		int quality = VparQ(i);
         Vector2d p = Vpar.row(i);
         Vector4i quad = Q.row(quality);
         Vector3d 	A(V.row(quad[0])),
@@ -58,8 +140,20 @@ Vector3d Cage::getVMapping(int i)
         Vector3d U = (B-A);
         Vector3d V = (D-A);
         return A + U*p(0) + V*p(1);
-}
+}*/
 
+Vector3d Cage::getVMapping(int q, Vector2d p)
+{
+    Vector4i quad = Q.row(q);
+    Vector3d    A(V.row(quad[0])),
+                B(V.row(quad[1])),
+                C(V.row(quad[2])),
+                D(V.row(quad[3]));
+
+    Vector3d U = (B-A);
+    Vector3d V = (D-A);
+    return A + U*p(0) + V*p(1);
+}
 
 // check if the cage is edge-manifold
     bool Cage::isManifold()

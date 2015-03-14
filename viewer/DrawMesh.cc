@@ -61,7 +61,7 @@ void DrawMesh::drawMesh (draw_mode_t mode, Process p)
         MatrixXd V = p.M.V;
         MatrixXi F = p.M.F;  
         VectorXd distV = p.distancesMeshCage;
-        VectorXi MeshParF = p.C.QVpar;
+        VectorXi MeshParF = p.C.VparQ;
 
         double* colorError[3];
         colorError[0] = new double[3];
@@ -241,7 +241,7 @@ void DrawMesh::drawMesh (draw_mode_t mode, Process p)
             for (int i = 0; i < F.rows(); i++)
             {
             	//if (i!=32 && i!=33 && i!=36 && i!=37) continue;
-                if(onlyFace != -1 && onlyFace != i) continue;
+                if(onlyFace != -1 && onlyFace == i) continue;
                 if (F.cols() != 4 || V.cols() != 3)
                     fprintf (stderr, "VF:draw(): only cube in 3D are supported\n");
 
@@ -334,7 +334,6 @@ void DrawMesh::drawMesh (draw_mode_t mode, Process p)
                         Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
                         Vector3d v3 (V(i3,0), V(i3,1), V(i3,2));
                         
-                        // triangle
 
                         glVertex3f (v0(0), v0(1), v0(2));
                         glVertex3f (v1(0), v1(1), v1(2));
@@ -366,7 +365,6 @@ void DrawMesh::drawMesh (draw_mode_t mode, Process p)
                 Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
                 Vector3d v3 (V(i3,0), V(i3,1), V(i3,2));
                 
-                // triangle
 
                 glVertex3f (v0(0), v0(1), v0(2));
                 glVertex3f (v1(0), v1(1), v1(2));
