@@ -1,6 +1,6 @@
 #include "Process.hh"
     
-    vector<vector<int>> Process::updateTQ()
+    void Process::updateTQ()
     {
         vector<vector<int>> listTQ(C.Q.rows());
         int count_v_orphan = 0;
@@ -21,13 +21,12 @@
         }
         cout << "orphan vertices : "<<count_v_orphan <<endl;
         TQ = listTQ;
-        return listTQ;
     }
 
 
     Vector3i Process::findTriangle(int q, Vector2d s)
     {
-        int countTimes = 0;
+        vector<int> countTimes;
         Vector3i ABC;
         
         for(vector<int>::const_iterator idF = TQ[q].begin(); idF != TQ[q].end(); ++idF)
@@ -39,13 +38,18 @@
                 isInside(_B, _C, s) &&
                 isInside(_C, _A, s) )
             {
-                countTimes++;
+                countTimes.push_back(*idF);
                 ABC = Vector3i(M.F(*idF,0), M.F(*idF,1), M.F(*idF,2) );
                 //return Vector3i(F(idF,0), F(idF,1), F(idF,2) );
             }
         }
-        if (countTimes > 1)
-            cout <<"["<<q<<"] triangles found "<< countTimes << " for s " << s(0) << " " << s(1) << endl;
+        if (countTimes.size() > 1)
+        {
+            cout <<"["<<q<<"] triangles found "<< countTimes.size() << " ( ";
+             for(vector<int>::const_iterator f = countTimes.begin(); f != countTimes.end(); ++f)
+                cout << *f << "; ";
+            cout << ") for s " << s(0) << " " << s(1) << endl;
+        }
         return ABC;
     }
 
@@ -54,7 +58,7 @@
     {
         Matrix2d m;
         m << P1(0)-P0(0), s(0)-P0(0),
-             P1(1)-P1(1), s(1)-P1(1);
+             P1(1)-P0(1), s(1)-P0(1);
 
         return m.determinant() > 0;
     }
@@ -128,6 +132,8 @@
         int times = 0;
         while(times < 3)
         {
+            cout << " -----------iteration: "<< times << " ---------------"<<endl;
+            
             VectorXd polychordsError = computeErrorPolychords();
             double maxError = 0;
             int worstPolychord = -1;
@@ -135,14 +141,14 @@
             for (unsigned int id=0; id<polychordsError.rows(); id++)
             {
                 double currentError = polychordsError[id];
-                cout << currentError << endl;
+                cout << "Error polychord["<<id<<"] :"<< currentError << endl;
                  if (currentError > maxError)
                 {
                     maxError = currentError;
                     worstPolychord = id;
                 }
             }
-            cout << worstPolychord << endl;
+            cout << "The worst Polychord error: "<< worstPolychord << endl;
             //worstPolychord = 1;
             // Split found polychord and cage 
             int q_next, q_start = P.P[worstPolychord][0];
@@ -156,7 +162,7 @@
             }
             C.computeQQ();
             P.computePolychords(); 
-
+            cout << endl;
             // Reinitialize relation adj.
             // moveCage towards mesh triangle
             

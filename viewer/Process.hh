@@ -42,9 +42,9 @@ public:
 
 	void raffinementQuadLayout();
 
-	vector<vector<int>> updateTQ();
 	VectorXd computeErrorPolychords();
 private:
+	void updateTQ();
 	double computeErrorsGrid(int q, int r = 5, int c = 5);
 	double computeErrorSample(int q, Vector2d s);
 	Vector3i findTriangle(int q, Vector2d s);
