@@ -61,7 +61,7 @@ void DrawMesh::drawMesh (draw_mode_t mode, Process p)
         MatrixXd V = p.M.V;
         MatrixXi F = p.M.F;  
         VectorXd distV = p.distancesMeshCage;
-        VectorXi MeshParF = p.C.VparQ;
+        VectorXi MeshParF = p.C.QVpar;
 
         double* colorError[3];
         colorError[0] = new double[3];

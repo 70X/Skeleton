@@ -17,7 +17,7 @@ public:
     // #Fx3[4]: in the ith row, stores the indices of the vertices of the ith face
     MatrixXi Q;
     MatrixXd Vpar; // Vx2
-    VectorXi VparQ;
+    VectorXi QVpar;
     // relation adjacents of Cage
     MatrixXi QQ;
 
@@ -28,7 +28,7 @@ public:
     int appendV(Vector3d v);
     int appendQ(Vector4i q);
 
-    vector<int> getQVpar(int q);
+    vector<int> getVparQ(int q);
     /*
     * return edge of the quad d from the quad s
     */

@@ -9,10 +9,10 @@
             int i0 = M.F(i,0);
             int i1 = M.F(i,1);
             int i2 = M.F(i,2);
-            if (C.VparQ(i0) == C.VparQ(i1)
-                && C.VparQ(i1) == C.VparQ(i2))
+            if (C.QVpar(i0) == C.QVpar(i1)
+                && C.QVpar(i1) == C.QVpar(i2))
             {
-                listTQ[C.VparQ(i0)].push_back(i);
+                listTQ[C.QVpar(i0)].push_back(i);
             }
             else 
             {
@@ -103,14 +103,7 @@
         }
         return E;
     }
-/*
-    VectorXd Process::computeQuadsError()
-    {
-        VectorXd QuadsError(C.Q.rows());
-        for (unsigned int i=0; i<C.Vpar.rows(); i++)
-            QuadsError[C.VparQ[i]] += distancesMeshCage[i];
-        return QuadsError;
-    }*/
+    
     VectorXd Process::computeErrorPolychords()
     {
         updateTQ();
@@ -201,7 +194,7 @@
         */
         for (unsigned int i = 0; i < V.rows(); i++)
         {
-            int quality = C.VparQ(i);
+            int quality = C.QVpar(i);
             Vector2d p = C.Vpar.row(i);
             distancesMeshCage[i] = computeDistance(V.row(i), C.getVMapping(quality, p));
         }
@@ -304,7 +297,7 @@
         M.V = MatrixXd (vnum, 3);
         M.F = MatrixXi (fnum, 3);
         C.Vpar = MatrixXd (vnum, 2);
-        C.VparQ = VectorXi (vnum);
+        C.QVpar = VectorXi (vnum);
 
         for(int i=0; i<vnum; i++)
         {
@@ -317,7 +310,7 @@
                                     u >> v;
             M.V.row(i) = Vector3d(x,y,z);
             C.Vpar.row(i) = Vector2d(u,v);
-            C.VparQ[i] = quality;
+            C.QVpar[i] = quality;
 
         }
         int tmp, v0,v1,v2; // 3

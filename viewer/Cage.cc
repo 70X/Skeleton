@@ -99,12 +99,12 @@ void Cage::split(int q, int e0, int e1)
 */
 
 
-vector<int> Cage::getQVpar(int q)
+vector<int> Cage::getVparQ(int q)
 {
     vector<int> listVertices;
     for(int i=0; i<Vpar.rows(); i++)
     {
-        if (VparQ(i) == q)
+        if (QVpar(i) == q)
             listVertices.push_back(i);
     }
     return listVertices;
@@ -112,14 +112,14 @@ vector<int> Cage::getQVpar(int q)
 
 void Cage::updateQV(int q, int q_new, int to_axis)
 {
-    vector<int> VQ = getQVpar(q);
+    vector<int> VQ = getVparQ(q);
     int XY = (to_axis == 0 || to_axis == 2) ? 0 : 1;
      for(vector<int>::const_iterator i = VQ.begin(); i != VQ.end(); ++i)
     {
         if (Vpar(*i, XY) > 0.5)
         {
             Vpar(*i, XY) -= 0.5;
-            VparQ(*i) = q_new;
+            QVpar(*i) = q_new;
         }
         // update vertex into new smaller quad
         Vpar(*i, XY) /= 0.5;
