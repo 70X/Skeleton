@@ -181,7 +181,7 @@ void TW_CALL setRaffinementTimes (void *value)
     times++;
     p.raffinementQuadLayout(1);
     char str[100];
-    sprintf(str, "Camera_Rendering/raffinement label='step %d reffinement'",  (int) times);
+    sprintf(str, "Camera_Rendering/raffinement label='step %d raffinement'",  (int) times);
     TwDefine(str);
 
     sprintf(str, "Camera_Rendering/onlyface max=%d ",  (int)(p.C.Q.rows() - 1));
