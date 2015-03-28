@@ -41,8 +41,8 @@ void Cage::split(int q, int e0, int e1)
     int iP0 = appendV(P0);
     int iP1 = appendV(P1);
     /*cout << relQ(0) <<" " << relQ(1) <<" " 
-         << relQ(2) <<" " << relQ(3) << endl;*/
-    
+         << relQ(2) <<" " << relQ(3) << endl;
+    cout << P0(0) << " " << P0(1) << endl;*/
     int q_new;
     if (e0 == 0 || e0 == 2)
     {
@@ -150,9 +150,18 @@ Vector3d Cage::getVMapping(int q, Vector2d p)
                 C(V.row(quad[2])),
                 D(V.row(quad[3]));
 
+    double u = p(0);
+    double v = p(1);
+    Vector3d P = (A*(1-u)+B*u)*(1-v) + (D*(1-u)+C*u)*v;
+    /*
     Vector3d U = (B-A);
     Vector3d V = (D-A);
-    return A + U*p(0) + V*p(1);
+    Vector3d T = (D-C);
+    if (
+        C(0) > (A + U*p(0) + V*p(1))(0) )
+        cout << q<< " --- "<<C(0) << " " << (A + U*p(0) + V*p(1))(0) <<endl;
+    return A + U*p(0) + V*p(1);*/
+        return P;
 }
 
 // check if the cage is edge-manifold

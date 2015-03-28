@@ -31,14 +31,19 @@ public:
 
 	void bb(MatrixXd MeshV, MatrixXi MeshF);
 
-	void drawCage (draw_mode_t mode, Process p);
-	void drawMesh (draw_mode_t mode, Process p);
+	void drawCage (draw_mode_t mode);
+	void drawMesh (draw_mode_t mode);
+	void drawGrid ();
+	void drawLinesVmapping();
+	void drawSamplePointWithHisTriangle(int q, Vector2d s, int t);
 	double* getCenter();
 	double getDiagonal();
+	void setProcess(Process &p){ this->p = &p; };
 	// set command from GUI
 	double thresholdMin = 0;
 	double thresholdMax = 1;
 	int onlyFace = -1;
+	bool showGrid = false;
 	int IDPolychord = -1;
 private:
 	void setColorError(double d, double *color);
@@ -46,6 +51,7 @@ private:
     double diagonal;
 
     bool initObject = false;
+    Process *p;
 
 };
 #endif

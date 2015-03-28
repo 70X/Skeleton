@@ -1,7 +1,8 @@
 #include "Process.hh"
-    
+        
     void Process::updateTQ()
     {
+        cout << "Q size: "<<C.Q.rows() << endl;
         vector<vector<int>> listTQ(C.Q.rows());
         int count_v_orphan = 0;
         for(int i=0; i<M.F.rows(); i++)
@@ -9,25 +10,45 @@
             int i0 = M.F(i,0);
             int i1 = M.F(i,1);
             int i2 = M.F(i,2);
-            if (C.QVpar(i0) == C.QVpar(i1)
-                && C.QVpar(i1) == C.QVpar(i2))
+            int q0 = C.QVpar(i0);
+            int q1 = C.QVpar(i1);
+            int q2 = C.QVpar(i2);
+
+            // tutti i vertici appartengono allo stesso quad
+            if (q0==q1 && q1==q2)
+                listTQ[q0].push_back(i);
+            // solo due vertici appartengono allo stesso quad
+            /*else if (q0==q1)
             {
-                listTQ[C.QVpar(i0)].push_back(i);
+                listTQ[q0].push_back(i);
+                listTQ[q2].push_back(i);
+            }
+            // solo due vertici appartengono allo stesso quad
+            else if (q0==q2 || q1==q2)
+            {
+                listTQ[q0].push_back(i);
+                listTQ[q1].push_back(i);
+            // tutti e tre i vertici appartengono a quad differenti
+            }else if (q0!=q1 && q1!=q2)
+            {
+                listTQ[q0].push_back(i);
+                listTQ[q1].push_back(i);
+                listTQ[q2].push_back(i);
             }
             else 
             {
-                count_v_orphan++;
-            }
+                //cout << i << " ???? "<<q0<<" "<<q1<<" "<<q2 << endl;
+            }*/
+            
         }
-        cout << "orphan vertices : "<<count_v_orphan <<endl;
         TQ = listTQ;
     }
 
 
     Vector3i Process::findTriangle(int q, Vector2d s)
     {
-        vector<int> countTimes;
-        Vector3i ABC;
+        vector<int> listTriangleIDs;
+        Vector3i ABC = Vector3i::Constant(-1);
         
         for(vector<int>::const_iterator idF = TQ[q].begin(); idF != TQ[q].end(); ++idF)
         {
@@ -38,18 +59,28 @@
                 isInside(_B, _C, s) &&
                 isInside(_C, _A, s) )
             {
-                countTimes.push_back(*idF);
+                listTriangleIDs.push_back(*idF);
                 ABC = Vector3i(M.F(*idF,0), M.F(*idF,1), M.F(*idF,2) );
                 //return Vector3i(F(idF,0), F(idF,1), F(idF,2) );
             }
         }
-        if (countTimes.size() > 1)
+        /*if (countTimes.size() == 1)
         {
             cout <<"["<<q<<"] triangles found "<< countTimes.size() << " ( ";
              for(vector<int>::const_iterator f = countTimes.begin(); f != countTimes.end(); ++f)
                 cout << *f << "; ";
-            cout << ") for s " << s(0) << " " << s(1) << endl;
+            cout << ") for s " << s(0) << " " << s(1) << endl; 
         }
+        else if (countTimes.size() == 0)
+            cout <<"["<<q<<"] ( NON TROVATO NIENTE "
+                  << ") for s " << s(0) << " " << s(1) << endl;
+        else
+        {
+            //cout << _A(0)<<" "<<_A(1)<<"---"<<_B(0)<<" "<<_B(1)<<"---"<<_C(0)<<" "<<_C(1)<<endl;  
+        }*/
+
+        storeSampleTriangles[q].insert(std::make_pair(s, listTriangleIDs) );
+        
         return ABC;
     }
 
@@ -59,8 +90,7 @@
         Matrix2d m;
         m << P1(0)-P0(0), s(0)-P0(0),
              P1(1)-P0(1), s(1)-P0(1);
-
-        return m.determinant() > 0;
+        return m.determinant() >= 0;
     }
 
     double Process::areaTriangle(Vector2d A, Vector2d B, Vector2d C)
@@ -75,6 +105,14 @@
     double Process::computeErrorSample(int q, Vector2d s)
     {
         Vector3i ABC = findTriangle(q, s);
+        
+        if (ABC(0) == -1)
+        {
+            orphanSample.push_back(s);
+            //if ( (s(0) != 0.8 && s(0) != 0.2) && (s(1) != 0.8 && s(1) != 0.2) )
+            //cout << "Triangle not found: quad["<<q<<"]" << "---" << s(0)<<"-"<<s(1)<<endl;
+            return 0;
+        }
         Vector2d _A = C.Vpar.row(ABC(0));
         Vector2d _B = C.Vpar.row(ABC(1));
         Vector2d _C = C.Vpar.row(ABC(2));
@@ -90,43 +128,134 @@
         return computeDistance(Vs, C.getVMapping(q, s));
     }
 
+
+    double Process::avarageSampleRound(int q, Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample)
+    {
+        vector<double> eRound;
+        double Err = 0;
+
+        Vector2d W  = Vector2d( s(0) - step_x, s(1)          );
+        Vector2d SW = Vector2d( s(0) - step_x, s(1) - step_y );
+        Vector2d S  = Vector2d( s(0)         , s(1) - step_y );
+        Vector2d SE = Vector2d( s(0) + step_x, s(1) - step_y );
+        Vector2d E  = Vector2d( s(0) + step_x, s(1)          );
+        Vector2d NE = Vector2d( s(0) + step_x, s(1) + step_y );
+        Vector2d N  = Vector2d( s(0)         , s(1) + step_y );
+        Vector2d NW = Vector2d( s(0) - step_x, s(1) + step_y );
+
+        if ( storeErrorSample.find(W) != storeErrorSample.end() && storeErrorSample.at(W) > 0)
+            eRound.push_back(storeErrorSample.at(W));
+
+        if ( storeErrorSample.find(SW) != storeErrorSample.end() && storeErrorSample.at(SW) > 0)
+            eRound.push_back(storeErrorSample.at(SW));
+
+        if ( storeErrorSample.find(S) != storeErrorSample.end() && storeErrorSample.at(S) > 0)
+            eRound.push_back(storeErrorSample.at(S));
+
+        if ( storeErrorSample.find(SE) != storeErrorSample.end() && storeErrorSample.at(SE) > 0)
+            eRound.push_back(storeErrorSample.at(SE));
+
+        if ( storeErrorSample.find(E) != storeErrorSample.end() && storeErrorSample.at(E) > 0)
+            eRound.push_back(storeErrorSample.at(E));
+
+        if ( storeErrorSample.find(NE) != storeErrorSample.end() && storeErrorSample.at(NE) > 0)
+            eRound.push_back(storeErrorSample.at(NE));
+
+        if ( storeErrorSample.find(N) != storeErrorSample.end() && storeErrorSample.at(N) > 0)
+            eRound.push_back(storeErrorSample.at(N));
+
+        if ( storeErrorSample.find(NW) != storeErrorSample.end() && storeErrorSample.at(NW) > 0)
+            eRound.push_back(storeErrorSample.at(NW));
+
+        if (eRound.size() == 0) return 0; // not Exists neighborhood of s
+        for(vector<double>::const_iterator Ei = eRound.begin(); Ei != eRound.end(); ++Ei)
+            Err+= *Ei;
+        return (Err/(double) eRound.size());
+    }
     double Process::computeErrorsGrid(int q, int r, int c)
     {
-        double E = 0;
-        double domain = PARAMETER_SPACE;
+        double tmpE, E = 0;
+        double domain = GRID_SAMPLE;
         double step_x = domain/r;
         double step_y = domain/c;
+
+        map<Vector2d, double, classcomp> storeErrorSample;
+
+        orphanSample.clear();
+        storeSampleTriangles.push_back(map<Vector2d, vector<int>, classcomp>());
         for (int i=1; i<r; i++)
-        {
             for (int j=1; j<c; j++)
-                E += computeErrorSample(q, Vector2d(step_x*i, step_y*j));
+            {
+                Vector2d s = Vector2d(step_x*i, step_y*j);
+                tmpE = computeErrorSample(q, s);
+                storeErrorSample.insert(make_pair(s, tmpE) );
+                E += tmpE;
+                // when return 0 is handled ahead
+            }
+            
+        // management orphan sample
+        if (orphanSample.size() > 0)
+        {
+            cout <<"quadID["<< q<<"]"<< " number orphan sample: " << orphanSample.size() << endl;
+            for(vector<Vector2d>::const_iterator s = orphanSample.begin(); s != orphanSample.end(); ++s)
+            {
+                /*map<Vector2d, double , Process::classcomp>::iterator it = storeErrorSample.begin();
+                for (it=storeErrorSample.begin(); it!=storeErrorSample.end(); ++it)
+                    cout << (it->first)(0) << " " << (it->first)(1) << " ---> "<< it->second<<endl;*/
+                
+                tmpE = avarageSampleRound(q, (*s),step_x, step_y, storeErrorSample);
+                //cout << q << " s: "<< (*s)(0)<<","<<(*s)(1)<<" = "<< tmpE <<endl;
+                E += tmpE;
+            }
         }
+        
+        //--------------------------- PRINT FOR DEBUG --------------------
+        /*if (q == 2)
+        for (int i=1; i<r; i++)
+            for (int j=1; j<c; j++)
+            {
+                vector<int> st = storeSampleTriangles[q].at(Vector2d(step_x*i, step_y*j));
+                    cout <<"("<< step_x*i << ";"<<step_y*j<<") ";
+                    for(vector<int>::const_iterator q = st.begin(); q != st.end(); ++q)
+                    {
+                        cout<<" "<<*q;
+                    }
+                    cout << endl;
+                
+            } */
         return E;
     }
-    
+    void Process::initErrorsAndRelations()
+    {
+        C.computeQQ();
+        P.computePolychords(); 
+        updateTQ();
+        storeSampleTriangles.clear();
+        errorQuads = VectorXd(C.Q.rows());
+        for (int i=0; i<C.Q.rows(); i++)
+            errorQuads(i) = computeErrorsGrid(i);
+    }
     VectorXd Process::computeErrorPolychords()
     {
-        updateTQ();
         double E;
         VectorXd polychordsError(P.getSize());
+
         for (int i=0; i<P.getSize(); i++)
         {
             E = 0;
             for(vector<int>::const_iterator q = P.P[i].begin(); q != P.P[i].end(); ++q)
-            {
-                E += computeErrorsGrid(*q);
-            }
+                E += errorQuads(*q);
             polychordsError[i] = E*((double) P.P[i].size() / (double) C.Q.rows() );
         }
         return polychordsError;
     }
-    void Process::raffinementQuadLayout()
+    void Process::raffinementQuadLayout(int times)
     {
-        int times = 0;
-        while(times < 3)
+        int i = 0;
+        while(i < times)
         {
-            cout << " -----------iteration: "<< times << " ---------------"<<endl;
-            
+            cout << " -----------iteration Raffinement ---------------"<<endl;
+            initErrorsAndRelations();
             VectorXd polychordsError = computeErrorPolychords();
             double maxError = 0;
             int worstPolychord = -1;
@@ -142,7 +271,7 @@
                 }
             }
             cout << "The worst Polychord error: "<< worstPolychord << endl;
-            //worstPolychord = 1;
+            //worstPolychord = 2;
             // Split found polychord and cage 
             int q_next, q_start = P.P[worstPolychord][0];
             for(vector<int>::const_iterator q = P.P[worstPolychord].begin(); q != P.P[worstPolychord].end(); ++q)
@@ -153,9 +282,9 @@
                 int e = C.getEdgeQuadAdjacent(*q, q_next);
                 C.split(*q, e, (e+2)%4);
             }
-            C.computeQQ();
-            P.computePolychords(); 
-            cout << endl;
+            
+            initErrorsAndRelations();
+            cout << " ----------- End  ---------------"<<endl;
             // Reinitialize relation adj.
             // moveCage towards mesh triangle
             
@@ -166,7 +295,7 @@
             for(int i=0; i<C.QQ.rows(); i++)
                 cout << "["<<i<<"]"<< C.QQ.row(i) << endl;
             cout << endl;*/
-            times++;
+            i++;
         }
     }
 
@@ -192,11 +321,14 @@
             normalized = true;
         cout << "normalized: "<< normalized << endl;
         */
+        mapV = MatrixXd(V.rows(), 3);
         for (unsigned int i = 0; i < V.rows(); i++)
         {
             int quality = C.QVpar(i);
             Vector2d p = C.Vpar.row(i);
+            mapV.row(i) = C.getVMapping(quality, p);
             distancesMeshCage[i] = computeDistance(V.row(i), C.getVMapping(quality, p));
+        
         }
         
         min = distancesMeshCage.minCoeff();
@@ -206,7 +338,17 @@
     }
 
 
+    void Process::initAll(char *filename)
+    {
+        char buf[200];
+        strcpy(buf, filename);
+        read(buf);
+        read(strcat(buf, ".domain.off"));
+        distancesBetweenMeshCage();
 
+        P = Polychords(&(C));
+        P.computePolychords();
+    }
 /////////////////// I/O ///////////////////////////////////////
     void Process::read(char *str)
     {
@@ -254,7 +396,7 @@
                              " in face: %d has value: %d, greater than #v: %d\n",
                              j,i,C.Q(i,j),(int)C.V.rows());
         fclose (fp);
-		r=r; // remove warnings
+        r=r; // remove warnings
         C.computeQQ();
         
     }
@@ -323,4 +465,3 @@
         }
         
     }
-    
