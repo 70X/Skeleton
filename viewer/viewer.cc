@@ -187,7 +187,7 @@ void TW_CALL setRaffinementTimes (void *value)
     sprintf(str, "Camera_Rendering/onlyface max=%d ",  (int)(p.C.Q.rows() - 1));
     TwDefine(str);
     
-    sprintf(str, "Camera_Rendering/polychord max=%d ",  (int)(p.C.Q.rows() - 1));
+    sprintf(str, "Camera_Rendering/polychord max=%d ",  (int)(p.P.getSize() - 1));
     TwDefine(str);
     glutPostRedisplay();
 }
@@ -246,7 +246,7 @@ void TW_CALL resetRaffinament (void *value)
     sprintf(str, "Camera_Rendering/onlyface max=%d ",  (int)(p.C.Q.rows() - 1));
     TwDefine(str);
     
-    sprintf(str, "Camera_Rendering/polychord max=%d ",  (int)(p.C.Q.rows() - 1));
+    sprintf(str, "Camera_Rendering/polychord max=%d ",  (int)(p.P.getSize() - 1));
     TwDefine(str);
     glutPostRedisplay();
 }
@@ -352,9 +352,12 @@ int main (int argc, char *argv[])
            NULL, strcat(str, "label='ID face'") );
     TwAddVarRW(cBar, "show grid", TW_TYPE_BOOLCPP, &drawing.showGrid, 
         "group = 'Debug'");
+    
+    sprintf(str, "group = 'Debug' min=-1 max=%d step=1", (int)(p.P.getSize() - 1));
     TwAddVarCB(cBar, "polychord", TW_TYPE_DOUBLE, setIDPolychord, getIDPolychord,
            NULL, strcat(str, "label='ID polychord'"));
 
+    
     TwAddButton(cBar, "raffinement", setRaffinementTimes, NULL, 
                 "group = 'Debug' label='step 0 raffinement'");
     

@@ -64,14 +64,15 @@
                 //return Vector3i(F(idF,0), F(idF,1), F(idF,2) );
             }
         }
-        /*if (countTimes.size() == 1)
+        
+        if (listTriangleIDs.size() > 1)
         {
-            cout <<"["<<q<<"] triangles found "<< countTimes.size() << " ( ";
-             for(vector<int>::const_iterator f = countTimes.begin(); f != countTimes.end(); ++f)
+            cout <<"idQuad["<<q<<"] triangles found "<< listTriangleIDs.size() << " ( ";
+             for(vector<int>::const_iterator f = listTriangleIDs.begin(); f != listTriangleIDs.end(); ++f)
                 cout << *f << "; ";
             cout << ") for s " << s(0) << " " << s(1) << endl; 
         }
-        else if (countTimes.size() == 0)
+        /*else if (listTriangleIDs.size() == 0)
             cout <<"["<<q<<"] ( NON TROVATO NIENTE "
                   << ") for s " << s(0) << " " << s(1) << endl;
         else

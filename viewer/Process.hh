@@ -52,7 +52,7 @@ public:
 	VectorXd computeErrorPolychords();
 private:
 	void updateTQ();
-	double computeErrorsGrid(int q, int r = 5, int c = 5);
+	double computeErrorsGrid(int q, int r = 6, int c = 6);
 	double avarageSampleRound(int q, Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample);
 	double computeErrorSample(int q, Vector2d s);
 	Vector3i findTriangle(int q, Vector2d s);
