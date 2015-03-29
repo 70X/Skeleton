@@ -3,6 +3,8 @@
     void Process::updateTQ()
     {
         cout << "Q size: "<<C.Q.rows() << endl;
+        VectorXi countQuadVertices = VectorXi::Constant(M.V.rows(), -1);
+
         vector<vector<int>> listTQ(C.Q.rows());
         int count_v_orphan = 0;
         for(int i=0; i<M.F.rows(); i++)
@@ -16,32 +18,68 @@
 
             // tutti i vertici appartengono allo stesso quad
             if (q0==q1 && q1==q2)
-                listTQ[q0].push_back(i);
-            // solo due vertici appartengono allo stesso quad
-            /*else if (q0==q1)
             {
+                countQuadVertices(i0) = 1;
+                countQuadVertices(i1) = 1;
+                countQuadVertices(i2) = 1;
                 listTQ[q0].push_back(i);
-                listTQ[q2].push_back(i);
             }
             // solo due vertici appartengono allo stesso quad
-            else if (q0==q2 || q1==q2)
+            else if (q0==q1)
             {
-                listTQ[q0].push_back(i);
-                listTQ[q1].push_back(i);
+                countQuadVertices(i0) = 2;
+                countQuadVertices(i1) = 2;
+                countQuadVertices(i2) = 2;
+                /*listTQ[q0].push_back(i);
+                listTQ[q2].push_back(i);*/
+            }
+            // solo due vertici appartengono allo stesso quad
+            else if (q0==q2)
+            {
+                countQuadVertices(i0) = 2;
+                countQuadVertices(i1) = 2;
+                countQuadVertices(i2) = 2;
+                /*listTQ[q0].push_back(i);
+                listTQ[q1].push_back(i);*/
+            }
+             else if (q1==q2)
+            {
+                countQuadVertices(i0) = 2;
+                countQuadVertices(i1) = 2;
+                countQuadVertices(i2) = 2;
+                /*listTQ[q0].push_back(i);
+                listTQ[q1].push_back(i);*/
             // tutti e tre i vertici appartengono a quad differenti
-            }else if (q0!=q1 && q1!=q2)
+            }
+            else if (q0!=q1 && q1!=q2)
             {
-                listTQ[q0].push_back(i);
+                countQuadVertices(i0) = 3;
+                countQuadVertices(i1) = 3;
+                countQuadVertices(i2) = 3;
+                /*listTQ[q0].push_back(i);
                 listTQ[q1].push_back(i);
-                listTQ[q2].push_back(i);
+                listTQ[q2].push_back(i);*/
             }
             else 
             {
-                //cout << i << " ???? "<<q0<<" "<<q1<<" "<<q2 << endl;
-            }*/
+                cout << i << " ???? "<<q0<<" "<<q1<<" "<<q2 << endl;
+            }
             
         }
         TQ = listTQ;
+
+        //DEBUG -------------------------------------------
+        double oneV = 0, twoV = 0, allV = 0;
+        for(int i=0; i<countQuadVertices.rows(); i++)
+        {
+            if (countQuadVertices(i) == 3) oneV++;
+            if (countQuadVertices(i) == 2) twoV++;
+            if (countQuadVertices(i) == 1) allV++;
+        }
+        cout << "Each Vertex with quad different: "<< oneV <<endl;
+        cout << "Two Verteces with the same quad: "<< twoV <<endl;
+        cout << "All Verteces with the same quad: "<< allV <<endl;
+        cout << "Tot:                             "<< oneV+twoV+allV <<endl;
     }
 
 
