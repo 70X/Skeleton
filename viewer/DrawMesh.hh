@@ -42,8 +42,8 @@ public:
 	// set command from GUI
 	double thresholdMin = 0;
 	double thresholdMax = 1;
-	int onlyFace = -1;
-	bool showGrid = false;
+	int onlyFace = 5;
+	bool showGrid = true;
 	int IDPolychord = -1;
 private:
 	void setColorError(double d, double *color);

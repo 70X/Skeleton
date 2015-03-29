@@ -27,11 +27,11 @@ int height = H;
 int times = 0;
 double thresholdMin = 0;
 double thresholdMax = 1;
-bool showMesh = true;
+bool showMesh = false;
 bool showCage = true;
 
 DrawMesh::draw_mode_t mesh_draw_mode = DrawMesh::FLAT;
-DrawMesh::draw_mode_t cage_draw_mode = DrawMesh::FLAT;
+DrawMesh::draw_mode_t cage_draw_mode = DrawMesh::WIRE;
 
 
 // Mesh:

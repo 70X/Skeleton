@@ -122,19 +122,18 @@ void DrawMesh::drawMesh (draw_mode_t mode)
                 d0 = distV(i0);
                 d1 = distV(i1);
                 d2 = distV(i2);
-                if (d0>thresholdMin && d0 < thresholdMax)
-                {
-                    //cout << d0 << " " << d1 << " " << d2 << endl;
-                    setColorError(d0, colorError[0]);
-                    setColorError(d1, colorError[1]);
-                    setColorError(d2, colorError[2]);
-                    glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);
-                    glVertex3f (v0(0), v0(1), v0(2));
-                    glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
-                    glVertex3f (v1(0), v1(1), v1(2));
-                    glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
-                    glVertex3f (v2(0), v2(1), v2(2));
-                }
+
+                //cout << d0 << " " << d1 << " " << d2 << endl;
+                setColorError(d0, colorError[0]);
+                setColorError(d1, colorError[1]);
+                setColorError(d2, colorError[2]);
+                glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);
+                glVertex3f (v0(0), v0(1), v0(2));
+                glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
+                glVertex3f (v1(0), v1(1), v1(2));
+                glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
+                glVertex3f (v2(0), v2(1), v2(2));
+                
             }
         }
         else
@@ -293,18 +292,34 @@ void DrawMesh::drawMesh (draw_mode_t mode)
 
     void DrawMesh::drawSamplePointWithHisTriangle(int q, Vector2d s, int t)
     {
-        glDisable (GL_DEPTH_TEST);
-            glDisable(GL_LIGHTING);
-            glBegin (GL_LINES);
-            glColor3f(1, 0.4, 0);
-
+        
             int i0 = p->M.F(t,0);
             int i1 = p->M.F(t,1);
             int i2 = p->M.F(t,2);
             Vector3d v0 (p->M.V(i0,0), p->M.V(i0,1), p->M.V(i0,2));
             Vector3d v1 (p->M.V(i1,0), p->M.V(i1,1), p->M.V(i1,2));
             Vector3d v2 (p->M.V(i2,0), p->M.V(i2,1), p->M.V(i2,2));
-                    
+            
+
+            glDisable (GL_DEPTH_TEST);
+                glDisable(GL_LIGHTING);
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glShadeModel(GL_FLAT); 
+                glBegin (GL_TRIANGLES); 
+
+                glColor4f(0.5,1,0.5, 0.4);
+                glVertex3f (p->mapV(i0,0), p->mapV(i0,1), p->mapV(i0,2));
+                glVertex3f (p->mapV(i1,0), p->mapV(i1,1), p->mapV(i1,2));
+                glVertex3f (p->mapV(i2,0), p->mapV(i2,1), p->mapV(i2,2));
+        
+            glEnd();
+
+            glDisable (GL_DEPTH_TEST);
+            glDisable(GL_LIGHTING);
+            glBegin (GL_LINES);
+            glColor3f(1, 0.4, 0);
+
                     // triangle
             glVertex3f (v0(0), v0(1), v0(2));
             glVertex3f (v1(0), v1(1), v1(2));
@@ -321,7 +336,7 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             glVertex3f (p->mapV(i1,0), p->mapV(i1,1), p->mapV(i1,2));
             glVertex3f (v2(0), v2(1), v2(2));
             glVertex3f (p->mapV(i2,0), p->mapV(i2,1), p->mapV(i2,2));
-    
+
         glEnd();
 
         glDisable (GL_DEPTH_TEST);
