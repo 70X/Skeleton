@@ -130,7 +130,7 @@
     }
 
 
-    double Process::avarageSampleRound(int q, Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample)
+    double Process::avarageSampleErrorRound( Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample)
     {
         vector<double> eRound;
         double Err = 0;
@@ -204,7 +204,7 @@
                 for (it=storeErrorSample.begin(); it!=storeErrorSample.end(); ++it)
                     cout << (it->first)(0) << " " << (it->first)(1) << " ---> "<< it->second<<endl;*/
                 
-                tmpE = avarageSampleRound(q, (*s),step_x, step_y, storeErrorSample);
+                tmpE = avarageSampleErrorRound((*s),step_x, step_y, storeErrorSample);
                 //cout << q << " s: "<< (*s)(0)<<","<<(*s)(1)<<" = "<< tmpE <<endl;
                 E += tmpE;
             }
@@ -256,7 +256,7 @@
         while(i < times)
         {
             cout << " -----------iteration Raffinement ---------------"<<endl;
-            initErrorsAndRelations();
+            //initErrorsAndRelations();
             VectorXd polychordsError = computeErrorPolychords();
             double maxError = 0;
             int worstPolychord = -1;
@@ -348,7 +348,7 @@
         distancesBetweenMeshCage();
 
         P = Polychords(&(C));
-        P.computePolychords();
+        initErrorsAndRelations();
     }
 /////////////////// I/O ///////////////////////////////////////
     void Process::read(char *str)
