@@ -87,14 +87,14 @@
             }
         }
         
-        if (listTriangleIDs.size() > 1)
+        /*if (listTriangleIDs.size() > 1)
         {
             cout <<"idQuad["<<q<<"] triangles found "<< listTriangleIDs.size() << " ( ";
              for(vector<int>::const_iterator f = listTriangleIDs.begin(); f != listTriangleIDs.end(); ++f)
                 cout << *f << "; ";
             cout << ") for s " << s(0) << " " << s(1) << endl; 
         }
-        /*else if (listTriangleIDs.size() == 0)
+        else if (listTriangleIDs.size() == 0)
             cout <<"["<<q<<"] ( NON TROVATO NIENTE "
                   << ") for s " << s(0) << " " << s(1) << endl;
         else
@@ -113,7 +113,7 @@
         Matrix2d m;
         m << P1(0)-P0(0), s(0)-P0(0),
              P1(1)-P0(1), s(1)-P0(1);
-        return m.determinant() >= 0;
+        return m.determinant() > 0;
         //return (  (P1(0) - P0(0)) *  (s(1)  - P0(1))
         //        - (s(0)  - P0(0)) *  (P1(1) - P0(1)) ) >= 0;
     }
@@ -145,7 +145,6 @@
     double Process::computeErrorSample(int q, Vector2d s)
     {
         vector<Vector3i> triangles = findTriangles(q, s);
-        
         if (triangles.size() == 0)
         {
             orphanSample.push_back(s);
@@ -171,8 +170,7 @@
             Vector3d Vs = alpha * VA + beta * VB + gamma * VC;
             distance += computeDistance(Vs, C.getVMapping(q, s));
         }
-        //cout << distance <<"  =   "<< distance/triangles.size() << " -> "<<triangles.size()<<endl;
-        
+       //cout << distance <<"  =   "<< distance/triangles.size() << " -> "<<triangles.size()<<endl;        
         return distance/triangles.size();
     }
 
@@ -244,7 +242,7 @@
         // management orphan sample
         if (orphanSample.size() > 0)
         {
-            cout <<"quadID["<< q<<"]"<< " number orphan sample: " << orphanSample.size() << endl;
+            //cout <<"quadID["<< q<<"]"<< " number orphan sample: " << orphanSample.size() << endl;
             for(vector<Vector2d>::const_iterator s = orphanSample.begin(); s != orphanSample.end(); ++s)
             {
                 /*map<Vector2d, double , Process::classcomp>::iterator it = storeErrorSample.begin();
@@ -271,6 +269,7 @@
                     cout << endl;
                 
             } */
+
         return E * areaQuad(q) / (r*c);
     }
     void Process::initErrorsAndRelations()
@@ -292,7 +291,9 @@
         {
             E = 0;
             for(vector<int>::const_iterator q = P.P[i].begin(); q != P.P[i].end(); ++q)
+            {
                 E += errorQuads(*q);
+            }
             polychordsError[i] = E*((double) P.P[i].size() / (double) C.Q.rows() );
         }
         return polychordsError;

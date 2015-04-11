@@ -339,6 +339,9 @@ int main (int argc, char *argv[])
     
     TwAddVarRW(cBar, "show mesh", TW_TYPE_BOOLCPP, &showMesh, 
         "group = 'Mesh'");
+    TwAddVarRW(cBar, "show lines mapping cage", TW_TYPE_BOOLCPP, &drawing.showLines, 
+        "group = 'Mesh'");
+    
     TwAddVarRW(cBar, "DrawMeshMode", draw_modeT, &mesh_draw_mode,
            "group = 'Mesh'" " keyIncr='<' keyDecr='>'"); 
     TwAddVarRW(cBar, "show cage", TW_TYPE_BOOLCPP, &showCage, 

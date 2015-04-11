@@ -56,6 +56,8 @@
     }
 void DrawMesh::drawLinesVmapping()
 {
+    if (!showLines) 
+        return;
     glBegin (GL_LINES);
     glColor3f(0.5,0.5,0.5);
 

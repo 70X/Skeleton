@@ -44,6 +44,7 @@ public:
 	double thresholdMax = 1;
 	int onlyFace = 5;
 	bool showGrid = true;
+	bool showLines = true;
 	int IDPolychord = -1;
 private:
 	void setColorError(double d, double *color);
