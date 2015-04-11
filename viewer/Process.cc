@@ -110,12 +110,12 @@
 
     bool Process::isLeft(Vector2d P0, Vector2d P1, Vector2d s)
     {
-        /*Matrix2d m;
+        Matrix2d m;
         m << P1(0)-P0(0), s(0)-P0(0),
              P1(1)-P0(1), s(1)-P0(1);
-        return m.determinant() >= 0;*/
-        return (  (P1(0) - P0(0)) *  (s(1)  - P0(1))
-                - (s(0)  - P0(0)) *  (P1(1) - P0(1)) ) >= 0;
+        return m.determinant() >= 0;
+        //return (  (P1(0) - P0(0)) *  (s(1)  - P0(1))
+        //        - (s(0)  - P0(0)) *  (P1(1) - P0(1)) ) >= 0;
     }
 
     double Process::areaTriangle(Vector2d A, Vector2d B, Vector2d C)
