@@ -50,7 +50,6 @@ public:
 	void raffinementQuadLayout(int times = 1);
 
 	VectorXd computeErrorPolychords();
-    double areaQuad(int q);
 private:
 	void updateTQ();
 	double computeErrorsGrid(int q, int r = 10, int c = 10);
@@ -59,6 +58,7 @@ private:
 	vector<Vector3i> findTriangles(int q, Vector2d s);
 	bool isLeft(Vector2d P0, Vector2d P1, Vector2d s);
 	double areaTriangle(Vector2d A, Vector2d B, Vector2d C);
+    double areaQuad(int q);
 	void initErrorsAndRelations();
 public:
 	Mesh M;
