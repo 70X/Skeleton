@@ -25,7 +25,7 @@
                 listTQ[q0].push_back(i);
             }
             // solo due vertici appartengono allo stesso quad
-            else if (q0==q1)
+            else if (q0==q1 || q0==q2 || q1==q2)
             {
                 countQuadVertices(i0) = 2;
                 countQuadVertices(i1) = 2;
@@ -33,24 +33,7 @@
                 /*listTQ[q0].push_back(i);
                 listTQ[q2].push_back(i);*/
             }
-            // solo due vertici appartengono allo stesso quad
-            else if (q0==q2)
-            {
-                countQuadVertices(i0) = 2;
-                countQuadVertices(i1) = 2;
-                countQuadVertices(i2) = 2;
-                /*listTQ[q0].push_back(i);
-                listTQ[q1].push_back(i);*/
-            }
-             else if (q1==q2)
-            {
-                countQuadVertices(i0) = 2;
-                countQuadVertices(i1) = 2;
-                countQuadVertices(i2) = 2;
-                /*listTQ[q0].push_back(i);
-                listTQ[q1].push_back(i);*/
             // tutti e tre i vertici appartengono a quad differenti
-            }
             else if (q0!=q1 && q1!=q2)
             {
                 countQuadVertices(i0) = 3;
@@ -60,6 +43,7 @@
                 listTQ[q1].push_back(i);
                 listTQ[q2].push_back(i);*/
             }
+            // verifica che non ci siano altri casi non gestiti
             else 
             {
                 cout << i << " ???? "<<q0<<" "<<q1<<" "<<q2 << endl;
@@ -83,22 +67,22 @@
     }
 
 
-    Vector3i Process::findTriangle(int q, Vector2d s)
+    vector<Vector3i> Process::findTriangles(int q, Vector2d s)
     {
         vector<int> listTriangleIDs;
-        Vector3i ABC = Vector3i::Constant(-1);
+        vector<Vector3i> ABC;
         
         for(vector<int>::const_iterator idF = TQ[q].begin(); idF != TQ[q].end(); ++idF)
         {
             Vector2d _A = C.Vpar.row(M.F(*idF,0));
             Vector2d _B = C.Vpar.row(M.F(*idF,1));
             Vector2d _C = C.Vpar.row(M.F(*idF,2));
-            if (isInside(_A, _B, s) &&
-                isInside(_B, _C, s) &&
-                isInside(_C, _A, s) )
+            if (isLeft(_A, _B, s) &&
+                isLeft(_B, _C, s) &&
+                isLeft(_C, _A, s) )
             {
                 listTriangleIDs.push_back(*idF);
-                ABC = Vector3i(M.F(*idF,0), M.F(*idF,1), M.F(*idF,2) );
+                ABC.push_back(Vector3i(M.F(*idF,0), M.F(*idF,1), M.F(*idF,2) ));
                 //return Vector3i(F(idF,0), F(idF,1), F(idF,2) );
             }
         }
@@ -124,12 +108,14 @@
     }
 
 
-    bool Process::isInside(Vector2d P0, Vector2d P1, Vector2d s)
+    bool Process::isLeft(Vector2d P0, Vector2d P1, Vector2d s)
     {
-        Matrix2d m;
+        /*Matrix2d m;
         m << P1(0)-P0(0), s(0)-P0(0),
              P1(1)-P0(1), s(1)-P0(1);
-        return m.determinant() >= 0;
+        return m.determinant() >= 0;*/
+        return (  (P1(0) - P0(0)) *  (s(1)  - P0(1))
+                - (s(0)  - P0(0)) *  (P1(1) - P0(1)) ) >= 0;
     }
 
     double Process::areaTriangle(Vector2d A, Vector2d B, Vector2d C)
@@ -141,30 +127,53 @@
     return (a > 0.0) ? a : -a;
     }
 
+    double Process::areaQuad(int q)
+    {
+        Vector3d _A = C.V.row(C.Q(q, 0));
+        Vector3d _B = C.V.row(C.Q(q, 1));
+        Vector3d _C = C.V.row(C.Q(q, 2));
+        Vector3d _D = C.V.row(C.Q(q, 3));
+       
+        double ABC = ( (((_C-_A).cross(_C-_B))).norm() )/2.0;
+        double ACD = ( (((_C-_A).cross(_C-_D))).norm() )/2.0;
+        //cout <<q<<". area = "<< ABC+ACD <<endl;
+        return ABC+ACD;
+       
+
+    }
+
     double Process::computeErrorSample(int q, Vector2d s)
     {
-        Vector3i ABC = findTriangle(q, s);
+        vector<Vector3i> triangles = findTriangles(q, s);
         
-        if (ABC(0) == -1)
+        if (triangles.size() == 0)
         {
             orphanSample.push_back(s);
             //if ( (s(0) != 0.8 && s(0) != 0.2) && (s(1) != 0.8 && s(1) != 0.2) )
             //cout << "Triangle not found: quad["<<q<<"]" << "---" << s(0)<<"-"<<s(1)<<endl;
             return 0;
         }
-        Vector2d _A = C.Vpar.row(ABC(0));
-        Vector2d _B = C.Vpar.row(ABC(1));
-        Vector2d _C = C.Vpar.row(ABC(2));
-        
-        double alpha = areaTriangle(s,_B,_C)/areaTriangle(_A,_B,_C);
-        double beta  = areaTriangle(_A,s,_C)/areaTriangle(_A,_B,_C);
-        double gamma = areaTriangle(_A,_B,s)/areaTriangle(_A,_B,_C);
+        double distance = 0;
+        for (int i = 0; i < triangles.size(); i++)
+        {
+            Vector3i ABC = triangles[i];
+            Vector2d _A = C.Vpar.row(ABC(0));
+            Vector2d _B = C.Vpar.row(ABC(1));
+            Vector2d _C = C.Vpar.row(ABC(2));
+            
+            double alpha = areaTriangle(s,_B,_C)/areaTriangle(_A,_B,_C);
+            double beta  = areaTriangle(_A,s,_C)/areaTriangle(_A,_B,_C);
+            double gamma = areaTriangle(_A,_B,s)/areaTriangle(_A,_B,_C);
 
-        Vector3d VA = M.V.row(ABC(0));
-        Vector3d VB = M.V.row(ABC(1));
-        Vector3d VC = M.V.row(ABC(2));
-        Vector3d Vs = alpha * VA + beta * VB + gamma * VC;
-        return computeDistance(Vs, C.getVMapping(q, s));
+            Vector3d VA = M.V.row(ABC(0));
+            Vector3d VB = M.V.row(ABC(1));
+            Vector3d VC = M.V.row(ABC(2));
+            Vector3d Vs = alpha * VA + beta * VB + gamma * VC;
+            distance += computeDistance(Vs, C.getVMapping(q, s));
+        }
+        //cout << distance <<"  =   "<< distance/triangles.size() << " -> "<<triangles.size()<<endl;
+        
+        return distance/triangles.size();
     }
 
 
@@ -262,7 +271,7 @@
                     cout << endl;
                 
             } */
-        return E;
+        return E * areaQuad(q) / (r*c);
     }
     void Process::initErrorsAndRelations()
     {

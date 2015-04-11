@@ -50,13 +50,14 @@ public:
 	void raffinementQuadLayout(int times = 1);
 
 	VectorXd computeErrorPolychords();
+    double areaQuad(int q);
 private:
 	void updateTQ();
-	double computeErrorsGrid(int q, int r = 6, int c = 6);
+	double computeErrorsGrid(int q, int r = 10, int c = 10);
 	double avarageSampleErrorRound(Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample);
 	double computeErrorSample(int q, Vector2d s);
-	Vector3i findTriangle(int q, Vector2d s);
-	bool isInside(Vector2d P0, Vector2d P1, Vector2d s);
+	vector<Vector3i> findTriangles(int q, Vector2d s);
+	bool isLeft(Vector2d P0, Vector2d P1, Vector2d s);
 	double areaTriangle(Vector2d A, Vector2d B, Vector2d C);
 	void initErrorsAndRelations();
 public:

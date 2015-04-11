@@ -30,8 +30,8 @@ public:
 
     vector<int> getVparQ(int q);
     /*
-    * return edge of the quad d from the quad s
-    */
+     * return edge of the quad d from the quad s
+     */
     int getEdgeQuadAdjacent(int s, int d);
 
     void split(int q, int e0, int e1);
