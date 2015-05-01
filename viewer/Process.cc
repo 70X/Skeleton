@@ -1,150 +1,89 @@
 #include "Process.hh"
-        
-    void Process::updateTQ()
+    vector<int> Process::getBorderTrianglesSubDomainQ(vector<int> subQ)
+    {
+        vector<int> TsQ;
+        for(int idT=0; idT<M.F.rows(); idT++)
+        {
+            bool flag = true;
+            int q0 = C.QVmesh(M.F(idT,0));
+            int q1 = C.QVmesh(M.F(idT,1));
+            int q2 = C.QVmesh(M.F(idT,2));
+            if (q0==q1 && q1==q2)
+                continue;
+            else if (   find(subQ.begin(), subQ.end(), q0) != subQ.end()
+                &&      find(subQ.begin(), subQ.end(), q1) != subQ.end()
+                &&      find(subQ.begin(), subQ.end(), q2) != subQ.end())
+            {
+                TsQ.push_back(idT);
+            }
+        }
+        return TsQ;
+    }
+
+     void Process::updateTQ()
     {
         cout << "Q size: "<<C.Q.rows() << endl;
-        VectorXi countQuadVertices = VectorXi::Constant(M.V.rows(), -1);
-
         vector<vector<int>> listTQ(C.Q.rows());
-        int count_v_orphan = 0;
-        for(int i=0; i<M.F.rows(); i++)
+         for(int i=0; i<M.F.rows(); i++)
         {
-            int i0 = M.F(i,0);
-            int i1 = M.F(i,1);
-            int i2 = M.F(i,2);
-            int q0 = C.QVpar(i0);
-            int q1 = C.QVpar(i1);
-            int q2 = C.QVpar(i2);
-
-            // tutti i vertici appartengono allo stesso quad
+            int q0 = C.QVmesh(M.F(i,0));
+            int q1 = C.QVmesh(M.F(i,1));
+            int q2 = C.QVmesh(M.F(i,2));
             if (q0==q1 && q1==q2)
-            {
-                countQuadVertices(i0) = 1;
-                countQuadVertices(i1) = 1;
-                countQuadVertices(i2) = 1;
                 listTQ[q0].push_back(i);
-            }
-            // solo due vertici appartengono allo stesso quad
-            else if (q0==q1 || q0==q2 || q1==q2)
-            {
-                countQuadVertices(i0) = 2;
-                countQuadVertices(i1) = 2;
-                countQuadVertices(i2) = 2;
-                /*listTQ[q0].push_back(i);
-                listTQ[q2].push_back(i);*/
-            }
-            // tutti e tre i vertici appartengono a quad differenti
-            else if (q0!=q1 && q1!=q2)
-            {
-                countQuadVertices(i0) = 3;
-                countQuadVertices(i1) = 3;
-                countQuadVertices(i2) = 3;
-                /*listTQ[q0].push_back(i);
-                listTQ[q1].push_back(i);
-                listTQ[q2].push_back(i);*/
-            }
-            // verifica che non ci siano altri casi non gestiti
-            else 
-            {
-                cout << i << " ???? "<<q0<<" "<<q1<<" "<<q2 << endl;
-            }
-            
         }
         TQ = listTQ;
-
-        //DEBUG -------------------------------------------
-        double oneV = 0, twoV = 0, allV = 0;
-        for(int i=0; i<countQuadVertices.rows(); i++)
-        {
-            if (countQuadVertices(i) == 3) oneV++;
-            if (countQuadVertices(i) == 2) twoV++;
-            if (countQuadVertices(i) == 1) allV++;
-        }
-        cout << "Each Vertex with quad different: "<< oneV <<endl;
-        cout << "Two Verteces with the same quad: "<< twoV <<endl;
-        cout << "All Verteces with the same quad: "<< allV <<endl;
-        cout << "Tot:                             "<< oneV+twoV+allV <<endl;
+    }
+    void Process::initSubDomain(CageSubDomain &sC)
+    {
+        sC.setV(C.V);
+        sC.setQ(C.Q);
+        sC.setVmesh(C.Vmesh);
+        sC.setQVmesh(C.QVmesh);
+        sC.setQQ(C.QQ);
+        sC.setPartialQV(C._QV);
     }
 
-
-    vector<Vector3i> Process::findTriangles(int q, Vector2d s)
+    void Process::movingVertexCageToMesh(vector<int> newVertices)
     {
-        vector<int> listTriangleIDs;
-        vector<Vector3i> ABC;
-        
-        for(vector<int>::const_iterator idF = TQ[q].begin(); idF != TQ[q].end(); ++idF)
-        {
-            Vector2d _A = C.Vpar.row(M.F(*idF,0));
-            Vector2d _B = C.Vpar.row(M.F(*idF,1));
-            Vector2d _C = C.Vpar.row(M.F(*idF,2));
-            if (isLeft(_A, _B, s) &&
-                isLeft(_B, _C, s) &&
-                isLeft(_C, _A, s) )
+        Vector3d Vs;
+        CageSubDomain sC;
+        initSubDomain(sC);
+        for(vector<int>::const_iterator Vi = newVertices.begin(); Vi != newVertices.end(); ++Vi )
+        {  
+            sC.initDomain(*Vi);    
+            vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
+            debugPartialTQ = TsQ;
+            //error: ‘Cage’ is an inaccessible base of ‘CageSubDomain’ TO DO
+            vector<int> triangles = M.findTrianglesSCDEBUG(TsQ, sC.sV[ *Vi ], sC);
+            cout << triangles.size()<<endl;
+            /*
+            for (int q=0; q<TQ.size(); q++)
             {
-                listTriangleIDs.push_back(*idF);
-                ABC.push_back(Vector3i(M.F(*idF,0), M.F(*idF,1), M.F(*idF,2) ));
-                //return Vector3i(F(idF,0), F(idF,1), F(idF,2) );
+                vector<int> triangles = M.findTriangles(TQ[q], sC.sV[ *Vi ], sC);
+                cout << triangles.size()<<endl;
             }
+            */
+
+            /*for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
+            {
+                Vs = Utility::getCoordBarycentricTriangle(sC.getTMapping(M.F.row(*idT)), M.getT(*idT), sC.V[ *Vi ]);
+                break;
+            }
+            C.V.row(*Vi) = Vs; // new Mapping :)
+            */
+            // d. Calcola le coordinate baricentriche di Vi rispetto al triangolo mappato che lo contiene
+            // e. Utilizza le coordinate baricentriche per mappare Vi sulla trimesh
+            break;
+
         }
-        
-        /*if (listTriangleIDs.size() > 1)
-        {
-            cout <<"idQuad["<<q<<"] triangles found "<< listTriangleIDs.size() << " ( ";
-             for(vector<int>::const_iterator f = listTriangleIDs.begin(); f != listTriangleIDs.end(); ++f)
-                cout << *f << "; ";
-            cout << ") for s " << s(0) << " " << s(1) << endl; 
-        }
-        else if (listTriangleIDs.size() == 0)
-            cout <<"["<<q<<"] ( NON TROVATO NIENTE "
-                  << ") for s " << s(0) << " " << s(1) << endl;
-        else
-        {
-            //cout << _A(0)<<" "<<_A(1)<<"---"<<_B(0)<<" "<<_B(1)<<"---"<<_C(0)<<" "<<_C(1)<<endl;  
-        }*/
-
-        storeSampleTriangles[q].insert(std::make_pair(s, listTriangleIDs) );
-        
-        return ABC;
     }
 
 
-    bool Process::isLeft(Vector2d P0, Vector2d P1, Vector2d s)
+    double Process::errorSample(int q, Vector2d s)
     {
-        Matrix2d m;
-        m << P1(0)-P0(0), s(0)-P0(0),
-             P1(1)-P0(1), s(1)-P0(1);
-        return m.determinant() > 0;
-        //return (  (P1(0) - P0(0)) *  (s(1)  - P0(1))
-        //        - (s(0)  - P0(0)) *  (P1(1) - P0(1)) ) >= 0;
-    }
-
-    double Process::areaTriangle(Vector2d A, Vector2d B, Vector2d C)
-    {
-        double a = ( 
-                (B(0) - A(0) )*(C(1) - A(1) ) -
-                (C(0) - A(0) )*(B(1) - A(1) )
-            ) / 2;
-    return (a > 0.0) ? a : -a;
-    }
-
-    double Process::areaQuad(int q)
-    {
-        Vector3d _A = C.V.row(C.Q(q, 0));
-        Vector3d _B = C.V.row(C.Q(q, 1));
-        Vector3d _C = C.V.row(C.Q(q, 2));
-        Vector3d _D = C.V.row(C.Q(q, 3));
-       
-        double ABC = ( (((_C-_A).cross(_C-_B))).norm() )/2.0;
-        double ACD = ( (((_C-_A).cross(_C-_D))).norm() )/2.0;
-        //cout <<q<<". area = "<< ABC+ACD <<endl;
-        return ABC+ACD;
-       
-
-    }
-
-    double Process::computeErrorSample(int q, Vector2d s)
-    {
-        vector<Vector3i> triangles = findTriangles(q, s);
+        vector<int> triangles = M.findTriangles(TQ[q], s, C);
+        storeSampleTriangles[q].insert(std::make_pair(s, triangles) );
         if (triangles.size() == 0)
         {
             orphanSample.push_back(s);
@@ -153,29 +92,17 @@
             return 0;
         }
         double distance = 0;
-        for (int i = 0; i < triangles.size(); i++)
+        for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
         {
-            Vector3i ABC = triangles[i];
-            Vector2d _A = C.Vpar.row(ABC(0));
-            Vector2d _B = C.Vpar.row(ABC(1));
-            Vector2d _C = C.Vpar.row(ABC(2));
-            
-            double alpha = areaTriangle(s,_B,_C)/areaTriangle(_A,_B,_C);
-            double beta  = areaTriangle(_A,s,_C)/areaTriangle(_A,_B,_C);
-            double gamma = areaTriangle(_A,_B,s)/areaTriangle(_A,_B,_C);
-
-            Vector3d VA = M.V.row(ABC(0));
-            Vector3d VB = M.V.row(ABC(1));
-            Vector3d VC = M.V.row(ABC(2));
-            Vector3d Vs = alpha * VA + beta * VB + gamma * VC;
-            distance += computeDistance(Vs, C.getVMapping(q, s));
+            Vector3d Vs = Utility::getCoordBarycentricTriangle(C.getTMapping(M.F.row(*idT)), M.getT(*idT), s);
+            distance += Utility::computeDistance(Vs, C.getVMapping(q, s));
         }
        //cout << distance <<"  =   "<< distance/triangles.size() << " -> "<<triangles.size()<<endl;        
         return distance/triangles.size();
     }
 
 
-    double Process::avarageSampleErrorRound( Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample)
+    double Process::errorAvarageSamples( Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample)
     {
         vector<double> eRound;
         double Err = 0;
@@ -218,7 +145,7 @@
             Err+= *Ei;
         return (Err/(double) eRound.size());
     }
-    double Process::computeErrorsGrid(int q, int r, int c)
+    double Process::errorsGrid(int q, int r, int c)
     {
         double tmpE, E = 0;
         double domain = GRID_SAMPLE;
@@ -233,7 +160,7 @@
             for (int j=1; j<c; j++)
             {
                 Vector2d s = Vector2d(step_x*i, step_y*j);
-                tmpE = computeErrorSample(q, s);
+                tmpE = errorSample(q, s);
                 storeErrorSample.insert(make_pair(s, tmpE) );
                 E += tmpE;
                 // when return 0 is handled ahead
@@ -242,35 +169,21 @@
         // management orphan sample
         if (orphanSample.size() > 0)
         {
-            //cout <<"quadID["<< q<<"]"<< " number orphan sample: " << orphanSample.size() << endl;
             for(vector<Vector2d>::const_iterator s = orphanSample.begin(); s != orphanSample.end(); ++s)
             {
-                /*map<Vector2d, double , Process::classcomp>::iterator it = storeErrorSample.begin();
-                for (it=storeErrorSample.begin(); it!=storeErrorSample.end(); ++it)
-                    cout << (it->first)(0) << " " << (it->first)(1) << " ---> "<< it->second<<endl;*/
-                
-                tmpE = avarageSampleErrorRound((*s),step_x, step_y, storeErrorSample);
+                tmpE = errorAvarageSamples((*s),step_x, step_y, storeErrorSample);
                 //cout << q << " s: "<< (*s)(0)<<","<<(*s)(1)<<" = "<< tmpE <<endl;
                 E += tmpE;
             }
         }
         
-        //--------------------------- PRINT FOR DEBUG --------------------
-        /*if (q == 2)
-        for (int i=1; i<r; i++)
-            for (int j=1; j<c; j++)
-            {
-                vector<int> st = storeSampleTriangles[q].at(Vector2d(step_x*i, step_y*j));
-                    cout <<"("<< step_x*i << ";"<<step_y*j<<") ";
-                    for(vector<int>::const_iterator q = st.begin(); q != st.end(); ++q)
-                    {
-                        cout<<" "<<*q;
-                    }
-                    cout << endl;
-                
-            } */
-
-        return E * areaQuad(q) / (r*c);
+       
+        return E * Utility::areaQuad(
+                            Vector3d(C.V.row(C.Q(q, 0))),
+                            Vector3d(C.V.row(C.Q(q, 1))),
+                            Vector3d(C.V.row(C.Q(q, 2))),
+                            Vector3d(C.V.row(C.Q(q, 3)))
+                            ) / (r*c);
     }
     void Process::initErrorsAndRelations()
     {
@@ -280,9 +193,9 @@
         storeSampleTriangles.clear();
         errorQuads = VectorXd(C.Q.rows());
         for (int i=0; i<C.Q.rows(); i++)
-            errorQuads(i) = computeErrorsGrid(i);
+            errorQuads(i) = errorsGrid(i);
     }
-    VectorXd Process::computeErrorPolychords()
+    VectorXd Process::errorPolychords()
     {
         double E;
         VectorXd polychordsError(P.getSize());
@@ -304,8 +217,9 @@
         while(i < times)
         {
             cout << " -----------iteration Raffinement ---------------"<<endl;
-            //initErrorsAndRelations();
-            VectorXd polychordsError = computeErrorPolychords();
+            vector<int> newVertices;
+
+            VectorXd polychordsError = errorPolychords();
             double maxError = 0;
             int worstPolychord = -1;
             // Find polychord with the greatest error
@@ -329,13 +243,16 @@
                 if (q+1 == P.P[worstPolychord].end())
                     q_next = q_start;
                 int e = C.getEdgeQuadAdjacent(*q, q_next);
-                C.split(*q, e, (e+2)%4);
+                C.split(*q, e, (e+2)%4, newVertices);
             }
             
-            initErrorsAndRelations();
-            cout << " ----------- End  ---------------"<<endl;
             // Reinitialize relation adj.
+            //initErrorsAndRelations();
+            // 8 => 7, 10 => 8, 9 => 11, 9 => 9
             // moveCage towards mesh triangle
+            movingVertexCageToMesh(newVertices);
+
+            cout << " ----------- End  ---------------"<<endl;
             
             /*
             for (int i=0; i<C.Q.rows(); i++)
@@ -348,15 +265,6 @@
         }
     }
 
-    double Process::normalizeDistance(double d, double min, double max)
-    {
-        return (d-min)/(max-min);
-    }
-
-    double Process::computeDistance(Vector3d v, Vector3d v_map)
-    {
-        return (v-v_map).norm();
-    }
 
     void Process::distancesBetweenMeshCage()
     {
@@ -373,17 +281,17 @@
         mapV = MatrixXd(V.rows(), 3);
         for (unsigned int i = 0; i < V.rows(); i++)
         {
-            int quality = C.QVpar(i);
-            Vector2d p = C.Vpar.row(i);
+            int quality = C.QVmesh(i);
+            Vector2d p = C.Vmesh.row(i);
             mapV.row(i) = C.getVMapping(quality, p);
-            distancesMeshCage[i] = computeDistance(V.row(i), C.getVMapping(quality, p));
+            distancesMeshCage[i] = Utility::computeDistance(V.row(i), C.getVMapping(quality, p));
         
         }
         
         min = distancesMeshCage.minCoeff();
         max = distancesMeshCage.maxCoeff();
         for (unsigned int i = 0; i < V.rows(); i++)
-            distancesMeshCage[i] = normalizeDistance(distancesMeshCage[i], min, max);
+            distancesMeshCage[i] = Utility::normalizeDistance(distancesMeshCage[i], min, max);
     }
 
 
@@ -487,8 +395,8 @@
 
         M.V = MatrixXd (vnum, 3);
         M.F = MatrixXi (fnum, 3);
-        C.Vpar = MatrixXd (vnum, 2);
-        C.QVpar = VectorXi (vnum);
+        C.Vmesh = MatrixXd (vnum, 2);
+        C.QVmesh = VectorXi (vnum);
 
         for(int i=0; i<vnum; i++)
         {
@@ -500,8 +408,8 @@
             else linestream >> x >> y >> z >> quality >> 
                                     u >> v;
             M.V.row(i) = Vector3d(x,y,z);
-            C.Vpar.row(i) = Vector2d(u,v);
-            C.QVpar[i] = quality;
+            C.Vmesh.row(i) = Vector2d(u,v);
+            C.QVmesh[i] = quality;
 
         }
         int tmp, v0,v1,v2; // 3

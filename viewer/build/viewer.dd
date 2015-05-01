@@ -1,5 +1,5 @@
 build/viewer.oo build/viewer.dd : viewer.cc ../AntTweakBar/include/AntTweakBar.h Process.hh \
- Mesh.hh ../eigen3/Eigen/Core \
+ Utility.hh ../eigen3/Eigen/Core \
  ../eigen3/Eigen/src/Core/util/DisableStupidWarnings.h \
  ../eigen3/Eigen/src/Core/util/Macros.h \
  ../eigen3/Eigen/src/Core/util/MKL_support.h \
@@ -115,5 +115,5 @@ build/viewer.oo build/viewer.dd : viewer.cc ../AntTweakBar/include/AntTweakBar.h
  ../eigen3/Eigen/src/Geometry/ParametrizedLine.h \
  ../eigen3/Eigen/src/Geometry/AlignedBox.h \
  ../eigen3/Eigen/src/Geometry/Umeyama.h \
- ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Cage.hh Polychords.hh \
- DrawMesh.hh camera.hh trackball.hh
+ ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Mesh.hh Cage.hh \
+ CageSubDomain.hh Polychords.hh DrawMesh.hh camera.hh trackball.hh

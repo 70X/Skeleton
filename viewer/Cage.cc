@@ -1,19 +1,33 @@
 #include "Cage.hh"
 
-int Cage::appendV(Vector3d v)
+int Cage::findV(Vector3d v)
 {
     for (unsigned int j=0; j<V.rows(); j++)
     {
         if (v(0) == V(j,0) && v(1) == V(j,1)
             && v(2) == V(j,2))
         {
-            //cout << "v already exists: "<<j<<endl;
             return j;
         }
+    }
+    return -1;
+}
+
+int Cage::appendV(Vector3d v, int q)
+{
+    int j;
+    if ( (j = findV(v) ) != -1)
+    {
+        //cout << "v already exists: "<<j<<endl;
+        return j;
     }
     int i = V.rows();
     V.conservativeResize(i+1, 3);
     V.row(i) = v;
+
+    _QV.conservativeResize(_QV.rows() + 1);
+    _QV(i) = q;
+
     return i;
 }
 int Cage::appendQ(Vector4i q)
@@ -24,7 +38,7 @@ int Cage::appendQ(Vector4i q)
     return i;
 }
 
-void Cage::split(int q, int e0, int e1)
+void Cage::split(int q, int e0, int e1, vector<int> &collectV)
 {
     e0 = (e0 == 0 || e0 == 2) ? 0 : 1;
     e1 = (e0 == 0 || e0 == 2) ? 2 : 3;
@@ -38,109 +52,61 @@ void Cage::split(int q, int e0, int e1)
     Vector3d P0 = (relV.row(e0) + relV.row((e0+1)%4))/2;
     Vector3d P1 = (relV.row(e1) + relV.row((e1+1)%4))/2;
 
-    int iP0 = appendV(P0);
-    int iP1 = appendV(P1);
-    /*cout << relQ(0) <<" " << relQ(1) <<" " 
-         << relQ(2) <<" " << relQ(3) << endl;
-    cout << P0(0) << " " << P0(1) << endl;*/
+    int iP0 = appendV(P0, q);
+    int iP1 = appendV(P1, q);
+
+    if (find(collectV.begin(), collectV.end(), iP0) == collectV.end())
+        collectV.push_back(iP0);
+
+    if (find(collectV.begin(), collectV.end(), iP1) == collectV.end())
+        collectV.push_back(iP1);
+
+    //cout << " QUI " << _QV(iP0) << " /// " << _QV.size() << endl;
     int q_new;
     if (e0 == 0 || e0 == 2)
     {
-        /*cout << relQ(0) <<" " << iP0 <<" " 
-             << iP1 <<" " << relQ(3) << endl;
-
-        cout << iP0 <<" " << relQ(1) <<" " 
-             << relQ(2) <<" " << iP1 << endl;*/
         Q.row(q) =      Vector4i(relQ(0), iP0, iP1, relQ(3));
         q_new = appendQ(Vector4i(iP0, relQ(1), relQ(2), iP1));
     }
     else
     {
-        /*cout << relQ(0) <<" " << relQ(1) <<" " 
-             << iP0 <<" " << iP1 << endl;
-
-        cout << iP1 <<" " << iP0 <<" " 
-             << relQ(2) <<" " << relQ(3) << endl;*/
-
         Q.row(q) =      Vector4i(relQ(0), relQ(1), iP0, iP1)  ;
         q_new = appendQ(Vector4i(iP1, iP0, relQ(2), relQ(3)) );
     }
     //cout << q << " - " << q_new << " to " << e0 << endl;
-    updateQV(q, q_new, e0);
+    updateQVmesh(q, q_new, e0);
+
 }
 
-/*
-void Cage::split(int q, int e0, int e1)
+
+vector<int> Cage::getVmeshQ(int q)
 {
-    Vector4i boh = Q.row(q);
-    cout << boh(0) <<" " << boh(1) <<" " << boh(2) <<" " << boh(3) << endl;
-    int iA = Q(q, e0),
-        iB = Q(q, (e0+1)%4),
-        iC = Q(q, e1),
-        iD = Q(q, (e1+1)%4);
-    cout << e0 << " -- " << e1 << endl;
-    cout << iA << " " << iB <<" " << iC << " " <<iD << endl<< endl;
-    Vector3d A = V.row(iA),
-             B = V.row(iB),
-             C = V.row(iC),
-             D = V.row(iD);
-    Vector3d P0 = (B+A)/2;
-    Vector3d P1 = (D+C)/2;
-    
-    int iP0 = appendV(P0);
-    int iP1 = appendV(P1);
-
-    Q.row(q) = Vector4i(iA, iP0, iP1, iD);
-    int q_new = appendQ(Vector4i(iP0, iB, iC, iP1));
-
-    cout << q << " - " << q_new << " to " << e0 << endl;
-    //updateQV(q, q_new, e0);
-}
-*/
-
-
-vector<int> Cage::getVparQ(int q)
-{
-    vector<int> listVertices;
-    for(int i=0; i<Vpar.rows(); i++)
+    vector<int> vertices;
+    for(int i=0; i<Vmesh.rows(); i++)
     {
-        if (QVpar(i) == q)
-            listVertices.push_back(i);
+        if (QVmesh(i) == q)
+            vertices.push_back(i);
     }
-    return listVertices;
+    return vertices;
 }
 
-void Cage::updateQV(int q, int q_new, int to_axis)
+
+void Cage::updateQVmesh(int q, int q_new, int to_axis)
 {
-    vector<int> VQ = getVparQ(q);
+    vector<int> VQ = getVmeshQ(q);
     int XY = (to_axis == 0 || to_axis == 2) ? 0 : 1;
      for(vector<int>::const_iterator i = VQ.begin(); i != VQ.end(); ++i)
     {
-        if (Vpar(*i, XY) > 0.5)
+        if (Vmesh(*i, XY) > 0.5)
         {
-            Vpar(*i, XY) -= 0.5;
-            QVpar(*i) = q_new;
+            Vmesh(*i, XY) -= 0.5;
+            QVmesh(*i) = q_new;
         }
         // update vertex into new smaller quad
-        Vpar(*i, XY) /= 0.5;
+        Vmesh(*i, XY) /= 0.5;
     }
 }
 
-/*
-Vector3d Cage::getVMapping(int i)
-{
-		int quality = VparQ(i);
-        Vector2d p = Vpar.row(i);
-        Vector4i quad = Q.row(quality);
-        Vector3d 	A(V.row(quad[0])),
-                	B(V.row(quad[1])),
-                	C(V.row(quad[2])),
-                	D(V.row(quad[3]));
-
-        Vector3d U = (B-A);
-        Vector3d V = (D-A);
-        return A + U*p(0) + V*p(1);
-}*/
 
 Vector3d Cage::getVMapping(int q, Vector2d p)
 {
@@ -153,15 +119,7 @@ Vector3d Cage::getVMapping(int q, Vector2d p)
     double u = p(0);
     double v = p(1);
     Vector3d P = (A*(1-u)+B*u)*(1-v) + (D*(1-u)+C*u)*v;
-    /*
-    Vector3d U = (B-A);
-    Vector3d V = (D-A);
-    Vector3d T = (D-C);
-    if (
-        C(0) > (A + U*p(0) + V*p(1))(0) )
-        cout << q<< " --- "<<C(0) << " " << (A + U*p(0) + V*p(1))(0) <<endl;
-    return A + U*p(0) + V*p(1);*/
-        return P;
+    return P;
 }
 
 // check if the cage is edge-manifold
@@ -203,11 +161,17 @@ Vector3d Cage::getVMapping(int q, Vector2d p)
 
     void Cage::computeQQ()
     {
+        assert(isManifold());
+        QQ_QV_flag = true;
+        _QV = VectorXi(V.rows());
         //cout << "isManifold(): "<<isManifold() << endl;
         vector<vector<int> > QQT;
         for (int q=0; q<Q.rows(); q++)
             for (int i=0; i<4; i++)
             {
+                // QV*
+                _QV( Q(q,i) ) = q;
+
                 int v0 = Q(q,i);
                 int v1 = Q(q,(i+1)%4);
                 if (v0 > v1) swap(v0,v1);
@@ -246,3 +210,108 @@ Vector3d Cage::getVMapping(int q, Vector2d p)
             if (QQ(s,i) == d) return i;
         }
     }
+
+    MatrixXd Cage::getTMapping(Vector3i ABC)
+{
+    MatrixXd T = MatrixXd(3, 2);
+    T <<    Vmesh.row(ABC(0)),
+            Vmesh.row(ABC(1)),
+            Vmesh.row(ABC(2));
+    return T;
+}
+
+// assume che in Q le relazioni siano state memorizzate in un ordine preciso (clockwise or counterclockwise)
+/*vector<int> Cage::getQV(int Vi)
+{
+    vector<int> QV;
+    int ei, q_start     = _QV(Vi),
+            q_current   = q_start;
+    int j=0;
+    QV.push_back(q_current);
+    do
+    {
+        //cout << ".QV : "<<q_current << endl;
+    }
+    while(q_current != q_start);
+
+    return QV;
+}*/
+
+vector<int> Cage::getQV(int Vi)
+{
+    vector<int> QV, QVccw;
+    int curt, firstt, k=0, l=0;
+    int BUFFER_V = V.rows();
+
+    if (!QQ_QV_flag) computeQQ(); 
+        
+    firstt = curt = _QV(Vi);
+    do {
+        QV.push_back(curt);
+        assert(k<BUFFER_V); k++;
+        for (int j=0;j<4;++j)
+            if (Q(curt,j)==Vi)
+            {
+                //cout << " curt : "<<curt;
+                curt = QQ(curt,(j+3)%4);
+                    if (curt == -1)
+                        cout << " --> j : "<<j<<endl;
+                break;
+            }
+    } while (curt!=firstt && curt != -1);
+
+    if(curt!=firstt)
+    {                   //allora e' necessario fare il giro inverso
+        curt = firstt; //questo e' il primo in entrambi i versi
+        do {
+            QVccw.push_back(curt);
+            assert(l<BUFFER_V); l++;
+            for (int j=0;j<4;++j)
+                if (Q(curt,j)==Vi)
+                {
+                    //cout << " curt : "<<curt;
+                    curt = QQ(curt,j);
+                    if (curt == -1)
+                        cout << " --> j : "<<j<<endl;
+                    break;
+                }
+        } while (curt!=firstt && curt != -1);
+
+
+        for(l--;l>0;l--){
+            QV.push_back(QVccw[l]);
+        }
+
+    }
+    return QV;
+}
+
+vector<int> Cage::getVV(int Vi)
+{
+    vector<int> VV;
+    vector<int> QV = getQV(Vi);
+    //cout << "QV : "<< QV.size() << endl;
+    for(vector<int>::const_iterator q = QV.begin(); q != QV.end(); ++q)
+    {
+        for (int i=0; i<4; i++ )
+        {
+            if ( Q(*q, i) == Vi)
+            {
+                // 3 cycle: quad round to Vi
+                int j=(i+1)%4;
+                while (j != i)
+                {
+                    if (find(VV.begin(), VV.end(), Q(*q, j)) == VV.end() )
+                        VV.push_back(Q(*q, j));
+                    j = (j+1)%4;
+                }
+            }
+        }
+    }
+    return VV;
+}
+
+Vector3d Cage::getV(int Vi)
+{
+    return V.row(Vi);
+}

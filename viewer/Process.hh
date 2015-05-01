@@ -9,8 +9,10 @@
 
 #define GRID_SAMPLE 1
 
+#include "Utility.hh"
 #include "Mesh.hh"
 #include "Cage.hh"
+#include "CageSubDomain.hh"
 #include "Polychords.hh"
 
 #include <Eigen/Core>
@@ -41,25 +43,34 @@ public:
 	void read(char *str);
 	void readOFF (char* meshfile);
 	void readPLY (char* meshfile);
+
 	void initAll(char* filename);
-	
-	double normalizeDistance(double d, double min, double max);
-	void distancesBetweenMeshCage();
-	double computeDistance(Vector3d v, Vector3d v_map);
-
-	void raffinementQuadLayout(int times = 1);
-
-	VectorXd computeErrorPolychords();
-private:
-	void updateTQ();
-	double computeErrorsGrid(int q, int r = 5, int c = 5);
-	double avarageSampleErrorRound(Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample);
-	double computeErrorSample(int q, Vector2d s);
-	vector<Vector3i> findTriangles(int q, Vector2d s);
-	bool isLeft(Vector2d P0, Vector2d P1, Vector2d s);
-	double areaTriangle(Vector2d A, Vector2d B, Vector2d C);
-    double areaQuad(int q);
 	void initErrorsAndRelations();
+	
+private:
+	void distancesBetweenMeshCage();
+	
+
+	VectorXd errorPolychords();
+	void updateTQ();
+
+
+    /******************************************************/
+    /*            raffinement cage                        */
+    /******************************************************/
+	double errorsGrid(int q, int r = 5, int c = 5);
+	double errorAvarageSamples(Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample);
+	double errorSample(int q, Vector2d s);
+public:
+	void raffinementQuadLayout(int times = 1);
+private:
+	
+    /******************************************************/
+    /*            moving cage towards mesh                */
+    /******************************************************/
+    void initSubDomain(CageSubDomain &sC);
+	void movingVertexCageToMesh(vector<int> newVertices);
+	vector<int> getBorderTrianglesSubDomainQ(vector<int> subQ);
 public:
 	Mesh M;
 	Cage C;
@@ -69,11 +80,12 @@ public:
     VectorXd errorQuads;
 
     vector<vector<int>> TQ;
-
     // -- ONLY FOR DEBUG
     vector<map<Vector2d, vector<int>, classcomp> > storeSampleTriangles;
     vector<Vector2d> orphanSample;
     MatrixXd mapV;
+
+    vector<int> debugPartialTQ;
 
 };
 

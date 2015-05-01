@@ -278,8 +278,8 @@ int main (int argc, char *argv[])
     p.initAll(filename);
     drawing.setProcess(p);
     drawing.bb(p.M.V, p.M.F);
-
-    #define __VIEWER__DEBUG
+    p.raffinementQuadLayout(1);
+    //#define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG
 
     glutInit(&argc, argv);

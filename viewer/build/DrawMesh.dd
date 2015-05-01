@@ -1,4 +1,4 @@
-build/DrawMesh.oo build/DrawMesh.dd : DrawMesh.cc DrawMesh.hh Process.hh Mesh.hh \
+build/DrawMesh.oo build/DrawMesh.dd : DrawMesh.cc DrawMesh.hh Process.hh Utility.hh \
  ../eigen3/Eigen/Core \
  ../eigen3/Eigen/src/Core/util/DisableStupidWarnings.h \
  ../eigen3/Eigen/src/Core/util/Macros.h \
@@ -115,4 +115,5 @@ build/DrawMesh.oo build/DrawMesh.dd : DrawMesh.cc DrawMesh.hh Process.hh Mesh.hh
  ../eigen3/Eigen/src/Geometry/ParametrizedLine.h \
  ../eigen3/Eigen/src/Geometry/AlignedBox.h \
  ../eigen3/Eigen/src/Geometry/Umeyama.h \
- ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Cage.hh Polychords.hh
+ ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Mesh.hh Cage.hh \
+ CageSubDomain.hh Polychords.hh

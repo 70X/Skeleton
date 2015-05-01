@@ -114,4 +114,4 @@ build/Mesh.oo build/Mesh.dd : Mesh.cc Mesh.hh ../eigen3/Eigen/Core \
  ../eigen3/Eigen/src/Geometry/ParametrizedLine.h \
  ../eigen3/Eigen/src/Geometry/AlignedBox.h \
  ../eigen3/Eigen/src/Geometry/Umeyama.h \
- ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h
+ ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Utility.hh Cage.hh

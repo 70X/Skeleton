@@ -1,4 +1,4 @@
-build/Process.oo build/Process.dd : Process.cc Process.hh Mesh.hh ../eigen3/Eigen/Core \
+build/Process.oo build/Process.dd : Process.cc Process.hh Utility.hh ../eigen3/Eigen/Core \
  ../eigen3/Eigen/src/Core/util/DisableStupidWarnings.h \
  ../eigen3/Eigen/src/Core/util/Macros.h \
  ../eigen3/Eigen/src/Core/util/MKL_support.h \
@@ -114,4 +114,5 @@ build/Process.oo build/Process.dd : Process.cc Process.hh Mesh.hh ../eigen3/Eige
  ../eigen3/Eigen/src/Geometry/ParametrizedLine.h \
  ../eigen3/Eigen/src/Geometry/AlignedBox.h \
  ../eigen3/Eigen/src/Geometry/Umeyama.h \
- ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Cage.hh Polychords.hh
+ ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Mesh.hh Cage.hh \
+ CageSubDomain.hh Polychords.hh
