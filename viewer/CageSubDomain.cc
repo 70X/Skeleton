@@ -4,7 +4,7 @@ void CageSubDomain::initDomain(int Vi)
 {
     vector<int> oneRingVi = getVV(Vi);
     sQ = getQV(Vi); 
-    sV = expMapping(Vi, oneRingVi);
+    expMapping(Vi, oneRingVi);
 };
 
 double CageSubDomain::angleBetweenTwoV(Vector3d Vj0, Vector3d Vj1, Vector3d Vi)
@@ -41,23 +41,25 @@ double CageSubDomain::sumAngles(vector<double> Tj)
     return Tj[Tj.size()-1];
 }
 
-vector< pair<int, Vector2d> > CageSubDomain::expMapping(int Vi, vector<int> oneRingVi)
+void CageSubDomain::expMapping(int Vi, vector<int> oneRingVi)
 {
-    vector< pair<int, Vector2d> > E;
+    vector<Vector2d> E;
     vector<double> Tj = getAnglesRoundV(Vi, oneRingVi);
     double A = 2 * M_PI / sumAngles(Tj);
 
-    E.push_back(std::make_pair(Vi, Vector2d(0,0)) );
+    iV[Vi] = 0;
+    E.push_back(Vector2d(0,0));
     for (int i=0; i<oneRingVi.size(); i++)
     {
         int Vj = oneRingVi[i];
         double R = Utility::computeDistance(getV(Vi), getV(Vj));
 
-        E.push_back(std::make_pair(Vj, Vector2d( 	
-        										R * ( cos( Tj[i]*A ) ),  
-        										R * ( sin( Tj[i]*A ) )
-        									)
-								)
+        //iV.insert(pair(Vj, i+1));
+        iV[Vj] = i+1;
+        E.push_back(Vector2d( 	
+    							R * ( cos( Tj[i]*A ) ),  
+    							R * ( sin( Tj[i]*A ) )
+    						)
                    );
         //printV(Vi);
         //printV(Vj);
@@ -65,8 +67,7 @@ vector< pair<int, Vector2d> > CageSubDomain::expMapping(int Vi, vector<int> oneR
         //cout <<"R : "<< R << " -> "<<Tj[i] << " * "<<A<<"=" << Tj[i]*A << endl;
         //cout <<"("<<R * ( cos( Tj[i]*A ) )<<","<<R * ( sin( Tj[i]*A ) )<<")"<<endl<<endl;
     }
-
-    return E;
+    sV = E;
 }
 
 
@@ -76,10 +77,10 @@ Vector2d CageSubDomain::getVMapping(int q, Vector2d p)
     // check if exists in domain q
     assert( find(sQ.begin(), sQ.end(), q) != sQ.end()  && "Error: the quad's id doesn't exist in CageSubDomain::Q");
     Vector4i quad = Q.row(q);
-    Vector2d    A = sV[ quad[0] ].second,
-                B = sV[ quad[1] ].second,
-                C = sV[ quad[2] ].second,
-                D = sV[ quad[3] ].second;
+    Vector2d    A = sV[ iV.find(quad[0])->second ],
+                B = sV[ iV.find(quad[1])->second ],
+                C = sV[ iV.find(quad[2])->second ],
+                D = sV[ iV.find(quad[3])->second ];
     double u = p(0);
     double v = p(1);
     Vector2d P = (A*(1-u)+B*u)*(1-v) + (D*(1-u)+C*u)*v;

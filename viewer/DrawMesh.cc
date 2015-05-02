@@ -58,9 +58,9 @@
 
     void DrawMesh::drawDebug()
     {
-        if (p->sC.sV.size() == 0)
+        if (p->storeSubC.find(IDCageSubDomain) == p->storeSubC.end())
             return;
-        
+        CageSubDomain sC = p->storeSubC.find(IDCageSubDomain)->second;
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glTranslatef (-center[0], -center[1], -center[2]);
@@ -68,29 +68,29 @@
 
         glBegin (GL_LINES);
         glColor3f(0.5,0.5,0.5);
-        vector<pair<int,Vector2d>>::iterator Vi = p->sC.sV.begin();
-        vector<pair<int,Vector2d>>::iterator prec = p->sC.sV.begin();
-        vector<pair<int,Vector2d>>::iterator it = p->sC.sV.begin();
+        vector< Vector2d >::iterator Vi = sC.sV.begin();
+        vector< Vector2d >::iterator prec = sC.sV.begin();
+        vector< Vector2d >::iterator it = sC.sV.begin();
         advance(it, 1);
-        vector<pair<int,Vector2d>>::iterator firstRing = it;
-        for (; it!=p->sC.sV.end(); ++it, ++prec)
+        vector<Vector2d>::iterator firstRing = it;
+        for (; it!=sC.sV.end(); ++it, ++prec)
         {
             //p->sC.printV(it->first);
             glColor3f(1,0,0);
-            glVertex3f (Vi->second(0), Vi->second(1), Vi->second(2));
-            glVertex3f (prec->second(0), prec->second(1), prec->second(2));
+            glVertex2f ((*Vi)(0), (*Vi)(1));
+            glVertex2f ((*prec)(0), (*prec)(1));
             
             glColor3f(0.5,0.5,0.5);
-            glVertex3f (prec->second(0), prec->second(1), prec->second(2));
-            glVertex3f (it->second(0), it->second(1), it->second(2));
+            glVertex2f ((*prec)(0), (*prec)(1));
+            glVertex2f ((*it)(0), (*it)(1));
         }
         glColor3f(1,0,0);
-        glVertex3f (Vi->second(0), Vi->second(1), Vi->second(2));
-        glVertex3f (prec->second(0), prec->second(1), prec->second(2));
+        glVertex2f ((*Vi)(0), (*Vi)(1));
+        glVertex2f ((*prec)(0), (*prec)(1));
         
             glColor3f(0.5,0.5,0.5);
-        glVertex3f (prec->second(0), prec->second(1), prec->second(2));
-        glVertex3f (firstRing->second(0), firstRing->second(1), firstRing->second(2));
+        glVertex2f ((*prec)(0), (*prec)(1));
+        glVertex2f ((*firstRing)(0), (*firstRing)(1));
         
         glEnd();
 
@@ -98,15 +98,67 @@
         glBegin (GL_POINTS);
         glColor3f(1, 0,0);
 
-        it = p->sC.sV.begin();
-
-        glVertex3f (p->C.V(it->first, 0), p->C.V(it->first, 1), p->C.V(it->first, 2));
-        advance(it, 1);
-        glColor3f(0, 1,0);
-        for (; it!=p->sC.sV.end(); ++it, ++prec)
+        for(map<int,int>::iterator it = sC.iV.begin(); it != sC.iV.end(); ++it) 
         {
+            if (it->second == 0)
+                glColor3f(1, 0,0);
+            else glColor3f(0, 1,0);
             glVertex3f (p->C.V(it->first, 0), p->C.V(it->first, 1), p->C.V(it->first, 2));
         }
+
+        glEnd();
+            
+
+        glEnable (GL_DEPTH_TEST);
+        glEnable(GL_LIGHTING);
+        glShadeModel(GL_FLAT); 
+        glBegin (GL_TRIANGLES); 
+        glColor3f(0,1,0);
+
+        int i0,i1,i2, i =9853 ;
+        MatrixXd V = p->M.V;
+        MatrixXi F = p->M.F;  
+        i0 = F(i,0);
+        i1 = F(i,1);
+        i2 = F(i,2);
+
+        Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
+        Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
+        Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
+
+        glVertex3f (v0(0), v0(1), v0(2));
+        glVertex3f (v1(0), v1(1), v1(2));
+        glVertex3f (v2(0), v2(1), v2(2));
+
+        glEnd();
+
+        glBegin (GL_LINES);
+        glColor3f(0.5,0.5,0.5);
+        glVertex3f (v0(0), v0(1), v0(2));
+        glVertex3f (p->mapV(i0,0), p->mapV(i0,1), p->mapV(i0,2));
+
+        glVertex3f (v1(0), v1(1), v1(2));
+        glVertex3f (p->mapV(i1,0), p->mapV(i1,1), p->mapV(i1,2));
+
+        glVertex3f (v2(0), v2(1), v2(2));
+        glVertex3f (p->mapV(i2,0), p->mapV(i2,1), p->mapV(i2,2));
+        glEnd();
+        
+        MatrixXd ABC = sC.getTMapping(F.row(i)); //ritorna il triangolo mappato in C o in SubDomainC
+            
+        Vector2d _A = ABC.row(0);
+        Vector2d _B = ABC.row(1);
+        Vector2d _C = ABC.row(2);
+
+        glEnable (GL_DEPTH_TEST);
+        glEnable(GL_LIGHTING);
+        glShadeModel(GL_FLAT); 
+        glBegin (GL_TRIANGLES); 
+        glColor3f(0,0,0);
+
+        glVertex2f (_A(0), _A(1));
+        glVertex2f (_B(0), _B(1));
+        glVertex2f (_C(0), _C(1));
 
 
         glEnd();

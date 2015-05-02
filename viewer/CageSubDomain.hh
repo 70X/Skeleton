@@ -15,10 +15,13 @@ using namespace std;
 class CageSubDomain : public Cage
 {
 	public:
+    // new mapping vertex
+    vector<Vector2d> sV;
     // key: id vector concern Cage.V    | value: new mapping vertex
-    vector< pair<int, Vector2d> > sV;
+    map<int, int> iV;
     // id quad into new domain
-    vector<int> sQ;              
+    vector<int> sQ;      
+    vector<int> triangles;
     CageSubDomain(){};
     ~CageSubDomain(){};
 
@@ -28,13 +31,13 @@ class CageSubDomain : public Cage
     MatrixXd getTMapping(Vector3i ABC);
 
 private:
-    vector< pair<int, Vector2d> > expMapping(int Vi, vector<int> oneRingVi);
+    void expMapping(int Vi, vector<int> oneRingVi);
 
     vector<double> getAnglesRoundV(int Vi, vector<int> oneRingV);
     double   angleBetweenTwoV(Vector3d Vj0, Vector3d Vj1, Vector3d Vi);
     double   sumAngles(vector<double> Tj);
 public:
-    void print_sV()
+    /*void print_sV()
     {
         cout << " DEBUG: "<<endl;
         printV(sV.begin()->first);
@@ -49,6 +52,6 @@ public:
     {
         cout << " sV["<<V<<"]\t ---> ["<<sV[V].second(0)<<","<<sV[V].second(1)<<"]"<<endl;
     };
-
+    */
 };
 #endif

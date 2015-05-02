@@ -25,8 +25,7 @@ Camera camera;
 int width = W;
 int height = H;
 int times = 0;
-double thresholdMin = 0;
-double thresholdMax = 1;
+int choiceIDSubCage = -1;
 
 DrawMesh::draw_mode_t mesh_draw_mode = DrawMesh::FLAT;
 DrawMesh::draw_mode_t cage_draw_mode = DrawMesh::WIRE;
@@ -215,6 +214,44 @@ void TW_CALL getTriangleView (void *value, void *)
 }
 
 
+void TW_CALL setCageSubDomain (const void *value, void *)
+{
+    choiceIDSubCage = *(const double *) value;
+    drawing.IDCageSubDomain = -1;
+    int i = choiceIDSubCage;
+    if (p.storeSubC.find(choiceIDSubCage) != p.storeSubC.end())
+        drawing.IDCageSubDomain = choiceIDSubCage;
+    else
+        for(map<int, CageSubDomain>::const_iterator it = p.storeSubC.begin(); it != p.storeSubC.end(); ++it, --i)
+        {
+
+            if(i==0)
+                 drawing.IDCageSubDomain = it->first;
+        }
+}
+
+/*
+void TW_CALL setCageSubDomain (const void *value, void *)
+{
+    int choiceIDSubCage = *(const double *) value;
+    /*int i = choiceIDSubCage;
+    for(map<int, CageSubDomain>::const_iterator it = p.storeSubC.begin(); it != p.storeSubC.end(); ++it, --i)
+    {
+        if(i==0)
+             drawing.IDCageSubDomain = it->first;
+    }
+    char str[100];
+    sprintf(str, "Camera_Rendering/LabelIDCageSubDomain value=%d ",  (int)(drawing.IDCageSubDomain));
+    TwDefine(str);*/
+//}
+
+void TW_CALL getCageSubDomain (void *value, void *)
+{
+    *(double *) value = drawing.IDCageSubDomain;
+}
+
+
+
 void TW_CALL call_quit(void *clientData)
 { 
     quit();
@@ -341,19 +378,29 @@ int main (int argc, char *argv[])
   char str[100];
   sprintf(str, "group = 'Debug' min=-1 max=%d step=1", (int)(p.C.Q.rows() - 1));
     TwAddVarCB(cBar, "IDQuad", TW_TYPE_DOUBLE, setEnableCageFace, getEnableCageFace,
-           NULL, strcat(str, "label='ID quad'") );
+           NULL, strcat(str, " label='ID quad'") );
     TwAddVarRW(cBar, "show grid", TW_TYPE_BOOLCPP, &drawing.showGrid, 
         "group = 'Debug'");
     
     sprintf(str, "group = 'Debug' min=-1 max=%d step=1", (int)(p.P.getSize() - 1));
     TwAddVarCB(cBar, "IDPolychord", TW_TYPE_DOUBLE, setIDPolychord, getIDPolychord,
-           NULL, strcat(str, "label='ID polychord'"));
+           NULL, strcat(str, " label='ID polychord'"));
 
-  sprintf(str, "group = 'Debug' min=-1 max=%d step=1", (int)(p.M.F.rows() - 1));
-  TwAddVarCB(cBar, "IDTriangle", TW_TYPE_DOUBLE, setTriangleView, getTriangleView,
-           NULL, strcat(str, "label='ID triangle'"));
+    sprintf(str, "group = 'Debug' min=-1 max=%d step=1", (int)(p.M.F.rows() - 1));
+    TwAddVarCB(cBar, "IDTriangle", TW_TYPE_DOUBLE, setTriangleView, getTriangleView,
+           NULL, strcat(str, " label='ID triangle'"));
 
-    
+
+    sprintf(str, "group = 'Debug' min=-1 step=1");
+    TwAddVarCB(cBar, "IDCageSubDomain", TW_TYPE_DOUBLE, setCageSubDomain, getCageSubDomain,
+           NULL, strcat(str, " label='ID CageSubDomain'"));
+
+    //sprintf(str, "group = 'Debug' ");
+    //TwAddVarRO(cBar, "LabelIDCageSubDomain", TW_TYPE_FLOAT, &(drawing.IDCageSubDomain), strcat(str, "label='which sC: '"));
+   
+
+
+
     TwAddButton(cBar, "raffinement", setRaffinementTimes, NULL, 
                 "group = 'Debug' label='step 0 raffinement'");
     

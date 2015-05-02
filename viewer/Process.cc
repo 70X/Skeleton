@@ -43,6 +43,10 @@
         sC.setQVmesh(C.QVmesh);
         sC.setQQ(C.QQ);
         sC.setPartialQV(C._QV);
+        sC.sV.clear();
+        sC.iV.clear();
+        sC.sQ.clear();
+        sC.triangles.clear();
     }
 
     void Process::movingVertexCageToMesh(vector<int> newVertices)
@@ -50,38 +54,44 @@
         Vector3d Vs;
         //CageSubDomain sC;
         cout << "How many vertices? "<< newVertices.size() << endl;
-        initSubDomain(sC);
         for(vector<int>::const_iterator Vi = newVertices.begin(); Vi != newVertices.end(); ++Vi )
         {  
-            sC.initDomain(*Vi);    
+            CageSubDomain sC;
+            initSubDomain(sC);
+            sC.initDomain(*Vi); 
+            
             vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
             debugPartialTQ = TsQ;
             //error: ‘Cage’ is an inaccessible base of ‘CageSubDomain’ TO DO
-            vector<int> triangles = M.findTriangles(TsQ, sC.sV[*Vi].second, sC);
-            cout <<*Vi <<". ALERT "<< triangles.size()<<endl;
-            for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT )
+            //cout << "Vector: "<< sC.iV.find(*Vi)->first<<" - "<<sC.iV.find(*Vi)->second<<endl;
+            
+            sC.triangles = M.findTriangles(TsQ, sC.sV[ sC.iV[*Vi] ], sC);
+            cout <<*Vi <<". ALERT "<< sC.triangles.size()<<endl;
+            for(vector<int>::const_iterator idT = sC.triangles.begin(); idT != sC.triangles.end(); ++idT )
             {
-                //cout << "Triangle: "<<*idT << endl;
+                cout << "Triangle: "<<*idT << endl;
             }
-            /*
-            for (int q=0; q<TQ.size(); q++)
+            /*if (*Vi == 8)
             {
-                vector<int> triangles = M.findTriangles(TQ[q], sC.sV[ *Vi ], sC);
-                cout << triangles.size()<<endl;
+                int idTdebug = 8053;
+                cout << C.QVmesh(M.F(idTdebug, 0)) << ","<< C.QVmesh(M.F(idTdebug, 1)) <<","<< C.QVmesh(M.F(idTdebug, 2)) <<endl;
+        
+                for(vector<int>::const_iterator q = sC.sQ.begin(); q != sC.sQ.end(); ++q )
+                {
+                    cout << *q<<" , ";
+                }
+                cout <<endl;
+                break;
             }
+            break;   
             */
 
             /*for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
             {
-                Vs = Utility::getCoordBarycentricTriangle(sC.getTMapping(M.F.row(*idT)), M.getT(*idT), sC.V[ *Vi ]);
-                break;
-            }
-            C.V.row(*Vi) = Vs; // new Mapping :)
-            */
-            // d. Calcola le coordinate baricentriche di Vi rispetto al triangolo mappato che lo contiene
-            // e. Utilizza le coordinate baricentriche per mappare Vi sulla trimesh
-            //break;
-
+                Vs = Utility::getCoordBarycentricTriangle(sC.getTMapping(M.F.row(*idT)), M.getT(*idT), sC.sV[ sC.iV[*Vi] ]);
+                C.V.row(*Vi) = Vs; // new Mapping :)
+            }*/
+            storeSubC[*Vi] = sC;
         }
     }
 

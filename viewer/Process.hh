@@ -85,7 +85,7 @@ public:
     vector<Vector2d> orphanSample;
     MatrixXd mapV;
 
-    CageSubDomain sC;
+    map<int, CageSubDomain> storeSubC;
     vector<int> debugPartialTQ;
 
 };
