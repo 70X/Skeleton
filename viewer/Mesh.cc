@@ -129,6 +129,7 @@ VectorXi Mesh::getVT(int i) // returns VT relation of the i-th vertex
         for(vector<int>::const_iterator idT = Ts.begin(); idT != Ts.end(); ++idT)
         {
             MatrixXd ABC = C.getTMapping(F.row(*idT)); //ritorna il triangolo mappato in C o in SubDomainC
+            
             Vector2d _A = ABC.row(0);
             Vector2d _B = ABC.row(1);
             Vector2d _C = ABC.row(2);

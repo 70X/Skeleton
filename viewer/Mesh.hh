@@ -36,28 +36,6 @@ public:
     vector<int> findTriangles(vector<int> Ts, Vector2d V, Cage &C);
 	
 
-
-
-    vector<int> findTrianglesSCDEBUG(vector<int> Ts, Vector2d V, Cage &C)
-    {
-        vector<int> listTriangleIDs;
-
-        for(vector<int>::const_iterator idT = Ts.begin(); idT != Ts.end(); ++idT)
-        {
-            MatrixXd ABC = C.getTMapping(F.row(*idT)); //ritorna il triangolo mappato in C o in SubDomainC
-            Vector2d _A = ABC.row(0);
-            Vector2d _B = ABC.row(1);
-            Vector2d _C = ABC.row(2);
-            if (Utility::is_inside(_A,_B,_C, V) )
-            {
-                listTriangleIDs.push_back(*idT);
-            }
-           // break;
-        }
-
-        
-        return listTriangleIDs;
-    };
 private:
     
     bool TTVTflag;  // true iff TV* and TT are up-to-date

@@ -252,10 +252,7 @@ vector<int> Cage::getQV(int Vi)
         for (int j=0;j<4;++j)
             if (Q(curt,j)==Vi)
             {
-                //cout << " curt : "<<curt;
                 curt = QQ(curt,(j+3)%4);
-                    if (curt == -1)
-                        cout << " --> j : "<<j<<endl;
                 break;
             }
     } while (curt!=firstt && curt != -1);
@@ -269,10 +266,7 @@ vector<int> Cage::getQV(int Vi)
             for (int j=0;j<4;++j)
                 if (Q(curt,j)==Vi)
                 {
-                    //cout << " curt : "<<curt;
                     curt = QQ(curt,j);
-                    if (curt == -1)
-                        cout << " --> j : "<<j<<endl;
                     break;
                 }
         } while (curt!=firstt && curt != -1);

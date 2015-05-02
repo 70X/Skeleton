@@ -15,8 +15,10 @@ using namespace std;
 class CageSubDomain : public Cage
 {
 	public:
-    map<int, Vector2d> sV;       // key: id vector concern Cage.V    | value: new mapping vertex
-    vector<int> sQ;              // id quad into new domain
+    // key: id vector concern Cage.V    | value: new mapping vertex
+    vector< pair<int, Vector2d> > sV;
+    // id quad into new domain
+    vector<int> sQ;              
     CageSubDomain(){};
     ~CageSubDomain(){};
 
@@ -26,22 +28,27 @@ class CageSubDomain : public Cage
     MatrixXd getTMapping(Vector3i ABC);
 
 private:
-    map<int, Vector2d> expMapping(int Vi, vector<int> oneRingVi);
+    vector< pair<int, Vector2d> > expMapping(int Vi, vector<int> oneRingVi);
 
     vector<double> getAnglesRoundV(int Vi, vector<int> oneRingV);
     double   angleBetweenTwoV(Vector3d Vj0, Vector3d Vj1, Vector3d Vi);
     double   sumAngles(vector<double> Tj);
-
-    void print_sV(int Vi, vector<int> oneRingVi)
+public:
+    void print_sV()
     {
         cout << " DEBUG: "<<endl;
-        cout << " sV["<<Vi<<"]\t ---> ["<<sV[Vi](0)<<","<<sV[Vi](1)<<"]"<<endl;
-        for(vector<int>::const_iterator vj = oneRingVi.begin(); vj != oneRingVi.end(); ++vj)
+        printV(sV.begin()->first);
+        for(vector< pair<int, Vector2d> >::const_iterator vj = sV.begin(); vj != sV.end(); ++vj)
         {
-            cout << " sV["<<*vj<<"]\t---> ["<<sV[*vj](0)<<","<<sV[*vj](1)<<"]"<<endl;
+            //cout << " sV["<<*vj<<"]\t---> ["<<sV[*vj](0)<<","<<sV[*vj](1)<<"]"<<endl;
+            printV(vj->first);
         }
     };
 
+    void printV(int V)
+    {
+        cout << " sV["<<V<<"]\t ---> ["<<sV[V].second(0)<<","<<sV[V].second(1)<<"]"<<endl;
+    };
 
 };
 #endif

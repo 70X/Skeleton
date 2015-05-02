@@ -54,6 +54,68 @@
             color[1] = color[2] = (-2*d)+2;
         }
     }
+
+
+    void DrawMesh::drawDebug()
+    {
+        if (p->sC.sV.size() == 0)
+            return;
+        
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glTranslatef (-center[0], -center[1], -center[2]);
+        glPointSize(4.0);
+
+        glBegin (GL_LINES);
+        glColor3f(0.5,0.5,0.5);
+        vector<pair<int,Vector2d>>::iterator Vi = p->sC.sV.begin();
+        vector<pair<int,Vector2d>>::iterator prec = p->sC.sV.begin();
+        vector<pair<int,Vector2d>>::iterator it = p->sC.sV.begin();
+        advance(it, 1);
+        vector<pair<int,Vector2d>>::iterator firstRing = it;
+        for (; it!=p->sC.sV.end(); ++it, ++prec)
+        {
+            //p->sC.printV(it->first);
+            glColor3f(1,0,0);
+            glVertex3f (Vi->second(0), Vi->second(1), Vi->second(2));
+            glVertex3f (prec->second(0), prec->second(1), prec->second(2));
+            
+            glColor3f(0.5,0.5,0.5);
+            glVertex3f (prec->second(0), prec->second(1), prec->second(2));
+            glVertex3f (it->second(0), it->second(1), it->second(2));
+        }
+        glColor3f(1,0,0);
+        glVertex3f (Vi->second(0), Vi->second(1), Vi->second(2));
+        glVertex3f (prec->second(0), prec->second(1), prec->second(2));
+        
+            glColor3f(0.5,0.5,0.5);
+        glVertex3f (prec->second(0), prec->second(1), prec->second(2));
+        glVertex3f (firstRing->second(0), firstRing->second(1), firstRing->second(2));
+        
+        glEnd();
+
+
+        glBegin (GL_POINTS);
+        glColor3f(1, 0,0);
+
+        it = p->sC.sV.begin();
+
+        glVertex3f (p->C.V(it->first, 0), p->C.V(it->first, 1), p->C.V(it->first, 2));
+        advance(it, 1);
+        glColor3f(0, 1,0);
+        for (; it!=p->sC.sV.end(); ++it, ++prec)
+        {
+            glVertex3f (p->C.V(it->first, 0), p->C.V(it->first, 1), p->C.V(it->first, 2));
+        }
+
+
+        glEnd();
+
+        glPopMatrix();
+
+    }
+
+
 void DrawMesh::drawLinesVmapping()
 {
     if (!showLines) 
@@ -62,7 +124,7 @@ void DrawMesh::drawLinesVmapping()
     glColor3f(0.5,0.5,0.5);
 
     for (unsigned int i = 0; i < p->M.V.rows(); i++){
-        if(onlyFace != -1 && onlyFace != p->C.QVmesh[i]) 
+        if(IDQuad != -1 && IDQuad != p->C.QVmesh[i]) 
             continue;
         glVertex3f (p->M.V(i,0), p->M.V(i,1), p->M.V(i,2));
         glVertex3f (p->mapV(i,0), p->mapV(i,1), p->mapV(i,2));
@@ -73,6 +135,8 @@ void DrawMesh::drawLinesVmapping()
 
 void DrawMesh::drawMesh (draw_mode_t mode)
     { 
+        drawDebug();
+        return;
         MatrixXd V = p->M.V;
         MatrixXi F = p->M.F;  
         VectorXd distV = p->distancesMeshCage;
@@ -92,7 +156,7 @@ void DrawMesh::drawMesh (draw_mode_t mode)
         glPointSize(4.0);
         Vector3f color (0,1,0);       // generic mesh color
 
-    /*if (mode == SMOOTH || mode == FLAT)
+    if (mode == SMOOTH || mode == FLAT)
     {
         glEnable (GL_DEPTH_TEST);
         glEnable(GL_LIGHTING);
@@ -102,9 +166,9 @@ void DrawMesh::drawMesh (draw_mode_t mode)
         glColor3f(0,1,0);
         
                 
-        if(onlyFace != -1 && onlyFace < p->TQ.size() )
+        if(IDQuad != -1 && IDQuad < p->TQ.size() )
         {
-            int q = onlyFace;
+            int q = IDQuad;
             for(vector<int>::const_iterator idF = p->TQ[q].begin(); idF != p->TQ[q].end(); ++idF)
             {
                 int i = *idF;
@@ -143,6 +207,13 @@ void DrawMesh::drawMesh (draw_mode_t mode)
         else
                 for (int i = 0; i < F.rows(); i++)
             {
+
+                        
+                if(IDTriangle != -1 && IDTriangle < p->M.F.rows() && IDTriangle != i)
+                {
+                    continue;
+                }
+
                 if (F.cols() != 3 || V.cols() != 3)
                     fprintf (stderr, "VF:draw(): only triangles in 3D are supported\n");
 
@@ -164,6 +235,9 @@ void DrawMesh::drawMesh (draw_mode_t mode)
                 Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
                 Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
                 Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
+                //1684
+                //1701 = nV = 11
+
                 Vector3d u,v,n;
                 u = v1 - v0;
                 v = v2 - v0;
@@ -175,23 +249,20 @@ void DrawMesh::drawMesh (draw_mode_t mode)
                 d0 = distV(i0);
                 d1 = distV(i1);
                 d2 = distV(i2);
-                if (d0>thresholdMin && d0 < thresholdMax)
-                {
                     //cout << d0 << " " << d1 << " " << d2 << endl;
-                    setColorError(d0, colorError[0]);
-                    setColorError(d1, colorError[1]);
-                    setColorError(d2, colorError[2]);
-                    glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);
-                    glVertex3f (v0(0), v0(1), v0(2));
-                    glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
-                    glVertex3f (v1(0), v1(1), v1(2));
-                    glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
-                    glVertex3f (v2(0), v2(1), v2(2));
-                }
+                setColorError(d0, colorError[0]);
+                setColorError(d1, colorError[1]);
+                setColorError(d2, colorError[2]);
+                glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);
+                glVertex3f (v0(0), v0(1), v0(2));
+                glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
+                glVertex3f (v1(0), v1(1), v1(2));
+                glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
+                glVertex3f (v2(0), v2(1), v2(2));
             }
         glEnd(); 
-    }*/
-    glEnable (GL_DEPTH_TEST);
+    }
+    /*glEnable (GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glShadeModel(GL_FLAT); 
     glBegin (GL_TRIANGLES); 
@@ -213,7 +284,7 @@ void DrawMesh::drawMesh (draw_mode_t mode)
         glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
         glVertex3f (v2(0), v2(1), v2(2));
     } 
-    glEnd(); 
+    glEnd(); */
 
     drawLinesVmapping();
     if (mode == POINTS)
@@ -222,17 +293,12 @@ void DrawMesh::drawMesh (draw_mode_t mode)
         glDisable(GL_LIGHTING);
         glBegin (GL_POINTS);
 
-
-        double d;
         for (unsigned int i = 0; i < V.rows(); i++){
             
-            if(onlyFace != -1 && onlyFace != QVmesh[i]) continue;
-            d = distV[i]; 
-            if (d>thresholdMin && d < thresholdMax)
-            {
-                glColor3f(1,0,0);
-                glVertex3f (V(i,0), V(i,1), V(i,2));
-            }
+            if(IDQuad != -1 && IDQuad != QVmesh[i]) continue;
+            glColor3f(1,0,0);
+            glVertex3f (V(i,0), V(i,1), V(i,2));
+            
             
 
         }
@@ -247,24 +313,12 @@ void DrawMesh::drawMesh (draw_mode_t mode)
         glBegin (GL_LINES);
 
 
-        if(onlyFace != -1 && onlyFace < p->TQ.size() )
+        if(IDQuad != -1 && IDQuad < p->TQ.size() )
         {
-            int q = onlyFace;
+            int q = IDQuad;
             for(vector<int>::const_iterator idF = p->TQ[q].begin(); idF != p->TQ[q].end(); ++idF)
             {
                 int i = *idF;
-               // 1701; 9056; 9174; 9549; 10033; 10138; 10145; 26887; 28540; 30148;
-               /* if (i != 1701 &&
-                    i != 9056 &&
-                    i != 9174 &&
-                    i != 9549 &&
-                    i != 10033 &&
-                    i != 10138 &&
-                    i != 10145 &&
-                    i != 26887 &&
-                    i != 28540 &&
-                    i != 30148 )
-                    continue;*/
 
 
                  int i0,i1,i2;
@@ -378,7 +432,7 @@ void DrawMesh::drawMesh (draw_mode_t mode)
     }
     void DrawMesh::drawGrid()
     {
-        if (onlyFace == -1 || 
+        if (IDQuad == -1 || 
             p->storeSampleTriangles.size() == 0) return;
 
         Vector3d s;
@@ -387,7 +441,7 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             
          for (int q = 0; q < F.rows(); q++)
         {
-            if(onlyFace != q) continue;
+            if(IDQuad != q) continue;
             
             map<Vector2d, vector<int>, Process::classcomp>::iterator it = p->storeSampleTriangles[q].begin();
             for (it=p->storeSampleTriangles[q].begin(); it!=p->storeSampleTriangles[q].end(); ++it)
@@ -424,25 +478,9 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             
             for (int i = 0; i < F.rows(); i++)
             {
-                //if (i!=32 && i!=33 && i!=36 && i!=37) continue;
-                if(onlyFace != -1 && onlyFace != i) continue;
-                if (F.cols() != 4 || V.cols() != 3)
-                    fprintf (stderr, "VF:draw(): only cube in 3D are supported\n");
-
+                if(IDQuad != -1 && IDQuad != i) 
+                    continue;
                 int i0,i1,i2,i3;
-                i0 = i1 = i2 = i3 = 0;
-                if (i0 < 0 || i0 >= V.rows())
-                    fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
-                         i,0,F(i,0));
-                if (i1 < 0 || i1 >= V.rows())
-                    fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
-                         i,1,F(i,1));
-                if (i2 < 0 || i2 >= V.rows())
-                    fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
-                         i,2,F(i,2));
-                if (i3 < 0 || i3 >= V.rows())
-                    fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
-                         i,3,F(i,3));
                 // indexes of vertices of face i
                 i0 = F(i,0);
                 i1 = F(i,1);
@@ -454,9 +492,8 @@ void DrawMesh::drawMesh (draw_mode_t mode)
                 Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
                 Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
                 Vector3d v3 (V(i3,0), V(i3,1), V(i3,2));
-                //std::cout << v0 << "," << v1<<","<<v2<<","<<v3<<std::endl;
-                // normal per face (flat shading)
                 
+                // normal per face (flat shading)
                 Vector3d u,v,n;
                 u = v1 - v0;
                 v = v3 - v1;
@@ -469,8 +506,6 @@ void DrawMesh::drawMesh (draw_mode_t mode)
                 glVertex3f (v1(0), v1(1), v1(2));
                 glVertex3f (v2(0), v2(1), v2(2));
                 glVertex3f (v3(0), v3(1), v3(2));
-                
-                //break;
             }
             glEnd();            
         }

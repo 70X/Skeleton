@@ -33,20 +33,26 @@ public:
 
 	void drawCage (draw_mode_t mode);
 	void drawMesh (draw_mode_t mode);
-	void drawGrid ();
+
+
+	void drawGrid();
 	void drawLinesVmapping();
 	void drawSamplePointWithHisTriangle(int q, Vector2d s, int t);
 	double* getCenter();
 	double getDiagonal();
 	void setProcess(Process &p){ this->p = &p; };
-	// set command from GUI
-	double thresholdMin = 0;
-	double thresholdMax = 1;
-	int onlyFace = 5;
-	bool showGrid = true;
-	bool showLines = true;
+	
+	// set command GUI
+	double IDTriangle = -1;
+	int IDQuad = -1;
+
+	bool showMesh = true;
+	bool showCage = true;
+	bool showGrid = false;
+	bool showLines = false;
 	int IDPolychord = -1;
 private:
+	void drawDebug();
 	void setColorError(double d, double *color);
 	double center[3];
     double diagonal;

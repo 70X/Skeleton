@@ -27,8 +27,6 @@ int height = H;
 int times = 0;
 double thresholdMin = 0;
 double thresholdMax = 1;
-bool showMesh = false;
-bool showCage = true;
 
 DrawMesh::draw_mode_t mesh_draw_mode = DrawMesh::FLAT;
 DrawMesh::draw_mode_t cage_draw_mode = DrawMesh::WIRE;
@@ -60,9 +58,9 @@ void display()
     glViewport(0, 0, (GLsizei) width, (GLsizei) height);
     // draw GUI
     camera.display_begin();
-    if (showMesh)
+    if (drawing.showMesh)
         drawing.drawMesh(mesh_draw_mode);
-    if (showCage)
+    if (drawing.showCage)
         drawing.drawCage(cage_draw_mode);
 
     camera.display_end();
@@ -184,10 +182,10 @@ void TW_CALL setRaffinementTimes (void *value)
     sprintf(str, "Camera_Rendering/raffinement label='step %d raffinement'",  (int) times);
     TwDefine(str);
 
-    sprintf(str, "Camera_Rendering/onlyface max=%d ",  (int)(p.C.Q.rows() - 1));
+    sprintf(str, "Camera_Rendering/IDQuad max=%d ",  (int)(p.C.Q.rows() - 1));
     TwDefine(str);
     
-    sprintf(str, "Camera_Rendering/polychord max=%d ",  (int)(p.P.getSize() - 1));
+    sprintf(str, "Camera_Rendering/IDPolychord max=%d ",  (int)(p.P.getSize() - 1));
     TwDefine(str);
     glutPostRedisplay();
 }
@@ -196,35 +194,26 @@ void TW_CALL setRaffinementTimes (void *value)
 
 void TW_CALL setEnableCageFace (const void *value, void *)
 {
-    drawing.onlyFace = *(const double *) value;
+    drawing.IDQuad = *(const double *) value;
     glutPostRedisplay();
 }
 
 void TW_CALL getEnableCageFace (void *value, void *)
 {
-    *(double *) value = drawing.onlyFace;
+    *(double *) value = drawing.IDQuad;
 }
 
-void TW_CALL setThresholdMin (const void *value, void *)
+void TW_CALL setTriangleView (const void *value, void *)
 {
-    drawing.thresholdMin = *(const double *) value;
+    drawing.IDTriangle = *(const double *) value;
     //glutPostRedisplay();
 }
 
-void TW_CALL getThresholdMin (void *value, void *)
+void TW_CALL getTriangleView (void *value, void *)
 {
-    *(double *) value = drawing.thresholdMin;
-}
-void TW_CALL setThresholdMax (const void *value, void *)
-{
-    drawing.thresholdMax = *(const double *) value;
-    //glutPostRedisplay();
+    *(double *) value = drawing.IDTriangle;
 }
 
-void TW_CALL getThresholdMax (void *value, void *)
-{
-    *(double *) value = drawing.thresholdMax;
-}
 
 void TW_CALL call_quit(void *clientData)
 { 
@@ -236,17 +225,17 @@ char filename[200];
 void TW_CALL resetRaffinament (void *value)
 {
     drawing.IDPolychord = -1;
-    drawing.onlyFace = -1;
+    drawing.IDQuad = -1;
     p.initAll(filename);
     times = 0;
     
     char str[50];
     TwDefine("Camera_Rendering/raffinement label='step 0 raffinement'");
 
-    sprintf(str, "Camera_Rendering/onlyface max=%d ",  (int)(p.C.Q.rows() - 1));
+    sprintf(str, "Camera_Rendering/IDQuad max=%d ",  (int)(p.C.Q.rows() - 1));
     TwDefine(str);
     
-    sprintf(str, "Camera_Rendering/polychord max=%d ",  (int)(p.P.getSize() - 1));
+    sprintf(str, "Camera_Rendering/IDPolychord max=%d ",  (int)(p.P.getSize() - 1));
     TwDefine(str);
     glutPostRedisplay();
 }
@@ -279,7 +268,7 @@ int main (int argc, char *argv[])
     drawing.setProcess(p);
     drawing.bb(p.M.V, p.M.F);
     p.raffinementQuadLayout(1);
-    //#define __VIEWER__DEBUG
+    #define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG
 
     glutInit(&argc, argv);
@@ -311,7 +300,7 @@ int main (int argc, char *argv[])
 
     TwBar *cBar;
     cBar = TwNewBar("Camera_Rendering");
-    TwDefine("Camera_Rendering size='250 320'");
+    TwDefine("Camera_Rendering size='250 420'");
     TwDefine("Camera_Rendering valueswidth=80");
     TwDefine("Camera_Rendering color='192 255 192' text=dark ");
 
@@ -337,38 +326,44 @@ int main (int argc, char *argv[])
     TwAddVarCB(cBar, "camera focus", TW_TYPE_DOUBLE, setFocalLength, getFocalLength,
 	       NULL, "group = 'Scene' min=0.00 max=100.00 step=0.1");
     
-    TwAddVarRW(cBar, "show mesh", TW_TYPE_BOOLCPP, &showMesh, 
+    TwAddVarRW(cBar, "show mesh", TW_TYPE_BOOLCPP, &drawing.showMesh, 
         "group = 'Mesh'");
     TwAddVarRW(cBar, "show lines mapping cage", TW_TYPE_BOOLCPP, &drawing.showLines, 
         "group = 'Mesh'");
     
     TwAddVarRW(cBar, "DrawMeshMode", draw_modeT, &mesh_draw_mode,
            "group = 'Mesh'" " keyIncr='<' keyDecr='>'"); 
-    TwAddVarRW(cBar, "show cage", TW_TYPE_BOOLCPP, &showCage, 
+    TwAddVarRW(cBar, "show cage", TW_TYPE_BOOLCPP, &drawing.showCage, 
         "group = 'Cage'");
     TwAddVarRW(cBar, "DrawCageMode", draw_modeC, &cage_draw_mode,
            "group = 'Cage'" " keyIncr='<' keyDecr='>'");
     
   char str[100];
   sprintf(str, "group = 'Debug' min=-1 max=%d step=1", (int)(p.C.Q.rows() - 1));
-    TwAddVarCB(cBar, "onlyface", TW_TYPE_DOUBLE, setEnableCageFace, getEnableCageFace,
-           NULL, strcat(str, "label='ID face'") );
+    TwAddVarCB(cBar, "IDQuad", TW_TYPE_DOUBLE, setEnableCageFace, getEnableCageFace,
+           NULL, strcat(str, "label='ID quad'") );
     TwAddVarRW(cBar, "show grid", TW_TYPE_BOOLCPP, &drawing.showGrid, 
         "group = 'Debug'");
     
     sprintf(str, "group = 'Debug' min=-1 max=%d step=1", (int)(p.P.getSize() - 1));
-    TwAddVarCB(cBar, "polychord", TW_TYPE_DOUBLE, setIDPolychord, getIDPolychord,
+    TwAddVarCB(cBar, "IDPolychord", TW_TYPE_DOUBLE, setIDPolychord, getIDPolychord,
            NULL, strcat(str, "label='ID polychord'"));
+
+  sprintf(str, "group = 'Debug' min=-1 max=%d step=1", (int)(p.M.F.rows() - 1));
+  TwAddVarCB(cBar, "IDTriangle", TW_TYPE_DOUBLE, setTriangleView, getTriangleView,
+           NULL, strcat(str, "label='ID triangle'"));
 
     
     TwAddButton(cBar, "raffinement", setRaffinementTimes, NULL, 
                 "group = 'Debug' label='step 0 raffinement'");
     
+
     TwAddButton(cBar, "reset", resetRaffinament, NULL, 
                   "group = 'Debug' label='--> Reset'");
     
     /*TwAddVarCB(cBar, "threshold min", TW_TYPE_DOUBLE, setThresholdMin, getThresholdMin,
            NULL, "min=0.00 max=1.00 step=0.001");
+
     TwAddVarCB(cBar, "threshold max", TW_TYPE_DOUBLE, setThresholdMax, getThresholdMax,
            NULL, "min=0.00 max=1.00 step=0.001");*/
     glutMainLoop();

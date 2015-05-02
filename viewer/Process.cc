@@ -12,7 +12,8 @@
                 continue;
             else if (   find(subQ.begin(), subQ.end(), q0) != subQ.end()
                 &&      find(subQ.begin(), subQ.end(), q1) != subQ.end()
-                &&      find(subQ.begin(), subQ.end(), q2) != subQ.end())
+                &&      find(subQ.begin(), subQ.end(), q2) != subQ.end()
+                &&      find(TsQ.begin(), TsQ.end(), idT)  == TsQ.end())
             {
                 TsQ.push_back(idT);
             }
@@ -47,7 +48,8 @@
     void Process::movingVertexCageToMesh(vector<int> newVertices)
     {
         Vector3d Vs;
-        CageSubDomain sC;
+        //CageSubDomain sC;
+        cout << "How many vertices? "<< newVertices.size() << endl;
         initSubDomain(sC);
         for(vector<int>::const_iterator Vi = newVertices.begin(); Vi != newVertices.end(); ++Vi )
         {  
@@ -55,8 +57,12 @@
             vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
             debugPartialTQ = TsQ;
             //error: ‘Cage’ is an inaccessible base of ‘CageSubDomain’ TO DO
-            vector<int> triangles = M.findTrianglesSCDEBUG(TsQ, sC.sV[ *Vi ], sC);
-            cout << triangles.size()<<endl;
+            vector<int> triangles = M.findTriangles(TsQ, sC.sV[*Vi].second, sC);
+            cout <<*Vi <<". ALERT "<< triangles.size()<<endl;
+            for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT )
+            {
+                //cout << "Triangle: "<<*idT << endl;
+            }
             /*
             for (int q=0; q<TQ.size(); q++)
             {
@@ -74,7 +80,7 @@
             */
             // d. Calcola le coordinate baricentriche di Vi rispetto al triangolo mappato che lo contiene
             // e. Utilizza le coordinate baricentriche per mappare Vi sulla trimesh
-            break;
+            //break;
 
         }
     }
@@ -247,7 +253,7 @@
             }
             
             // Reinitialize relation adj.
-            //initErrorsAndRelations();
+            initErrorsAndRelations();
             // 8 => 7, 10 => 8, 9 => 11, 9 => 9
             // moveCage towards mesh triangle
             movingVertexCageToMesh(newVertices);
