@@ -109,60 +109,62 @@
         glEnd();
             
 
-        glEnable (GL_DEPTH_TEST);
-        glEnable(GL_LIGHTING);
-        glShadeModel(GL_FLAT); 
-        glBegin (GL_TRIANGLES); 
-        glColor3f(0,1,0);
+        for(vector<int>::iterator idT = sC.triangles.begin();idT != sC.triangles.end(); ++idT) 
+        {
+            glEnable (GL_DEPTH_TEST);
+            glEnable(GL_LIGHTING);
+            glShadeModel(GL_FLAT); 
+            glBegin (GL_TRIANGLES); 
+            glColor3f(0,1,0);
 
-        int i0,i1,i2, i =9853 ;
-        MatrixXd V = p->M.V;
-        MatrixXi F = p->M.F;  
-        i0 = F(i,0);
-        i1 = F(i,1);
-        i2 = F(i,2);
+            int i0,i1,i2, i =*idT ;
+            MatrixXd V = p->M.V;
+            MatrixXi F = p->M.F;  
+            i0 = F(i,0);
+            i1 = F(i,1);
+            i2 = F(i,2);
 
-        Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
-        Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
-        Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
+            Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
+            Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
+            Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
 
-        glVertex3f (v0(0), v0(1), v0(2));
-        glVertex3f (v1(0), v1(1), v1(2));
-        glVertex3f (v2(0), v2(1), v2(2));
+            glVertex3f (v0(0), v0(1), v0(2));
+            glVertex3f (v1(0), v1(1), v1(2));
+            glVertex3f (v2(0), v2(1), v2(2));
 
-        glEnd();
+            glEnd();
 
-        glBegin (GL_LINES);
-        glColor3f(0.5,0.5,0.5);
-        glVertex3f (v0(0), v0(1), v0(2));
-        glVertex3f (p->mapV(i0,0), p->mapV(i0,1), p->mapV(i0,2));
+            glBegin (GL_LINES);
+            glColor3f(0.5,0.5,0.5);
+            glVertex3f (v0(0), v0(1), v0(2));
+            glVertex3f (p->mapV(i0,0), p->mapV(i0,1), p->mapV(i0,2));
 
-        glVertex3f (v1(0), v1(1), v1(2));
-        glVertex3f (p->mapV(i1,0), p->mapV(i1,1), p->mapV(i1,2));
+            glVertex3f (v1(0), v1(1), v1(2));
+            glVertex3f (p->mapV(i1,0), p->mapV(i1,1), p->mapV(i1,2));
 
-        glVertex3f (v2(0), v2(1), v2(2));
-        glVertex3f (p->mapV(i2,0), p->mapV(i2,1), p->mapV(i2,2));
-        glEnd();
-        
-        MatrixXd ABC = sC.getTMapping(F.row(i)); //ritorna il triangolo mappato in C o in SubDomainC
-            
-        Vector2d _A = ABC.row(0);
-        Vector2d _B = ABC.row(1);
-        Vector2d _C = ABC.row(2);
+            glVertex3f (v2(0), v2(1), v2(2));
+            glVertex3f (p->mapV(i2,0), p->mapV(i2,1), p->mapV(i2,2));
+            glEnd();
 
-        glEnable (GL_DEPTH_TEST);
-        glEnable(GL_LIGHTING);
-        glShadeModel(GL_FLAT); 
-        glBegin (GL_TRIANGLES); 
-        glColor3f(0,0,0);
+            MatrixXd ABC = sC.getTMapping(F.row(i)); //ritorna il triangolo mappato in C o in SubDomainC
+                
+            Vector2d _A = ABC.row(0);
+            Vector2d _B = ABC.row(1);
+            Vector2d _C = ABC.row(2);
 
-        glVertex2f (_A(0), _A(1));
-        glVertex2f (_B(0), _B(1));
-        glVertex2f (_C(0), _C(1));
+            glEnable (GL_DEPTH_TEST);
+            glEnable(GL_LIGHTING);
+            glShadeModel(GL_FLAT); 
+            glBegin (GL_TRIANGLES); 
+            glColor3f(0,0,0);
+
+            glVertex2f (_A(0), _A(1));
+            glVertex2f (_B(0), _B(1));
+            glVertex2f (_C(0), _C(1));
 
 
-        glEnd();
-
+            glEnd();
+        }
         glPopMatrix();
 
     }
