@@ -56,7 +56,7 @@
     }
 
 
-    void DrawMesh::drawDebug()
+    void DrawMesh::drawCageSubDomain()
     {
         if (p->storeSubC.find(IDCageSubDomain) == p->storeSubC.end())
             return;
@@ -65,10 +65,6 @@
             MatrixXd V = p->M.V;
             MatrixXi F = p->M.F;  
         CageSubDomain sC = p->storeSubC.find(IDCageSubDomain)->second;
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glTranslatef (-center[0], -center[1], -center[2]);
-        glPointSize(4.0);
 
         glBegin (GL_LINES);
         glColor3f(0.5,0.5,0.5);
@@ -245,9 +241,6 @@
             glEnd();
     */
 
-
-        glPopMatrix();
-
     }
 
 
@@ -270,8 +263,6 @@ void DrawMesh::drawLinesVmapping()
 
 void DrawMesh::drawMesh (draw_mode_t mode)
     { 
-        drawDebug();
-        return;
         MatrixXd V = p->M.V;
         MatrixXi F = p->M.F;  
         VectorXd distV = p->distancesMeshCage;
@@ -587,7 +578,6 @@ void DrawMesh::drawMesh (draw_mode_t mode)
 
     void DrawMesh::drawCage (draw_mode_t mode)
     {
-        
         MatrixXd V = p->C.V;
         MatrixXi F = p->C.Q;
         Polychords pc = p->P;
@@ -598,7 +588,9 @@ void DrawMesh::drawMesh (draw_mode_t mode)
         glPointSize(4.0);
         Vector3f color (0.5,0.5,1.0);       // generic mesh color
       if (showGrid)
-            drawGrid();  
+            drawGrid(); 
+
+        drawCageSubDomain();
     if ( mode == FLAT || mode == SMOOTH)
     {
         glEnable (GL_DEPTH_TEST);

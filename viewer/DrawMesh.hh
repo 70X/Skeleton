@@ -51,9 +51,9 @@ public:
 	bool showGrid = false;
 	bool showLines = false;
 	int IDPolychord = -1;
-	int IDCageSubDomain = 8;
+	int IDCageSubDomain = -1;
 private:
-	void drawDebug();
+	void drawCageSubDomain();
 	void setColorError(double d, double *color);
 	double center[3];
     double diagonal;

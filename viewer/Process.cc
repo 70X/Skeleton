@@ -65,31 +65,20 @@
             //error: ‘Cage’ is an inaccessible base of ‘CageSubDomain’ TO DO
             //cout << "Vector: "<< sC.iV.find(*Vi)->first<<" - "<<sC.iV.find(*Vi)->second<<endl;
             sC.triangles = M.findTrianglesDebug(TsQ, sC.sV[ sC.iV[*Vi] ], sC);
-            cout <<*Vi <<". ALERT "<< sC.triangles.size()<<endl;
-            for(vector<int>::const_iterator idT = sC.triangles.begin(); idT != sC.triangles.end(); ++idT )
+            if (sC.triangles.size() > 1)
             {
-                cout << "Triangle: "<<*idT << endl;
-            }
-            /*if (*Vi == 8)
-            {
-                int idTdebug = 8053;
-                cout << C.QVmesh(M.F(idTdebug, 0)) << ","<< C.QVmesh(M.F(idTdebug, 1)) <<","<< C.QVmesh(M.F(idTdebug, 2)) <<endl;
-        
-                for(vector<int>::const_iterator q = sC.sQ.begin(); q != sC.sQ.end(); ++q )
+                cout <<*Vi <<". ALERT "<< sC.triangles.size()<<endl;
+                for(vector<int>::const_iterator idT = sC.triangles.begin(); idT != sC.triangles.end(); ++idT )
                 {
-                    cout << *q<<" , ";
+                    cout << "Triangle: "<<*idT << endl;
                 }
-                cout <<endl;
-                break;
             }
-            break;   
-            */
 
-            /*for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
+            for(vector<int>::const_iterator idT = sC.triangles.begin(); idT != sC.triangles.end(); ++idT)
             {
                 Vs = Utility::getCoordBarycentricTriangle(sC.getTMapping(M.F.row(*idT)), M.getT(*idT), sC.sV[ sC.iV[*Vi] ]);
                 C.V.row(*Vi) = Vs; // new Mapping :)
-            }*/
+            }
             storeSubC[*Vi] = sC;
         }
     }

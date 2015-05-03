@@ -72,7 +72,7 @@ void CageSubDomain::expMapping(int Vi, vector<int> oneRingVi)
 
 
 
-Vector2d CageSubDomain::getVMapping(int q, Vector2d p, bool print)
+Vector2d CageSubDomain::getVMapping(int q, Vector2d p)
 {
     Vector4i quad = Q.row(q);
     Vector2d    A = sV[ iV.find(quad[0])->second ],
@@ -82,10 +82,6 @@ Vector2d CageSubDomain::getVMapping(int q, Vector2d p, bool print)
     double u = p(0);
     double v = p(1);
     Vector2d P = (A*(1-u)+B*u)*(1-v) + (D*(1-u)+C*u)*v;
-    if (print)
-    {
-        cout << A << "|"<<B<<"|"<<C<<"|"<<D<<"==="<<p<<" ---- "<<P<<endl;
-    }
     return P;
 }
 
