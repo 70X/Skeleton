@@ -60,6 +60,10 @@
     {
         if (p->storeSubC.find(IDCageSubDomain) == p->storeSubC.end())
             return;
+
+            int i0,i1,i2, i;
+            MatrixXd V = p->M.V;
+            MatrixXi F = p->M.F;  
         CageSubDomain sC = p->storeSubC.find(IDCageSubDomain)->second;
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
@@ -107,19 +111,17 @@
         }
 
         glEnd();
-            
+        
 
         for(vector<int>::iterator idT = sC.triangles.begin();idT != sC.triangles.end(); ++idT) 
         {
+            i  =*idT ;
             glEnable (GL_DEPTH_TEST);
             glEnable(GL_LIGHTING);
             glShadeModel(GL_FLAT); 
             glBegin (GL_TRIANGLES); 
             glColor3f(0,1,0);
 
-            int i0,i1,i2, i =*idT ;
-            MatrixXd V = p->M.V;
-            MatrixXi F = p->M.F;  
             i0 = F(i,0);
             i1 = F(i,1);
             i2 = F(i,2);
@@ -156,15 +158,94 @@
             glEnable(GL_LIGHTING);
             glShadeModel(GL_FLAT); 
             glBegin (GL_TRIANGLES); 
-            glColor3f(0,0,0);
+            glColor3f(0,1,0);
 
             glVertex2f (_A(0), _A(1));
             glVertex2f (_B(0), _B(1));
             glVertex2f (_C(0), _C(1));
-
-
             glEnd();
+
+
         }
+
+    /* all mapping trianle on sub domain cage
+           glEnable (GL_DEPTH_TEST);
+            glEnable(GL_LIGHTING);
+        glBegin (GL_LINES);
+            glColor3f(0.5,0.5,0.5);
+    vector<int> sTQ = p->debugPartialTQ.find(IDCageSubDomain)->second;
+    for(vector<int>::const_iterator idT = sTQ.begin(); idT != sTQ.end(); ++idT)
+        {
+            MatrixXd ABC = sC.getTMapping(F.row(*idT)); //ritorna il triangolo mappato in C o in SubDomainC
+            
+            Vector2d _A = ABC.row(0);
+            Vector2d _B = ABC.row(1);
+            Vector2d _C = ABC.row(2);
+
+
+            glVertex2f (_A(0), _A(1));
+            glVertex2f (_B(0), _B(1));
+            glVertex2f (_B(0), _B(1));
+            glVertex2f (_C(0), _C(1));
+            /*glVertex2f (_C(0), _C(1));
+            glVertex2f (_A(0), _A(1));*/
+            //break;
+            /*glEnable (GL_DEPTH_TEST);
+            glEnable(GL_LIGHTING);
+            glShadeModel(GL_FLAT); 
+            glBegin (GL_TRIANGLES); 
+            glColor3f(0,1,0);
+             i0 = F(*idT,0);
+             i1 = F(*idT,1);
+             i2 = F(*idT,2);
+
+            Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
+            Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
+            Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
+
+            glVertex3f (v0(0), v0(1), v0(2));
+            glVertex3f (v1(0), v1(1), v1(2));
+            glVertex3f (v2(0), v2(1), v2(2));
+            glEnd(); 
+    } 
+            glEnd();
+
+            //drawing sub domain cage with quad rather than lines
+                glEnable (GL_DEPTH_TEST);
+            glEnable(GL_LIGHTING);
+        glBegin (GL_LINES);
+            glColor3f(0,1,0);
+            glBegin (GL_LINES);
+            for(vector<int>::const_iterator q = sC.sQ.begin(); q != sC.sQ.end(); ++q)
+            {
+                MatrixXi Q = p->C.Q;
+                int i0,i1,i2,i3;
+
+                i0 = Q(*q,0);
+                i1 = Q(*q,1);
+                i2 = Q(*q,2);
+                i3 = Q(*q,3);
+                
+                Vector2d v0 = sC.sV[sC.iV[i0]];
+                Vector2d v1 = sC.sV[sC.iV[i1]];
+                Vector2d v2 = sC.sV[sC.iV[i2]];
+                Vector2d v3 = sC.sV[sC.iV[i3]];
+
+                glVertex2f (v0(0), v0(1));
+                glVertex2f (v1(0), v1(1));
+                glVertex2f (v1(0), v1(1));
+                glVertex2f (v2(0), v2(1));
+                glVertex2f (v2(0), v2(1));
+                glVertex2f (v3(0), v3(1));
+                glVertex2f (v3(0), v3(1));
+                glVertex2f (v0(0), v0(1));
+
+                
+            }
+            glEnd();
+    */
+
+
         glPopMatrix();
 
     }

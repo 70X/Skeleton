@@ -86,7 +86,7 @@ public:
     MatrixXd mapV;
 
     map<int, CageSubDomain> storeSubC;
-    vector<int> debugPartialTQ;
+    map<int, vector<int>> debugPartialTQ;
 
 };
 

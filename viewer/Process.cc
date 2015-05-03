@@ -61,11 +61,10 @@
             sC.initDomain(*Vi); 
             
             vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
-            debugPartialTQ = TsQ;
+            debugPartialTQ[*Vi] = TsQ;
             //error: ‘Cage’ is an inaccessible base of ‘CageSubDomain’ TO DO
             //cout << "Vector: "<< sC.iV.find(*Vi)->first<<" - "<<sC.iV.find(*Vi)->second<<endl;
-            
-            sC.triangles = M.findTriangles(TsQ, sC.sV[ sC.iV[*Vi] ], sC);
+            sC.triangles = M.findTrianglesDebug(TsQ, sC.sV[ sC.iV[*Vi] ], sC);
             cout <<*Vi <<". ALERT "<< sC.triangles.size()<<endl;
             for(vector<int>::const_iterator idT = sC.triangles.begin(); idT != sC.triangles.end(); ++idT )
             {

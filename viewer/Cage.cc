@@ -217,6 +217,7 @@ Vector3d Cage::getVMapping(int q, Vector2d p)
     T <<    Vmesh.row(ABC(0)),
             Vmesh.row(ABC(1)),
             Vmesh.row(ABC(2));
+    
     return T;
 }
 

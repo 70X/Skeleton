@@ -72,10 +72,8 @@ void CageSubDomain::expMapping(int Vi, vector<int> oneRingVi)
 
 
 
-Vector2d CageSubDomain::getVMapping(int q, Vector2d p)
+Vector2d CageSubDomain::getVMapping(int q, Vector2d p, bool print)
 {
-    // check if exists in domain q
-    assert( find(sQ.begin(), sQ.end(), q) != sQ.end()  && "Error: the quad's id doesn't exist in CageSubDomain::Q");
     Vector4i quad = Q.row(q);
     Vector2d    A = sV[ iV.find(quad[0])->second ],
                 B = sV[ iV.find(quad[1])->second ],
@@ -84,15 +82,21 @@ Vector2d CageSubDomain::getVMapping(int q, Vector2d p)
     double u = p(0);
     double v = p(1);
     Vector2d P = (A*(1-u)+B*u)*(1-v) + (D*(1-u)+C*u)*v;
-    
+    if (print)
+    {
+        cout << A << "|"<<B<<"|"<<C<<"|"<<D<<"==="<<p<<" ---- "<<P<<endl;
+    }
     return P;
 }
 
 MatrixXd CageSubDomain::getTMapping(Vector3i ABC)
 {
     MatrixXd T = MatrixXd(3, 2); // triangle mapping into new domain
-    T << 	getVMapping(QVmesh(ABC(0)), Vmesh.row(ABC(0)) ),
-    		getVMapping(QVmesh(ABC(1)), Vmesh.row(ABC(1)) ),
-    		getVMapping(QVmesh(ABC(2)), Vmesh.row(ABC(2)) );
+    Vector2d A = getVMapping(QVmesh(ABC(0)), Vmesh.row(ABC(0)) );
+    Vector2d B = getVMapping(QVmesh(ABC(1)), Vmesh.row(ABC(1)) );
+    Vector2d C = getVMapping(QVmesh(ABC(2)), Vmesh.row(ABC(2)) );
+    T.row(0) = A;
+    T.row(1) = B;
+    T.row(2) = C;
     return T;
 }

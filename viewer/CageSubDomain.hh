@@ -27,7 +27,7 @@ class CageSubDomain : public Cage
 
     void initDomain(int Vi);
 
-    Vector2d getVMapping(int q, Vector2d p);
+    Vector2d getVMapping(int q, Vector2d p, bool print = false);
     MatrixXd getTMapping(Vector3i ABC);
 
 private:
