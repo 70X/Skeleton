@@ -304,7 +304,7 @@ int main (int argc, char *argv[])
     p.initAll(filename);
     drawing.setProcess(p);
     drawing.bb(p.M.V, p.M.F);
-    p.raffinementQuadLayout(1);
+    
     #define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG
 
