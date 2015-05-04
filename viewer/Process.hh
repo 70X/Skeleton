@@ -83,7 +83,7 @@ public:
     // -- ONLY FOR DEBUG
     vector<map<Vector2d, vector<int>, classcomp> > storeSampleTriangles;
     vector<Vector2d> orphanSample;
-    MatrixXd mapV;
+    
 
     map<int, CageSubDomain> storeSubC;
     map<int, vector<int>> debugPartialTQ;

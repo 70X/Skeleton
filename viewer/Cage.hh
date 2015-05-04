@@ -56,6 +56,8 @@ public:
     //
     // return update of collectV
     void split(int q, int e0, int e1, vector<int> &collectV);
+
+    int getAreaQuad(int q, Vector2d s);
 private:
 	void updateQVmesh(int q, int q_new, int to_axis);
 public:

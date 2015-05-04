@@ -126,22 +126,27 @@
             Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
             Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
 
+            Vector3d v0_map = p->C.getVMapping(p->C.QVmesh(i0), p->C.Vmesh.row(i0));
+            Vector3d v1_map = p->C.getVMapping(p->C.QVmesh(i1), p->C.Vmesh.row(i1));
+            Vector3d v2_map = p->C.getVMapping(p->C.QVmesh(i2), p->C.Vmesh.row(i2));
+
             glVertex3f (v0(0), v0(1), v0(2));
             glVertex3f (v1(0), v1(1), v1(2));
             glVertex3f (v2(0), v2(1), v2(2));
 
             glEnd();
-
+                
+                
             glBegin (GL_LINES);
             glColor3f(0.5,0.5,0.5);
             glVertex3f (v0(0), v0(1), v0(2));
-            glVertex3f (p->mapV(i0,0), p->mapV(i0,1), p->mapV(i0,2));
+            glVertex3f (v0_map(0), v0_map(1), v0_map(2));
 
             glVertex3f (v1(0), v1(1), v1(2));
-            glVertex3f (p->mapV(i1,0), p->mapV(i1,1), p->mapV(i1,2));
+            glVertex3f (v1_map(0), v1_map(1), v1_map(2));
 
             glVertex3f (v2(0), v2(1), v2(2));
-            glVertex3f (p->mapV(i2,0), p->mapV(i2,1), p->mapV(i2,2));
+            glVertex3f (v2_map(0), v2_map(1), v2_map(2));
             glEnd();
 
             MatrixXd ABC = sC.getTMapping(F.row(i)); //ritorna il triangolo mappato in C o in SubDomainC
@@ -254,8 +259,10 @@ void DrawMesh::drawLinesVmapping()
     for (unsigned int i = 0; i < p->M.V.rows(); i++){
         if(IDQuad != -1 && IDQuad != p->C.QVmesh[i]) 
             continue;
+        Vector3d v = p->C.getVMapping(IDQuad, p->C.Vmesh.row(i));
+            
         glVertex3f (p->M.V(i,0), p->M.V(i,1), p->M.V(i,2));
-        glVertex3f (p->mapV(i,0), p->mapV(i,1), p->mapV(i,2));
+        glVertex3f (v(0), v(1), v(2));
     }
     glEnd();
 }
@@ -507,6 +514,9 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             Vector3d v1 (p->M.V(i1,0), p->M.V(i1,1), p->M.V(i1,2));
             Vector3d v2 (p->M.V(i2,0), p->M.V(i2,1), p->M.V(i2,2));
             
+            Vector3d v0_map = p->C.getVMapping(q, p->C.Vmesh.row(i0));
+            Vector3d v1_map = p->C.getVMapping(q, p->C.Vmesh.row(i1));
+            Vector3d v2_map = p->C.getVMapping(q, p->C.Vmesh.row(i2));
 
             glDisable (GL_DEPTH_TEST);
                 glDisable(GL_LIGHTING);
@@ -516,9 +526,9 @@ void DrawMesh::drawMesh (draw_mode_t mode)
                 glBegin (GL_TRIANGLES); 
 
                 glColor4f(0.5,1,0.5, 0.4);
-                glVertex3f (p->mapV(i0,0), p->mapV(i0,1), p->mapV(i0,2));
-                glVertex3f (p->mapV(i1,0), p->mapV(i1,1), p->mapV(i1,2));
-                glVertex3f (p->mapV(i2,0), p->mapV(i2,1), p->mapV(i2,2));
+                glVertex3f (v0_map(0), v0_map(1), v0_map(2));
+                glVertex3f (v1_map(0), v1_map(1), v1_map(2));
+                glVertex3f (v2_map(0), v2_map(1), v2_map(2));
         
             glEnd();
 
@@ -538,19 +548,17 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             glColor3f(0.5,0.5,0.5);
             
             glVertex3f (v0(0), v0(1), v0(2));
-            glVertex3f (p->mapV(i0,0), p->mapV(i0,1), p->mapV(i0,2));
+            glVertex3f (v0_map(0), v0_map(1), v0_map(2));
             glVertex3f (v1(0), v1(1), v1(2));
-            glVertex3f (p->mapV(i1,0), p->mapV(i1,1), p->mapV(i1,2));
+            glVertex3f (v1_map(0), v1_map(1), v1_map(2));
             glVertex3f (v2(0), v2(1), v2(2));
-            glVertex3f (p->mapV(i2,0), p->mapV(i2,1), p->mapV(i2,2));
+            glVertex3f (v2_map(0), v2_map(1), v2_map(2));
 
         glEnd();
 
         glDisable (GL_DEPTH_TEST);
             glDisable(GL_LIGHTING);
             glBegin(GL_POINTS);
-
-            glColor3f(0.8, 0.4, 0);
             Vector3d pt = p->C.getVMapping(q, s);
             glColor3f(1,0,0);
             glVertex3f (pt(0), pt(1), pt(2));
@@ -561,7 +569,6 @@ void DrawMesh::drawMesh (draw_mode_t mode)
         if (IDQuad == -1 || 
             p->storeSampleTriangles.size() == 0) return;
 
-        Vector3d s;
         MatrixXi F = p->C.Q;
  // same color for all points
             
@@ -571,8 +578,22 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             
             map<Vector2d, vector<int>, Process::classcomp>::iterator it = p->storeSampleTriangles[q].begin();
             for (it=p->storeSampleTriangles[q].begin(); it!=p->storeSampleTriangles[q].end(); ++it)
-                for(vector<int>::const_iterator t= (it->second).begin(); t != (it->second).end(); ++t)
-                        drawSamplePointWithHisTriangle(q, (it->first), *t);
+            {
+                if((it->second).size() == 0)
+                {
+                    glDisable (GL_DEPTH_TEST);
+                        glDisable(GL_LIGHTING);
+                        glBegin(GL_POINTS);
+
+                        glColor3f(0.8, 0.4, 0);
+                        Vector3d pt = p->C.getVMapping(q, (it->first));
+                        glVertex3f (pt(0), pt(1), pt(2));
+                    glEnd();
+                }
+                else
+                    for(vector<int>::const_iterator t= (it->second).begin(); t != (it->second).end(); ++t)
+                            drawSamplePointWithHisTriangle(q, (it->first), *t);
+            }
         }
     }
 
@@ -591,6 +612,36 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             drawGrid(); 
 
         drawCageSubDomain();
+
+        if (IDQuad != -1 && IDQuad < p->C.Q.rows())
+        {
+                int i0,i1,i2,i3, i = IDQuad;
+                i0 = i1 = i2 = i3 = 0;
+
+                i0 = F(i,0);
+                i1 = F(i,1);
+                i2 = F(i,2);
+                i3 = F(i,3);
+                
+                Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
+                Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
+                Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
+                Vector3d v3 (V(i3,0), V(i3,1), V(i3,2));
+                glDisable (GL_DEPTH_TEST);
+                glDisable(GL_LIGHTING);
+                glBegin (GL_POINTS);
+
+                glColor3f(1,0,0);
+                glVertex3f (v0(0), v0(1), v0(2));
+                glColor3f(0,1,0);
+                glVertex3f (v1(0), v1(1), v1(2));
+                glColor3f(0,0,1);
+                glVertex3f (v2(0), v2(1), v2(2));
+                glColor3f(0,0,0);
+                glVertex3f (v3(0), v3(1), v3(2));
+                
+            glEnd(); 
+        }
     if ( mode == FLAT || mode == SMOOTH)
     {
         glEnable (GL_DEPTH_TEST);
@@ -698,6 +749,7 @@ void DrawMesh::drawMesh (draw_mode_t mode)
                 glBegin (GL_LINES);
                 for (int i = 0; i < F.rows(); i++)
                 {
+
                 int i0,i1,i2,i3;
                 i0 = i1 = i2 = i3 = 0;
 
@@ -724,7 +776,10 @@ void DrawMesh::drawMesh (draw_mode_t mode)
                 
                 }
             }
-            glEnd();            
+            glEnd();
+            
+                
+                     
         }
 
         glPopMatrix();

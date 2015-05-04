@@ -64,7 +64,7 @@
             debugPartialTQ[*Vi] = TsQ;
             //error: ‘Cage’ is an inaccessible base of ‘CageSubDomain’ TO DO
             //cout << "Vector: "<< sC.iV.find(*Vi)->first<<" - "<<sC.iV.find(*Vi)->second<<endl;
-            sC.triangles = M.findTrianglesDebug(TsQ, sC.sV[ sC.iV[*Vi] ], sC);
+            sC.triangles = M.findTriangles(TsQ, sC.sV[ sC.iV[*Vi] ], sC);
             if (sC.triangles.size() > 1)
             {
                 cout <<*Vi <<". ALERT "<< sC.triangles.size()<<endl;
@@ -79,7 +79,7 @@
                 Vs = Utility::getCoordBarycentricTriangle(sC.getTMapping(M.F.row(*idT)), M.getT(*idT), sC.sV[ sC.iV[*Vi] ]);
                 C.V.row(*Vi) = Vs; // new Mapping :)
             }
-            storeSubC[*Vi] = sC;
+            //storeSubC[*Vi] = sC;
         }
     }
 
@@ -90,10 +90,20 @@
         storeSampleTriangles[q].insert(std::make_pair(s, triangles) );
         if (triangles.size() == 0)
         {
-            orphanSample.push_back(s);
-            //if ( (s(0) != 0.8 && s(0) != 0.2) && (s(1) != 0.8 && s(1) != 0.2) )
-            //cout << "Triangle not found: quad["<<q<<"]" << "---" << s(0)<<"-"<<s(1)<<endl;
-            return 0;
+            int Vi = C.getAreaQuad(q, s);
+            CageSubDomain sC;
+            initSubDomain(sC);
+            sC.initDomain(Vi);
+            vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
+            sC.triangles = M.findTriangles(TsQ, sC.getVMapping(q, s), sC);
+            triangles = sC.triangles;
+            if (triangles.size() == 0)
+            {
+                storeSubC[Vi] = sC;
+                cout << " Real sample orphan: "<<s(0)<<","<<s(1)<<" in "<<q<<endl;
+                orphanSample.push_back(s);
+                return 0;
+            }
         }
         double distance = 0;
         for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
@@ -275,19 +285,11 @@
         double min, max;
         MatrixXd V = M.V;
         distancesMeshCage = VectorXd(V.rows());
-        /*
-        bool normalized = false;
-        Vector2d maxPar = C.ParV_2D.colwise().maxCoeff();
-        if (maxPar(0) >= 0 && maxPar(1) <= 1)
-            normalized = true;
-        cout << "normalized: "<< normalized << endl;
-        */
-        mapV = MatrixXd(V.rows(), 3);
+
         for (unsigned int i = 0; i < V.rows(); i++)
         {
             int quality = C.QVmesh(i);
             Vector2d p = C.Vmesh.row(i);
-            mapV.row(i) = C.getVMapping(quality, p);
             distancesMeshCage[i] = Utility::computeDistance(V.row(i), C.getVMapping(quality, p));
         
         }

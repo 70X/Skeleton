@@ -79,6 +79,38 @@ void Cage::split(int q, int e0, int e1, vector<int> &collectV)
 }
 
 
+    int Cage::getAreaQuad(int q, Vector2d s)
+    {
+        Vector4i ABCD = Q.row(q);
+        VectorXd min = VectorXd::Constant(Vmesh.cols(),0.0);
+        VectorXd max = VectorXd::Constant(Vmesh.cols(),0.0);
+        
+        //min = Vmesh.colwise().minCoeff(); //(0, 0)
+        max = Vmesh.colwise().maxCoeff(); //(1, 1)
+
+        double x = s(0);
+        double y = s(1);
+        double Ox = min(0);     // x origin
+        double Oy = min(1);     // y origin
+        double Hx = max(0)/2.0; // x half space
+        double Hy = max(1)/2.0; // y half space
+        double Mx = max(0);     // x max space (point C of ABCD)
+        double My = max(1);     // y max space (point C of ABCD)
+ 
+        assert(x>=Ox && x<=Mx && y>=Oy && y<=My);
+        
+        if(x >= Ox && x <= Hx  && y >= Oy && y <= Hy) // area SW
+            return ABCD[0];
+        if(x > Hx && x <= Mx   && y >= Oy && y <= Hy) // area SE
+            return ABCD[1];
+        if(x > Hx && x <= Mx   && y > Hy  && y <= My) // area NE
+            return ABCD[2];
+        if(x >= Ox && x <= Hx  && y > Hy  && y <= My) // area NW
+            return ABCD[3];
+
+ 
+    }
+
 vector<int> Cage::getVmeshQ(int q)
 {
     vector<int> vertices;
@@ -220,23 +252,6 @@ Vector3d Cage::getVMapping(int q, Vector2d p)
     
     return T;
 }
-
-// assume che in Q le relazioni siano state memorizzate in un ordine preciso (clockwise or counterclockwise)
-/*vector<int> Cage::getQV(int Vi)
-{
-    vector<int> QV;
-    int ei, q_start     = _QV(Vi),
-            q_current   = q_start;
-    int j=0;
-    QV.push_back(q_current);
-    do
-    {
-        //cout << ".QV : "<<q_current << endl;
-    }
-    while(q_current != q_start);
-
-    return QV;
-}*/
 
 vector<int> Cage::getQV(int Vi)
 {
