@@ -58,7 +58,7 @@ private:
     /******************************************************/
     /*            raffinement cage                        */
     /******************************************************/
-	double errorsGrid(int q, int r = 5, int c = 5);
+	double errorsGrid(int q, int r = 10, int c = 10);
 	double errorAvarageSamples(Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample);
 	double errorSample(int q, Vector2d s);
 public:
@@ -79,6 +79,7 @@ public:
     VectorXd distancesMeshCage;
     VectorXd errorQuads;
 
+    vector<int> debugTsQ;
     vector<vector<int>> TQ;
     // -- ONLY FOR DEBUG
     vector<map<Vector2d, vector<int>, classcomp> > storeSampleTriangles;

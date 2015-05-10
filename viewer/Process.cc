@@ -61,10 +61,11 @@
             sC.initDomain(*Vi); 
             
             vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
-            debugPartialTQ[*Vi] = TsQ;
+            //debugPartialTQ[*Vi] = TsQ;
             //error: ‘Cage’ is an inaccessible base of ‘CageSubDomain’ TO DO
             //cout << "Vector: "<< sC.iV.find(*Vi)->first<<" - "<<sC.iV.find(*Vi)->second<<endl;
             sC.triangles = M.findTriangles(TsQ, sC.sV[ sC.iV[*Vi] ], sC);
+            sC.examVertex =  sC.sV[ sC.iV[*Vi] ];
             if (sC.triangles.size() > 1)
             {
                 cout <<*Vi <<". ALERT "<< sC.triangles.size()<<endl;
@@ -94,16 +95,36 @@
             CageSubDomain sC;
             initSubDomain(sC);
             sC.initDomain(Vi);
+            sC.examVertex = sC.getVMapping(q, s);
+            //cout << q <<" - "<<Vi<<" _ "<<sC.sQ.size()<<endl;
             vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
-            sC.triangles = M.findTriangles(TsQ, sC.getVMapping(q, s), sC);
+            sC.triangles = M.findTriangles(TsQ, sC.examVertex, sC);
             triangles = sC.triangles;
+
             if (triangles.size() == 0)
             {
+                if (storeSubC.size() == 0)
+                {
+                    sC.TsQ = TsQ;
+                    debugPartialTQ[Vi] = TsQ;
+                    storeSubC[Vi] = sC;
+                }
+                sC.triangles = M.findTriangles(TsQ, sC.examVertex, sC);
+            
+                debugTsQ = TsQ;
                 storeSubC[Vi] = sC;
                 cout << " Real sample orphan: "<<s(0)<<","<<s(1)<<" in "<<q<<endl;
-                orphanSample.push_back(s);
+                //orphanSample.push_back(s);
                 return 0;
             }
+            orphanSample.push_back(s);
+            double distance = 0;
+            for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
+            {
+                Vector3d Vs = Utility::getCoordBarycentricTriangle(sC.getTMapping(M.F.row(*idT)), M.getT(*idT), sC.examVertex);
+                distance += Utility::computeDistance(Vs, C.getVMapping(q, s));
+            }
+             return distance/triangles.size();
         }
         double distance = 0;
         for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
@@ -204,10 +225,14 @@
         C.computeQQ();
         P.computePolychords(); 
         updateTQ();
+        distancesBetweenMeshCage();
         storeSampleTriangles.clear();
         errorQuads = VectorXd(C.Q.rows());
         for (int i=0; i<C.Q.rows(); i++)
+        {
             errorQuads(i) = errorsGrid(i);
+            //cout << i <<" Err: "<< errorQuads(i) << " with: "<<orphanSample.size()<<endl;
+        }
     }
     VectorXd Process::errorPolychords()
     {

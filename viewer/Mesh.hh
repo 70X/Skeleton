@@ -35,6 +35,33 @@ public:
     Matrix3d getT(int i);
     vector<int> findTriangles(vector<int> Ts, Vector2d V, Cage &C);
 	  
+
+      vector<int> findTrianglesDebug(vector<int> Ts, Vector2d V, Cage &C)
+    {
+        vector<int> listTriangleIDs;
+
+        for(vector<int>::const_iterator idT = Ts.begin(); idT != Ts.end(); ++idT)
+        {
+            MatrixXd ABC = C.getTMapping(F.row(*idT)); //ritorna il triangolo mappato in C o in SubDomainC
+            
+            Vector2d _A = ABC.row(0);
+            Vector2d _B = ABC.row(1);
+            Vector2d _C = ABC.row(2);
+            if (*idT == 27325 )
+            {
+             cout << Utility::debug(_A, _B, V) << endl;
+                cout << Utility::debug(_B, _C, V) << endl;
+                cout << Utility::debug(_C, _A, V) << endl<<endl;
+            }
+            if (Utility::is_inside(_A,_B,_C, V) )
+            {
+                listTriangleIDs.push_back(*idT);
+            }
+        }
+
+        
+        return listTriangleIDs;
+    }
 private:
     
     bool TTVTflag;  // true iff TV* and TT are up-to-date

@@ -55,6 +55,36 @@
         }
     }
 
+    void DrawMesh::printtext(int x, int y, string s)
+    {
+    //(x,y) is from the bottom left of the window
+       glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+        glTranslatef (-center[0], -center[1], -center[2]);
+    glLoadIdentity();
+        gluOrtho2D(0.0, 800, 0.0, 600);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glColor3f(1.0f, 0.0f, 0.0f);//needs to be called before RasterPos
+    glRasterPos2i(10, 10);
+    void * font = GLUT_BITMAP_9_BY_15;
+    for (std::string::iterator i = s.begin(); i != s.end(); ++i)
+    {
+        char c = *i;
+        //this does nothing, color is fixed for Bitmaps when calling glRasterPos
+        //glColor3f(1.0, 0.0, 1.0); 
+        glutBitmapCharacter(font, c);
+    }
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
+    glutPostRedisplay();
+
+    }
+ 
 
     void DrawMesh::drawCageSubDomain()
     {
@@ -65,12 +95,13 @@
             MatrixXd V = p->M.V;
             MatrixXi F = p->M.F;  
         CageSubDomain sC = p->storeSubC.find(IDCageSubDomain)->second;
-
+        
         glBegin (GL_LINES);
         glColor3f(0.5,0.5,0.5);
-        vector< Vector2d >::iterator Vi = sC.sV.begin();
+
         vector< Vector2d >::iterator prec = sC.sV.begin();
         vector< Vector2d >::iterator it = sC.sV.begin();
+        vector< Vector2d >::iterator Vi = it;
         advance(it, 1);
         vector<Vector2d>::iterator firstRing = it;
         for (; it!=sC.sV.end(); ++it, ++prec)
@@ -93,6 +124,7 @@
         glVertex2f ((*firstRing)(0), (*firstRing)(1));
         
         glEnd();
+        
 
 
         glBegin (GL_POINTS);
@@ -105,7 +137,9 @@
             else glColor3f(0, 1,0);
             glVertex3f (p->C.V(it->first, 0), p->C.V(it->first, 1), p->C.V(it->first, 2));
         }
-
+         glColor3f(1, 0,0);
+        glVertex2f(sC.examVertex(0),sC.examVertex(1));
+        
         glEnd();
         
 
@@ -135,7 +169,6 @@
             glVertex3f (v2(0), v2(1), v2(2));
 
             glEnd();
-                
                 
             glBegin (GL_LINES);
             glColor3f(0.5,0.5,0.5);
@@ -169,7 +202,7 @@
 
         }
 
-    /* all mapping trianle on sub domain cage
+    /* all mapping trianle on sub domain cage */
            glEnable (GL_DEPTH_TEST);
             glEnable(GL_LIGHTING);
         glBegin (GL_LINES);
@@ -177,19 +210,21 @@
     vector<int> sTQ = p->debugPartialTQ.find(IDCageSubDomain)->second;
     for(vector<int>::const_iterator idT = sTQ.begin(); idT != sTQ.end(); ++idT)
         {
+            // 27325
+            if (*idT != IDPartialTriangle) continue;
             MatrixXd ABC = sC.getTMapping(F.row(*idT)); //ritorna il triangolo mappato in C o in SubDomainC
             
             Vector2d _A = ABC.row(0);
             Vector2d _B = ABC.row(1);
             Vector2d _C = ABC.row(2);
 
-
+            
             glVertex2f (_A(0), _A(1));
             glVertex2f (_B(0), _B(1));
             glVertex2f (_B(0), _B(1));
             glVertex2f (_C(0), _C(1));
-            /*glVertex2f (_C(0), _C(1));
-            glVertex2f (_A(0), _A(1));*/
+            glVertex2f (_C(0), _C(1));
+            glVertex2f (_A(0), _A(1));
             //break;
             /*glEnable (GL_DEPTH_TEST);
             glEnable(GL_LIGHTING);
@@ -207,7 +242,7 @@
             glVertex3f (v0(0), v0(1), v0(2));
             glVertex3f (v1(0), v1(1), v1(2));
             glVertex3f (v2(0), v2(1), v2(2));
-            glEnd(); 
+            glEnd(); */
     } 
             glEnd();
 
@@ -226,7 +261,6 @@
                 i1 = Q(*q,1);
                 i2 = Q(*q,2);
                 i3 = Q(*q,3);
-                
                 Vector2d v0 = sC.sV[sC.iV[i0]];
                 Vector2d v1 = sC.sV[sC.iV[i1]];
                 Vector2d v2 = sC.sV[sC.iV[i2]];
@@ -244,7 +278,6 @@
                 
             }
             glEnd();
-    */
 
     }
 
@@ -395,30 +428,14 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             }
         glEnd(); 
     }
-    /*glEnable (GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
-    glShadeModel(GL_FLAT); 
-    glBegin (GL_TRIANGLES); 
-    glColor3f(0,1,0);
-    for(vector<int>::const_iterator idT = p->debugPartialTQ.begin(); idT != p->debugPartialTQ.end(); ++idT )
+    // print triangle partial between different quads
+    
+    for(vector<int>::const_iterator idT = p->debugTsQ.begin(); idT != p->debugTsQ.end(); ++idT )
     {
-        i0 = F(*idT,0);
-        i1 = F(*idT,1);
-        i2 = F(*idT,2);
-
-        Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
-        Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
-        Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
-
-        glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);
-        glVertex3f (v0(0), v0(1), v0(2));
-        glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
-        glVertex3f (v1(0), v1(1), v1(2));
-        glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
-        glVertex3f (v2(0), v2(1), v2(2));
+        if (*idT != 27325) continue;
+        drawTriangleAndShadow(*idT);
     } 
-    glEnd(); */
-
+    ///------------------------------------------------------------------
     drawLinesVmapping();
     if (mode == POINTS)
     {
@@ -439,18 +456,23 @@ void DrawMesh::drawMesh (draw_mode_t mode)
     }
     if (mode == WIRE)
     {
-        glDisable (GL_DEPTH_TEST);
-        glDisable (GL_LIGHTING);
-        glColor3f(color(0),color(1),color(2)); // same color for all edges
         
-        glBegin (GL_LINES);
-
 
         if(IDQuad != -1 && IDQuad < p->TQ.size() )
         {
-            int q = IDQuad;
-            for(vector<int>::const_iterator idF = p->TQ[q].begin(); idF != p->TQ[q].end(); ++idF)
+            //int q = IDQuad;
+            vector<int> listQ;
+            listQ.push_back(IDQuad);
+            listQ.push_back(0);
+            for (vector<int>::const_iterator q = listQ.begin(); q!=listQ.end(); q++)
+            for(vector<int>::const_iterator idF = p->TQ[*q].begin(); idF != p->TQ[*q].end(); ++idF)
             {
+                /*glDisable (GL_DEPTH_TEST);
+                glDisable (GL_LIGHTING);
+                glColor3f(color(0),color(1),color(2)); // same color for all edges
+                
+                glBegin (GL_LINES);
+
                 int i = *idF;
 
 
@@ -472,11 +494,38 @@ void DrawMesh::drawMesh (draw_mode_t mode)
                 glVertex3f (v2(0), v2(1), v2(2));
                 glVertex3f (v1(0), v1(1), v1(2));
                 glVertex3f (v2(0), v2(1), v2(2));
+                glEnd(); 
+                */
+                /*Vector3d v0_map = p->C.getVMapping(*q, p->C.Vmesh.row(i0));
+                Vector3d v1_map = p->C.getVMapping(*q, p->C.Vmesh.row(i1));
+                Vector3d v2_map = p->C.getVMapping(*q, p->C.Vmesh.row(i2));
+
+                glDisable (GL_DEPTH_TEST);
+                    glDisable(GL_LIGHTING);
+                    glEnable(GL_BLEND);
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    glShadeModel(GL_FLAT); 
+                    glBegin (GL_TRIANGLES); 
+
+                    glColor4f(0.5,1,0.5, 0.4);
+                    glVertex3f (v0_map(0), v0_map(1), v0_map(2));
+                    glVertex3f (v1_map(0), v1_map(1), v1_map(2));
+                    glVertex3f (v2_map(0), v2_map(1), v2_map(2));
+            
+                glEnd();
+                */
+                
             }
         }
         else
         for (int i = 0; i < F.rows(); i++)
         {
+            glDisable (GL_DEPTH_TEST);
+            glDisable (GL_LIGHTING);
+            glColor3f(color(0),color(1),color(2)); // same color for all edges
+            
+            glBegin (GL_LINES);
+
             int i0,i1,i2;
             i0 = i1 = i2 = 0;
 
@@ -495,44 +544,33 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             glVertex3f (v2(0), v2(1), v2(2));
             glVertex3f (v1(0), v1(1), v1(2));
             glVertex3f (v2(0), v2(1), v2(2));
-        }
-        glEnd();            
+            glEnd(); 
+        }           
     }
 
     glPopMatrix();
     
     return; 
     }
-
-    void DrawMesh::drawSamplePointWithHisTriangle(int q, Vector2d s, int t)
+    void DrawMesh::drawTriangleAndShadow(int idT, bool shadow)
     {
+        int i0 = p->M.F(idT,0);
+        int i1 = p->M.F(idT,1);
+        int i2 = p->M.F(idT,2);
+
+        Vector3d v0 (p->M.V(i0,0), p->M.V(i0,1), p->M.V(i0,2));
+        Vector3d v1 (p->M.V(i1,0), p->M.V(i1,1), p->M.V(i1,2));
+        Vector3d v2 (p->M.V(i2,0), p->M.V(i2,1), p->M.V(i2,2));
         
-            int i0 = p->M.F(t,0);
-            int i1 = p->M.F(t,1);
-            int i2 = p->M.F(t,2);
-            Vector3d v0 (p->M.V(i0,0), p->M.V(i0,1), p->M.V(i0,2));
-            Vector3d v1 (p->M.V(i1,0), p->M.V(i1,1), p->M.V(i1,2));
-            Vector3d v2 (p->M.V(i2,0), p->M.V(i2,1), p->M.V(i2,2));
-            
-            Vector3d v0_map = p->C.getVMapping(q, p->C.Vmesh.row(i0));
-            Vector3d v1_map = p->C.getVMapping(q, p->C.Vmesh.row(i1));
-            Vector3d v2_map = p->C.getVMapping(q, p->C.Vmesh.row(i2));
-
-            glDisable (GL_DEPTH_TEST);
-                glDisable(GL_LIGHTING);
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                glShadeModel(GL_FLAT); 
-                glBegin (GL_TRIANGLES); 
-
-                glColor4f(0.5,1,0.5, 0.4);
-                glVertex3f (v0_map(0), v0_map(1), v0_map(2));
-                glVertex3f (v1_map(0), v1_map(1), v1_map(2));
-                glVertex3f (v2_map(0), v2_map(1), v2_map(2));
+        int q0 = p->C.QVmesh(i0);
+        int q1 = p->C.QVmesh(i1);
+        int q2 = p->C.QVmesh(i2);
         
-            glEnd();
+        Vector3d v0_map = p->C.getVMapping(q0, p->C.Vmesh.row(i0));
+        Vector3d v1_map = p->C.getVMapping(q1, p->C.Vmesh.row(i1));
+        Vector3d v2_map = p->C.getVMapping(q2, p->C.Vmesh.row(i2));
 
-            glDisable (GL_DEPTH_TEST);
+        glDisable (GL_DEPTH_TEST);
             glDisable(GL_LIGHTING);
             glBegin (GL_LINES);
             glColor3f(1, 0.4, 0);
@@ -556,6 +594,30 @@ void DrawMesh::drawMesh (draw_mode_t mode)
 
         glEnd();
 
+        // shadow
+        if (shadow)
+        {
+
+            
+            glDisable (GL_DEPTH_TEST);
+                glDisable(GL_LIGHTING);
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glShadeModel(GL_FLAT); 
+                glBegin (GL_TRIANGLES); 
+
+                glColor4f(0.5,1,0.5, 0.4);
+                glVertex3f (v0_map(0), v0_map(1), v0_map(2));
+                glVertex3f (v1_map(0), v1_map(1), v1_map(2));
+                glVertex3f (v2_map(0), v2_map(1), v2_map(2));
+        
+            glEnd();
+        }
+    }
+    void DrawMesh::drawSamplePointWithHisTriangle(int q, Vector2d s, int t)
+    {
+        
+        drawTriangleAndShadow(t);
         glDisable (GL_DEPTH_TEST);
             glDisable(GL_LIGHTING);
             glBegin(GL_POINTS);

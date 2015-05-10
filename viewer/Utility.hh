@@ -16,6 +16,7 @@ namespace Utility
   	double areaTriangle(Vector2d A, Vector2d B, Vector2d C);
 	double areaTriangle_old(Vector2d A, Vector2d B, Vector2d C);
 	double areaQuad(Vector3d A,Vector3d B,Vector3d C, Vector3d D);
+	double debug(Vector2d P0, Vector2d P1, Vector2d V);
 	bool isLeft(Vector2d P0, Vector2d P1, Vector2d V);
 	bool is_inside(Vector2d A, Vector2d B, Vector2d C, Vector2d V);
 	Vector3d getCoordBarycentricTriangle(Triangle2D ABCMapping, Triangle3D ABC, Vector2d V);

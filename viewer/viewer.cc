@@ -25,7 +25,6 @@ Camera camera;
 int width = W;
 int height = H;
 int times = 0;
-int choiceIDSubCage = -1;
 
 DrawMesh::draw_mode_t mesh_draw_mode = DrawMesh::FLAT;
 DrawMesh::draw_mode_t cage_draw_mode = DrawMesh::WIRE;
@@ -213,7 +212,7 @@ void TW_CALL getTriangleView (void *value, void *)
     *(double *) value = drawing.IDTriangle;
 }
 
-
+int choiceIDSubCage = -1;
 void TW_CALL setCageSubDomain (const void *value, void *)
 {
     choiceIDSubCage = *(const double *) value;
@@ -228,6 +227,27 @@ void TW_CALL setCageSubDomain (const void *value, void *)
             if(i==0)
                  drawing.IDCageSubDomain = it->first;
         }
+}
+
+
+void TW_CALL getPartialTriangle (void *value, void *)
+{
+    *(double *) value = drawing.IDPartialTriangle;
+}
+
+int choiceIDTriangle = -1;
+void TW_CALL setPartialTriangle (const void *value, void *)
+{
+    if (p.storeSubC.size() == 0)
+        return;
+    if (*(const double *) value > drawing.IDPartialTriangle)
+        choiceIDTriangle++;
+    else if (*(const double *) value < drawing.IDPartialTriangle)
+        choiceIDTriangle--;
+    else return;
+    vector<int>::const_iterator it = p.storeSubC[0].TsQ.begin();
+    advance(it, choiceIDTriangle);
+    drawing.IDPartialTriangle = *it;
 }
 
 /*
@@ -394,6 +414,10 @@ int main (int argc, char *argv[])
     sprintf(str, "group = 'Debug' min=-1 step=1");
     TwAddVarCB(cBar, "IDCageSubDomain", TW_TYPE_DOUBLE, setCageSubDomain, getCageSubDomain,
            NULL, strcat(str, " label='ID CageSubDomain'"));
+
+    sprintf(str, "group = 'Debug' min=-1 step=1");
+    TwAddVarCB(cBar, "IDPartialTriangle", TW_TYPE_DOUBLE, setPartialTriangle, getPartialTriangle,
+           NULL, strcat(str, " label='ID P. Triangle'"));
 
     //sprintf(str, "group = 'Debug' ");
     //TwAddVarRO(cBar, "LabelIDCageSubDomain", TW_TYPE_FLOAT, &(drawing.IDCageSubDomain), strcat(str, "label='which sC: '"));

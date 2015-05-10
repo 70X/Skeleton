@@ -20,8 +20,10 @@ class CageSubDomain : public Cage
     // key: id vector concern Cage.V    | value: new mapping vertex
     map<int, int> iV;
     // id quad into new domain
+    vector<int> TsQ;
     vector<int> sQ;      
     vector<int> triangles;
+    Vector2d examVertex;
     CageSubDomain(){};
     ~CageSubDomain(){};
 
