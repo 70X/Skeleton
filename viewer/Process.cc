@@ -84,9 +84,21 @@
         }
     }
 
+    double Process::computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap)
+    {
+        double distance = 0;
+        for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
+        {
+            Vector3d Vs = Utility::getCoordBarycentricTriangle(domain.getTMapping(M.F.row(*idT)), M.getT(*idT), examVertex);
+            distance += Utility::computeDistance(Vs, smap);
+
+        }
+         return distance/triangles.size();
+    }
 
     double Process::errorSample(int q, Vector2d s)
     {
+        double distance = 0;
         vector<int> triangles = M.findTriangles(TQ[q], s, C);
         storeSampleTriangles[q].insert(std::make_pair(s, triangles) );
         if (triangles.size() == 0)
@@ -109,31 +121,21 @@
                     debugPartialTQ[Vi] = TsQ;
                     storeSubC[Vi] = sC;
                 }
-                sC.triangles = M.findTriangles(TsQ, sC.examVertex, sC);
-            
+             
                 debugTsQ = TsQ;
                 storeSubC[Vi] = sC;
-                cout << " Real sample orphan: "<<s(0)<<","<<s(1)<<" in "<<q<<endl;
-                //orphanSample.push_back(s);
+                //cout << " Real sample orphan: "<<s(0)<<","<<s(1)<<" in "<<q<<endl;
+                //M.findTrianglesDebug(TsQ, sC.examVertex, sC);
+                orphanSample.push_back(s);
                 return 0;
             }
             orphanSample.push_back(s);
-            double distance = 0;
-            for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
-            {
-                Vector3d Vs = Utility::getCoordBarycentricTriangle(sC.getTMapping(M.F.row(*idT)), M.getT(*idT), sC.examVertex);
-                distance += Utility::computeDistance(Vs, C.getVMapping(q, s));
-            }
-             return distance/triangles.size();
+            distance = computeErrorFromListTriangle(triangles, sC, sC.examVertex,  C.getVMapping(q, s));
         }
-        double distance = 0;
-        for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
-        {
-            Vector3d Vs = Utility::getCoordBarycentricTriangle(C.getTMapping(M.F.row(*idT)), M.getT(*idT), s);
-            distance += Utility::computeDistance(Vs, C.getVMapping(q, s));
-        }
-       //cout << distance <<"  =   "<< distance/triangles.size() << " -> "<<triangles.size()<<endl;        
-        return distance/triangles.size();
+        else
+            distance = computeErrorFromListTriangle(triangles, C, s,  C.getVMapping(q, s));
+      
+        return distance;
     }
 
 

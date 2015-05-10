@@ -47,11 +47,13 @@ public:
             Vector2d _A = ABC.row(0);
             Vector2d _B = ABC.row(1);
             Vector2d _C = ABC.row(2);
-            if (*idT == 27325 )
+            if (Utility::getLeft(_A, _B, V) > -0.0001 &&
+                Utility::getLeft(_B, _C, V) > -0.0001 &&
+                Utility::getLeft(_C, _A, V) > -0.0001 )
             {
-             cout << Utility::debug(_A, _B, V) << endl;
-                cout << Utility::debug(_B, _C, V) << endl;
-                cout << Utility::debug(_C, _A, V) << endl<<endl;
+             cout << Utility::getLeft(_A, _B, V) << endl;
+                cout << Utility::getLeft(_B, _C, V) << endl;
+                cout << Utility::getLeft(_C, _A, V) << endl<<endl;
             }
             if (Utility::is_inside(_A,_B,_C, V) )
             {

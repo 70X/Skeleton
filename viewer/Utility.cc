@@ -19,7 +19,7 @@ namespace Utility
       return ABC+ACD;
   }
 
-  double debug(Vector2d P0, Vector2d P1, Vector2d V)
+  double getLeft(Vector2d P0, Vector2d P1, Vector2d V)
   {
       Matrix2d m;
       m << P1(0)-P0(0), V(0)-P0(0),
@@ -32,7 +32,7 @@ namespace Utility
       Matrix2d m;
       m << P1(0)-P0(0), V(0)-P0(0),
            P1(1)-P0(1), V(1)-P0(1);
-      return m.determinant() >= 0;
+      return m.determinant() > 0;
   }
 
   bool is_inside(Vector2d A, Vector2d B, Vector2d C, Vector2d V)

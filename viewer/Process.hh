@@ -61,6 +61,7 @@ private:
 	double errorsGrid(int q, int r = 10, int c = 10);
 	double errorAvarageSamples(Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample);
 	double errorSample(int q, Vector2d s);
+	double computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap);
 public:
 	void raffinementQuadLayout(int times = 1);
 private:
