@@ -61,7 +61,7 @@
             sC.initDomain(*Vi); 
             
             vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
-            //debugPartialTQ[*Vi] = TsQ;
+            debugPartialTQ[*Vi] = TsQ;
             //error: ‘Cage’ is an inaccessible base of ‘CageSubDomain’ TO DO
             //cout << "Vector: "<< sC.iV.find(*Vi)->first<<" - "<<sC.iV.find(*Vi)->second<<endl;
             sC.triangles = M.findTriangles(TsQ, sC.sV[ sC.iV[*Vi] ], sC);
@@ -80,7 +80,7 @@
                 Vs = Utility::getCoordBarycentricTriangle(sC.getTMapping(M.F.row(*idT)), M.getT(*idT), sC.sV[ sC.iV[*Vi] ]);
                 C.V.row(*Vi) = Vs; // new Mapping :)
             }
-            //storeSubC[*Vi] = sC;
+            storeSubC[*Vi] = sC;
         }
     }
 
@@ -118,12 +118,12 @@
                 if (storeSubC.size() == 0)
                 {
                     sC.TsQ = TsQ;
-                    debugPartialTQ[Vi] = TsQ;
-                    storeSubC[Vi] = sC;
+                    //debugPartialTQ[Vi] = TsQ;
+                    //storeSubC[Vi] = sC;
                 }
              
                 debugTsQ = TsQ;
-                storeSubC[Vi] = sC;
+                //storeSubC[Vi] = sC;
                 //cout << " Real sample orphan: "<<s(0)<<","<<s(1)<<" in "<<q<<endl;
                 //M.findTrianglesDebug(TsQ, sC.examVertex, sC);
                 orphanSample.push_back(s);

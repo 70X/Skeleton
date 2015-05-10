@@ -415,10 +415,10 @@ int main (int argc, char *argv[])
     TwAddVarCB(cBar, "IDCageSubDomain", TW_TYPE_DOUBLE, setCageSubDomain, getCageSubDomain,
            NULL, strcat(str, " label='ID CageSubDomain'"));
 
-    sprintf(str, "group = 'Debug' min=-1 step=1");
+    /*sprintf(str, "group = 'Debug' min=-1 step=1");
     TwAddVarCB(cBar, "IDPartialTriangle", TW_TYPE_DOUBLE, setPartialTriangle, getPartialTriangle,
            NULL, strcat(str, " label='ID P. Triangle'"));
-
+    */
     //sprintf(str, "group = 'Debug' ");
     //TwAddVarRO(cBar, "LabelIDCageSubDomain", TW_TYPE_FLOAT, &(drawing.IDCageSubDomain), strcat(str, "label='which sC: '"));
    

@@ -463,10 +463,11 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             //int q = IDQuad;
             vector<int> listQ;
             listQ.push_back(IDQuad);
-            listQ.push_back(0);
+            //listQ.push_back(0);
             for (vector<int>::const_iterator q = listQ.begin(); q!=listQ.end(); q++)
             for(vector<int>::const_iterator idF = p->TQ[*q].begin(); idF != p->TQ[*q].end(); ++idF)
             {
+                drawTriangleAndShadow(*idF);
                 /*glDisable (GL_DEPTH_TEST);
                 glDisable (GL_LIGHTING);
                 glColor3f(color(0),color(1),color(2)); // same color for all edges
