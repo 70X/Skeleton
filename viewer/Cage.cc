@@ -1,5 +1,20 @@
 #include "Cage.hh"
 
+double Cage::bb ()
+{
+
+    MatrixXd V = this->V;
+    VectorXd min, max;
+
+    min = VectorXd::Constant(V.cols(),0.0);
+    max = VectorXd::Constant(V.cols(),0.0);
+
+    min = V.colwise().minCoeff();
+    max = V.colwise().maxCoeff();
+    
+    return (max - min).norm();
+}
+
 int Cage::findV(Vector3d v)
 {
     for (unsigned int j=0; j<V.rows(); j++)

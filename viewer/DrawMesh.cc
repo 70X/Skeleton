@@ -129,13 +129,29 @@
 
         glBegin (GL_POINTS);
         glColor3f(1, 0,0);
-
-        for(map<int,int>::iterator it = sC.iV.begin(); it != sC.iV.end(); ++it) 
+        int count = 0;
+        vector<int> oneRingVi = sC.getVV(sC.Vi);
+        /*for(map<int,int>::iterator it = sC.iV.begin(); it != sC.iV.end(); ++it) 
         {
             if (it->second == 0)
                 glColor3f(1, 0,0);
             else glColor3f(0, 1,0);
+            if (count==0)
+                glColor3f(0, 0, 1);
+            if (count==1)
+                glColor3f(0, 0, 0);
+            count++;
             glVertex3f (p->C.V(it->first, 0), p->C.V(it->first, 1), p->C.V(it->first, 2));
+        }*/
+        for(vector<int>::iterator it = oneRingVi.begin(); it != oneRingVi.end(); ++it) 
+        {
+            glColor3f(0, 1,0);
+            if (*it==0)
+                glColor3f(0, 0, 1);
+            if (*it==8)
+                glColor3f(0, 0, 0);
+            count++;
+            glVertex3f (p->C.V(*it, 0), p->C.V(*it, 1), p->C.V(*it, 2));
         }
          glColor3f(1, 0,0);
         glVertex2f(sC.examVertex(0),sC.examVertex(1));
@@ -145,6 +161,8 @@
 
         for(vector<int>::iterator idT = sC.triangles.begin();idT != sC.triangles.end(); ++idT) 
         {
+            if (IDTriangle != -1 && *idT != IDTriangle) continue;
+            drawTriangleAndShadow(*idT, true);
             i  =*idT ;
             glEnable (GL_DEPTH_TEST);
             glEnable(GL_LIGHTING);
@@ -202,16 +220,20 @@
 
         }
 
-    /* all mapping trianle on sub domain cage */
-           glEnable (GL_DEPTH_TEST);
+    /* all mapping triangle on sub domain cage */
+      /*     
+    vector<int> sTQ = p->debugPartialTQ.find(IDCageSubDomain)->second;
+
+    for(vector<int>::const_iterator idT = sTQ.begin(); idT != sTQ.end(); ++idT)
+        {
+            //if (IDTriangle == -1 || *idT != IDTriangle) continue;
+            
+            //drawTriangleAndShadow(*idT);
+
+            glEnable (GL_DEPTH_TEST);
             glEnable(GL_LIGHTING);
         glBegin (GL_LINES);
             glColor3f(0.5,0.5,0.5);
-    vector<int> sTQ = p->debugPartialTQ.find(IDCageSubDomain)->second;
-    for(vector<int>::const_iterator idT = sTQ.begin(); idT != sTQ.end(); ++idT)
-        {
-            // 27325
-            if (*idT != IDPartialTriangle) continue;
             MatrixXd ABC = sC.getTMapping(F.row(*idT)); //ritorna il triangolo mappato in C o in SubDomainC
             
             Vector2d _A = ABC.row(0);
@@ -225,29 +247,42 @@
             glVertex2f (_C(0), _C(1));
             glVertex2f (_C(0), _C(1));
             glVertex2f (_A(0), _A(1));
-            //break;
-            /*glEnable (GL_DEPTH_TEST);
-            glEnable(GL_LIGHTING);
-            glShadeModel(GL_FLAT); 
-            glBegin (GL_TRIANGLES); 
-            glColor3f(0,1,0);
-             i0 = F(*idT,0);
-             i1 = F(*idT,1);
-             i2 = F(*idT,2);
-
-            Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
-            Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
-            Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
-
-            glVertex3f (v0(0), v0(1), v0(2));
-            glVertex3f (v1(0), v1(1), v1(2));
-            glVertex3f (v2(0), v2(1), v2(2));
-            glEnd(); */
-    } 
+            
             glEnd();
+    } */
+
+
+
+            // print triangle partial between different quads
+    //int idTriangleDebug = (p->TQ[0])[0];
+    //cout << idTriangleDebug <<endl;
+    /*CageSubDomain sCd;
+    sCd.initAll(p->C);
+    sCd.computeDomain(0);
+    MatrixXd ABC = sC.getTMapping(F.row(4)); //ritorna il triangolo mappato in C o in SubDomainC
+            
+      glEnable (GL_DEPTH_TEST);
+            glEnable(GL_LIGHTING);
+        glBegin (GL_LINES);
+            glColor3f(0.5,0.5,0.5);
+
+    Vector2d _A = ABC.row(0);
+    Vector2d _B = ABC.row(1);
+    Vector2d _C = ABC.row(2);
+
+    
+    glVertex2f (_A(0), _A(1));
+    glVertex2f (_B(0), _B(1));
+    glVertex2f (_B(0), _B(1));
+    glVertex2f (_C(0), _C(1));
+    glVertex2f (_C(0), _C(1));
+    glVertex2f (_A(0), _A(1));
+
+            glEnd();
+    */
 
             //drawing sub domain cage with quad rather than lines
-                glEnable (GL_DEPTH_TEST);
+            /*    glEnable (GL_DEPTH_TEST);
             glEnable(GL_LIGHTING);
         glBegin (GL_LINES);
             glColor3f(0,1,0);
@@ -278,6 +313,7 @@
                 
             }
             glEnd();
+            */
 
     }
 
@@ -428,14 +464,6 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             }
         glEnd(); 
     }
-    // print triangle partial between different quads
-    
-    for(vector<int>::const_iterator idT = p->debugTsQ.begin(); idT != p->debugTsQ.end(); ++idT )
-    {
-        if (*idT != 27325) continue;
-        drawTriangleAndShadow(*idT);
-    } 
-    ///------------------------------------------------------------------
     drawLinesVmapping();
     if (mode == POINTS)
     {
@@ -592,7 +620,7 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             glVertex3f (v1_map(0), v1_map(1), v1_map(2));
             glVertex3f (v2(0), v2(1), v2(2));
             glVertex3f (v2_map(0), v2_map(1), v2_map(2));
-
+            
         glEnd();
 
         // shadow
@@ -675,7 +703,6 @@ void DrawMesh::drawMesh (draw_mode_t mode)
             drawGrid(); 
 
         drawCageSubDomain();
-
         if (IDQuad != -1 && IDQuad < p->C.Q.rows())
         {
                 int i0,i1,i2,i3, i = IDQuad;

@@ -35,51 +35,42 @@
         }
         TQ = listTQ;
     }
-    void Process::initSubDomain(CageSubDomain &sC)
+    
+    void Process::getTrianglesInExpMapping(int Vi, CageSubDomain &sC)
     {
-        sC.setV(C.V);
-        sC.setQ(C.Q);
-        sC.setVmesh(C.Vmesh);
-        sC.setQVmesh(C.QVmesh);
-        sC.setQQ(C.QQ);
-        sC.setPartialQV(C._QV);
-        sC.sV.clear();
-        sC.iV.clear();
-        sC.sQ.clear();
-        sC.triangles.clear();
-    }
+        sC.initAll(C);
+        sC.computeDomain(Vi); 
+        vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
+        debugPartialTQ[Vi] = TsQ;
+            
+        sC.triangles = M.findTriangles(TsQ, sC.sV[ sC.iV[Vi] ], sC);
+        sC.examVertex =  sC.sV[ sC.iV[Vi] ];
 
+        if (sC.triangles.size() == 0)
+        {
+            //sC.computeDomainPartial(Vi);
+            //sC.triangles = M.findTriangles(TsQ, sC.sV[ sC.iV[Vi] ], sC);
+         
+            //vector<int> triangles = M.findTrianglesDebug(TsQ, sC.sV[ sC.iV[*Vi] ], sC);
+            //sC.triangles = triangles;
+            //cout <<Vi <<". ALERT "<< sC.triangles.size()<<endl;
+        }
+    }
     void Process::movingVertexCageToMesh(vector<int> newVertices)
     {
         Vector3d Vs;
-        //CageSubDomain sC;
         cout << "How many vertices? "<< newVertices.size() << endl;
         for(vector<int>::const_iterator Vi = newVertices.begin(); Vi != newVertices.end(); ++Vi )
         {  
             CageSubDomain sC;
-            initSubDomain(sC);
-            sC.initDomain(*Vi); 
-            
-            vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
-            debugPartialTQ[*Vi] = TsQ;
-            //error: ‘Cage’ is an inaccessible base of ‘CageSubDomain’ TO DO
-            //cout << "Vector: "<< sC.iV.find(*Vi)->first<<" - "<<sC.iV.find(*Vi)->second<<endl;
-            sC.triangles = M.findTriangles(TsQ, sC.sV[ sC.iV[*Vi] ], sC);
-            sC.examVertex =  sC.sV[ sC.iV[*Vi] ];
-            if (sC.triangles.size() > 1)
-            {
-                cout <<*Vi <<". ALERT "<< sC.triangles.size()<<endl;
-                for(vector<int>::const_iterator idT = sC.triangles.begin(); idT != sC.triangles.end(); ++idT )
-                {
-                    cout << "Triangle: "<<*idT << endl;
-                }
-            }
-
+            getTrianglesInExpMapping(*Vi, sC);
             for(vector<int>::const_iterator idT = sC.triangles.begin(); idT != sC.triangles.end(); ++idT)
             {
                 Vs = Utility::getCoordBarycentricTriangle(sC.getTMapping(M.F.row(*idT)), M.getT(*idT), sC.sV[ sC.iV[*Vi] ]);
                 C.V.row(*Vi) = Vs; // new Mapping :)
+                break;
             }
+            //if (storeSubC.size() == 0)
             storeSubC[*Vi] = sC;
         }
     }
@@ -105,32 +96,16 @@
         {
             int Vi = C.getAreaQuad(q, s);
             CageSubDomain sC;
-            initSubDomain(sC);
-            sC.initDomain(Vi);
-            sC.examVertex = sC.getVMapping(q, s);
-            //cout << q <<" - "<<Vi<<" _ "<<sC.sQ.size()<<endl;
-            vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
-            sC.triangles = M.findTriangles(TsQ, sC.examVertex, sC);
-            triangles = sC.triangles;
-
-            if (triangles.size() == 0)
+            getTrianglesInExpMapping(Vi, sC);
+            if (sC.triangles.size() == 0)
             {
-                if (storeSubC.size() == 0)
-                {
-                    sC.TsQ = TsQ;
-                    //debugPartialTQ[Vi] = TsQ;
-                    //storeSubC[Vi] = sC;
-                }
-             
-                debugTsQ = TsQ;
-                //storeSubC[Vi] = sC;
-                //cout << " Real sample orphan: "<<s(0)<<","<<s(1)<<" in "<<q<<endl;
-                //M.findTrianglesDebug(TsQ, sC.examVertex, sC);
+                //cout << " Sample: non trovo niente" <<endl;
                 orphanSample.push_back(s);
                 return 0;
             }
+            
             orphanSample.push_back(s);
-            distance = computeErrorFromListTriangle(triangles, sC, sC.examVertex,  C.getVMapping(q, s));
+            distance = computeErrorFromListTriangle(sC.triangles, sC, sC.examVertex,  C.getVMapping(q, s));
         }
         else
             distance = computeErrorFromListTriangle(triangles, C, s,  C.getVMapping(q, s));
@@ -182,19 +157,29 @@
             Err+= *Ei;
         return (Err/(double) eRound.size());
     }
-    double Process::errorsGrid(int q, int r, int c)
+    double Process::errorsGrid(int q)
     {
         double tmpE, E = 0;
         double domain = GRID_SAMPLE;
-        double step_x = domain/r;
-        double step_y = domain/c;
+        double diagonal = C.bb();
+        double spacing = diagonal * (1.0/20.0);
 
+        Vector3d _A = C.V.row(C.Q(q,0));
+        Vector3d _B = C.V.row(C.Q(q,1));
+        Vector3d _C = C.V.row(C.Q(q,2));
+        Vector3d _D = C.V.row(C.Q(q,3));
+        double m = ceil( (Utility::computeDistance((_B-_A), (_D-_C))/2.0) / spacing)+1;
+        double n = ceil( (Utility::computeDistance((_A-_D), (_C-_B))/2.0) / spacing)+1;
+        
+        double step_x = domain/m;
+        double step_y = domain/n;
+        
         map<Vector2d, double, classcomp> storeErrorSample;
 
         orphanSample.clear();
         storeSampleTriangles.push_back(map<Vector2d, vector<int>, classcomp>());
-        for (int i=1; i<r; i++)
-            for (int j=1; j<c; j++)
+        for (int i=1; i<m; i++)
+            for (int j=1; j<n; j++)
             {
                 Vector2d s = Vector2d(step_x*i, step_y*j);
                 tmpE = errorSample(q, s);
@@ -215,12 +200,7 @@
         }
         
        
-        return E * Utility::areaQuad(
-                            Vector3d(C.V.row(C.Q(q, 0))),
-                            Vector3d(C.V.row(C.Q(q, 1))),
-                            Vector3d(C.V.row(C.Q(q, 2))),
-                            Vector3d(C.V.row(C.Q(q, 3)))
-                            ) / (r*c);
+        return E * Utility::areaQuad(_A, _B, _C, _D ) / (m*n);
     }
     void Process::initErrorsAndRelations()
     {
@@ -229,6 +209,7 @@
         updateTQ();
         distancesBetweenMeshCage();
         storeSampleTriangles.clear();
+        storeSubC.clear();
         errorQuads = VectorXd(C.Q.rows());
         for (int i=0; i<C.Q.rows(); i++)
         {
@@ -255,7 +236,8 @@
     void Process::raffinementQuadLayout(int times)
     {
         int i = 0;
-        while(i < times)
+        double max = errorQuads.maxCoeff();
+        while(i < times )
         {
             cout << " -----------iteration Raffinement ---------------"<<endl;
             vector<int> newVertices;
@@ -292,6 +274,7 @@
             // 8 => 7, 10 => 8, 9 => 11, 9 => 9
             // moveCage towards mesh triangle
             movingVertexCageToMesh(newVertices);
+            max = errorQuads.maxCoeff();
 
             cout << " ----------- End  ---------------"<<endl;
             
@@ -338,6 +321,10 @@
 
         P = Polychords(&(C));
         initErrorsAndRelations();
+
+        vector<int> indexVerticesCage(C.V.rows());
+        std::iota(indexVerticesCage.begin(), indexVerticesCage.end(), 0);
+        movingVertexCageToMesh(indexVerticesCage);
     }
 /////////////////// I/O ///////////////////////////////////////
     void Process::read(char *str)

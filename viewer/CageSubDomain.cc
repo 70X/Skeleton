@@ -1,10 +1,39 @@
 #include "CageSubDomain.hh"
 
-void CageSubDomain::initDomain(int Vi)
+void CageSubDomain::initAll(Cage &C)
+    {
+        setV(C.V);
+        setQ(C.Q);
+        setVmesh(C.Vmesh);
+        setQVmesh(C.QVmesh);
+        setQQ(C.QQ);
+        setPartialQV(C._QV);
+        sV.clear();
+        iV.clear();
+        sQ.clear();
+        triangles.clear();
+    }
+
+void CageSubDomain::computeDomain(int Vi)
 {
+    this->Vi = Vi;
     vector<int> oneRingVi = getVV(Vi);
     sQ = getQV(Vi); 
     expMapping(Vi, oneRingVi);
+}
+
+void CageSubDomain::computeDomainPartial(int Vi)
+{
+    this->Vi = Vi;
+    vector<int> oneRingVi = getVV(Vi);
+    vector<int> oneRingViPartial;
+    for(vector<int>::const_iterator Vj = oneRingVi.begin(); Vj != oneRingVi.end(); ++Vj)
+    {
+        oneRingViPartial.push_back(*Vj);
+        ++Vj;
+    }
+    sQ = getQV(Vi); 
+    expMapping(Vi, oneRingViPartial);
 };
 
 double CageSubDomain::angleBetweenTwoV(Vector3d Vj0, Vector3d Vj1, Vector3d Vi)
@@ -24,7 +53,7 @@ double CageSubDomain::angleBetweenTwoV(Vector3d Vj0, Vector3d Vj1, Vector3d Vi)
 vector<double> CageSubDomain::getAnglesRoundV(int Vi, vector<int> oneRingVi)
 {
     vector<double> Tj;
-	vector<int>::const_iterator Vj;
+    vector<int>::const_iterator Vj;
     double angle = 0;
     for(Vj = oneRingVi.begin(); (Vj+1) != oneRingVi.end(); ++Vj)
     {
@@ -46,7 +75,6 @@ void CageSubDomain::expMapping(int Vi, vector<int> oneRingVi)
     vector<Vector2d> E;
     vector<double> Tj = getAnglesRoundV(Vi, oneRingVi);
     double A = 2 * M_PI / sumAngles(Tj);
-
     iV[Vi] = 0;
     E.push_back(Vector2d(0,0));
     for (int i=0; i<oneRingVi.size(); i++)

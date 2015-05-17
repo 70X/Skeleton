@@ -1,6 +1,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <iostream>
+#include <bitset>
 
 #include "Utility.hh"
 #include "Cage.hh"
@@ -47,18 +48,36 @@ public:
             Vector2d _A = ABC.row(0);
             Vector2d _B = ABC.row(1);
             Vector2d _C = ABC.row(2);
-            if (Utility::getLeft(_A, _B, V) > -0.0001 &&
-                Utility::getLeft(_B, _C, V) > -0.0001 &&
-                Utility::getLeft(_C, _A, V) > -0.0001 )
+
+            double T[3];
+            T[0] = Utility::getLeft(_A, _B, V);
+            T[1] = Utility::getLeft(_B, _C, V);
+            T[2] = Utility::getLeft(_C, _A, V);
+
+            bitset<3> confront;
+            confront.set(0, Utility::isLeft(_A, _B, V));
+            confront.set(1, Utility::isLeft(_B, _C, V));
+            confront.set(2, Utility::isLeft(_C, _A, V));
+            if (confront.count() >= 2)
             {
-             cout << Utility::getLeft(_A, _B, V) << endl;
+             for (std::size_t i=0; i<confront.size(); ++i)
+                if (!confront[i] && T[i] > -0.0001)
+                {
+                    listTriangleIDs.push_back(*idT);
+                    cout << T[i] << " -> "<<*idT << endl;
+                }
+            }
+
+            /*
+            {
+                cout << Utility::getLeft(_A, _B, V) << endl;
                 cout << Utility::getLeft(_B, _C, V) << endl;
                 cout << Utility::getLeft(_C, _A, V) << endl<<endl;
             }
             if (Utility::is_inside(_A,_B,_C, V) )
             {
                 listTriangleIDs.push_back(*idT);
-            }
+            }*/
         }
 
         

@@ -23,11 +23,14 @@ class CageSubDomain : public Cage
     vector<int> TsQ;
     vector<int> sQ;      
     vector<int> triangles;
+    int Vi; 
     Vector2d examVertex;
     CageSubDomain(){};
     ~CageSubDomain(){};
 
-    void initDomain(int Vi);
+    void initAll(Cage &C);
+    void computeDomain(int Vi);
+    void computeDomainPartial(int Vi);
 
     Vector2d getVMapping(int q, Vector2d p);
     //@override Cage::getTMapping(Vector3i ABC)
@@ -38,8 +41,9 @@ private:
 
     vector<double> getAnglesRoundV(int Vi, vector<int> oneRingV);
     double   angleBetweenTwoV(Vector3d Vj0, Vector3d Vj1, Vector3d Vi);
-    double   sumAngles(vector<double> Tj);
+    double   sumAngles(vector<double> Tj);  
 public:
+
     /*void print_sV()
     {
         cout << " DEBUG: "<<endl;
