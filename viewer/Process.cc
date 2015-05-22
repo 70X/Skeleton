@@ -4,7 +4,6 @@
         vector<int> TsQ;
         for(int idT=0; idT<M.F.rows(); idT++)
         {
-            bool flag = true;
             int q0 = C.QVmesh(M.F(idT,0));
             int q1 = C.QVmesh(M.F(idT,1));
             int q2 = C.QVmesh(M.F(idT,2));
@@ -64,6 +63,10 @@
         {  
             CageSubDomain sC;
             getTrianglesInExpMapping(*Vi, sC);
+            if (sC.triangles.size() == 0)
+            {
+                cout << "ALERT "<< *Vi << " niente"<<endl;
+            }
             for(vector<int>::const_iterator idT = sC.triangles.begin(); idT != sC.triangles.end(); ++idT)
             {
                 Vs = Utility::getCoordBarycentricTriangle(sC.getTMapping(M.F.row(*idT)), M.getT(*idT), sC.sV[ sC.iV[*Vi] ]);
@@ -170,7 +173,7 @@
         Vector3d _D = C.V.row(C.Q(q,3));
         double m = ceil( (Utility::computeDistance((_B-_A), (_D-_C))/2.0) / spacing)+1;
         double n = ceil( (Utility::computeDistance((_A-_D), (_C-_B))/2.0) / spacing)+1;
-        
+        m = n = 5;
         double step_x = domain/m;
         double step_y = domain/n;
         

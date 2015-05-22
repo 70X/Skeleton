@@ -38,12 +38,12 @@ class CageSubDomain : public Cage
 
 private:
     void expMapping(int Vi, vector<int> oneRingVi);
-
+    Vector2d computeExpMapping(double R, double angle, double A);
     vector<double> getAnglesRoundV(int Vi, vector<int> oneRingV);
     double   angleBetweenTwoV(Vector3d Vj0, Vector3d Vj1, Vector3d Vi);
     double   sumAngles(vector<double> Tj);  
 public:
-
+    
     /*void print_sV()
     {
         cout << " DEBUG: "<<endl;

@@ -104,18 +104,21 @@
         vector< Vector2d >::iterator Vi = it;
         advance(it, 1);
         vector<Vector2d>::iterator firstRing = it;
-        for (; it!=sC.sV.end(); ++it, ++prec)
+        for (int i=0; it!=sC.sV.end();++i, ++it, ++prec)
         {
             //p->sC.printV(it->first);
+            if (i==1) glColor3f(0,1,0);
+            else if (i==2) glColor3f(0,0,1);
+            else
             glColor3f(1,0,0);
             glVertex2f ((*Vi)(0), (*Vi)(1));
             glVertex2f ((*prec)(0), (*prec)(1));
-            
             glColor3f(0.5,0.5,0.5);
+
             glVertex2f ((*prec)(0), (*prec)(1));
             glVertex2f ((*it)(0), (*it)(1));
         }
-        glColor3f(1,0,0);
+        glColor3f(0,0,0);
         glVertex2f ((*Vi)(0), (*Vi)(1));
         glVertex2f ((*prec)(0), (*prec)(1));
         
@@ -148,8 +151,9 @@
             glColor3f(0, 1,0);
             if (*it==0)
                 glColor3f(0, 0, 1);
-            if (*it==8)
+            else if (*it==8)
                 glColor3f(0, 0, 0);
+            else continue;
             count++;
             glVertex3f (p->C.V(*it, 0), p->C.V(*it, 1), p->C.V(*it, 2));
         }
@@ -161,7 +165,7 @@
 
         for(vector<int>::iterator idT = sC.triangles.begin();idT != sC.triangles.end(); ++idT) 
         {
-            if (IDTriangle != -1 && *idT != IDTriangle) continue;
+            //if (IDTriangle != -1 && *idT != IDTriangle) continue;
             drawTriangleAndShadow(*idT, true);
             i  =*idT ;
             glEnable (GL_DEPTH_TEST);
@@ -221,7 +225,7 @@
         }
 
     /* all mapping triangle on sub domain cage */
-      /*     
+       
     vector<int> sTQ = p->debugPartialTQ.find(IDCageSubDomain)->second;
 
     for(vector<int>::const_iterator idT = sTQ.begin(); idT != sTQ.end(); ++idT)
@@ -249,7 +253,7 @@
             glVertex2f (_A(0), _A(1));
             
             glEnd();
-    } */
+    } 
 
 
 
@@ -289,6 +293,7 @@
             glBegin (GL_LINES);
             for(vector<int>::const_iterator q = sC.sQ.begin(); q != sC.sQ.end(); ++q)
             {
+                //if (*q != 6 || *q != 17) continue;
                 MatrixXi Q = p->C.Q;
                 int i0,i1,i2,i3;
 
@@ -847,7 +852,14 @@ void DrawMesh::drawMesh (draw_mode_t mode)
                 i1 = F(i,1);
                 i2 = F(i,2);
                 i3 = F(i,3);
-                
+                if (IDCageSubDomain != -1 && (
+                            IDCageSubDomain == i0 ||
+                            IDCageSubDomain == i1 ||
+                            IDCageSubDomain == i2 ||
+                            IDCageSubDomain == i3 )
+                            )
+                            glColor3f(1,0,0);
+                        else glColor3f(color(0),color(1),color(2));
                 Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
                 Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
                 Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));

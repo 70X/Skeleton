@@ -40,6 +40,7 @@ double CageSubDomain::angleBetweenTwoV(Vector3d Vj0, Vector3d Vj1, Vector3d Vi)
 {
     Vector3d v = (Vj0 - Vi) / (Vj0 - Vi).norm();
     Vector3d w = (Vj1 - Vi) / (Vj1 - Vi).norm();
+
     double nV = v.norm();
     double nW = w.norm();
 
@@ -72,41 +73,45 @@ double CageSubDomain::sumAngles(vector<double> Tj)
 
 void CageSubDomain::expMapping(int Vi, vector<int> oneRingVi)
 {
+    int i;
     vector<Vector2d> E;
     vector<double> Tj = getAnglesRoundV(Vi, oneRingVi);
     double A = 2 * M_PI / sumAngles(Tj);
+    
     iV[Vi] = 0;
     E.push_back(Vector2d(0,0));
-    for (int i=0; i<oneRingVi.size(); i++)
+    for (i=1; i<oneRingVi.size(); ++i)
     {
         int Vj = oneRingVi[i];
+        iV[Vj] = i;
         double R = Utility::computeDistance(getV(Vi), getV(Vj));
 
-        //iV.insert(pair(Vj, i+1));
-        iV[Vj] = i+1;
-        E.push_back(Vector2d( 	
-    							R * ( cos( Tj[i]*A ) ),  
-    							R * ( sin( Tj[i]*A ) )
-    						)
-                   );
-        //printV(Vi);
-        //printV(Vj);
-        // Vi=8 e Vj=10 angle 36.207 in rad 0.632
-        //cout <<"R : "<< R << " -> "<<Tj[i] << " * "<<A<<"=" << Tj[i]*A << endl;
-        //cout <<"("<<R * ( cos( Tj[i]*A ) )<<","<<R * ( sin( Tj[i]*A ) )<<")"<<endl<<endl;
+        E.push_back(computeExpMapping(R, Tj[i-1], A));
     }
+    int Vj = oneRingVi[0];
+    double R = Utility::computeDistance(getV(Vi), getV(Vj));
+
+    iV[Vj] = i;
+    E.push_back(computeExpMapping(R, Tj[i-1], A));
     sV = E;
 }
 
+Vector2d CageSubDomain::computeExpMapping(double R, double angle, double A)
+{
+    return Vector2d(    
+                    R * ( cos( angle*A ) ),  
+                    R * ( sin( angle*A ) )
+                );
+}
 
 
 Vector2d CageSubDomain::getVMapping(int q, Vector2d p)
 {
     Vector4i quad = Q.row(q);
-    Vector2d    A = sV[ iV.find(quad[0])->second ],
-                B = sV[ iV.find(quad[1])->second ],
-                C = sV[ iV.find(quad[2])->second ],
-                D = sV[ iV.find(quad[3])->second ];
+    Vector2d    A = sV[ iV[quad[0]] ],
+                B = sV[ iV[quad[1]] ],
+                C = sV[ iV[quad[2]] ],
+                D = sV[ iV[quad[3]] ];
     double u = p(0);
     double v = p(1);
     Vector2d P = (A*(1-u)+B*u)*(1-v) + (D*(1-u)+C*u)*v;
