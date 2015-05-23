@@ -51,7 +51,8 @@ private:
 	void distancesBetweenMeshCage();
 	
 
-	VectorXd errorPolychords();
+	//VectorXd errorPolychords();
+	vector<vector<double>> errorPolychords();
 	void updateTQ();
 
 	void getTrianglesInExpMapping(int Vi, CageSubDomain &sC);
@@ -62,6 +63,7 @@ private:
 	double errorAvarageSamples(Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample);
 	double errorSample(int q, Vector2d s);
 	double computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap);
+	int getPolychordWithMaxError();
 public:
 	void raffinementQuadLayout(int times = 1);
 private:
@@ -86,7 +88,7 @@ public:
     vector<map<Vector2d, vector<int>, classcomp> > storeSampleTriangles;
     vector<Vector2d> orphanSample;
     
-
+    int IDPolychord = -1;
     map<int, CageSubDomain> storeSubC;
     map<int, vector<int>> debugPartialTQ;
 

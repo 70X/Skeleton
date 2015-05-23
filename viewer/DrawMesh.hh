@@ -33,11 +33,9 @@ public:
 
 	void drawCage (draw_mode_t mode);
 	void drawMesh (draw_mode_t mode);
+	void drawDebug (draw_mode_t mode);
 
-	void drawGrid();
-	void drawLinesVmapping();
-	void drawSamplePointWithHisTriangle(int q, Vector2d s, int t);
-	void drawTriangleAndShadow(int idT, bool shadow = true);
+
 	double* getCenter();
 	double getDiagonal();
 	void setProcess(Process &p){ this->p = &p; };
@@ -48,14 +46,23 @@ public:
 
 	bool showMesh = true;
 	bool showCage = true;
+	bool showDebug = true;
 	bool showGrid = false;
 	bool showLines = false;
 	int IDPolychord = -1;
 	int IDCageSubDomain = -1;
 	int IDPartialTriangle = -1;
 private:
-	void printtext(int x, int y, string String);
+	//--------------------DEBUG----------------------
 	void drawCageSubDomain();
+	void drawPolychords();
+
+	void drawGrid();
+	void drawLinesVmapping();
+	void drawSamplePointWithHisTriangle(int q, Vector2d s, int t);
+	void drawTriangleAndShadow(int idT, bool shadow = true);
+	//-----------------------------------------------
+
 	void setColorError(double d, double *color);
 	double center[3];
     double diagonal;

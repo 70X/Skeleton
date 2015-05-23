@@ -173,7 +173,7 @@
         Vector3d _D = C.V.row(C.Q(q,3));
         double m = ceil( (Utility::computeDistance((_B-_A), (_D-_C))/2.0) / spacing)+1;
         double n = ceil( (Utility::computeDistance((_A-_D), (_C-_B))/2.0) / spacing)+1;
-        m = n = 5;
+        //m = n = 5;
         double step_x = domain/m;
         double step_y = domain/n;
         
@@ -220,6 +220,9 @@
             //cout << i <<" Err: "<< errorQuads(i) << " with: "<<orphanSample.size()<<endl;
         }
     }
+    /*          
+     * OLD VERSION
+     *
     VectorXd Process::errorPolychords()
     {
         double E;
@@ -236,32 +239,95 @@
         }
         return polychordsError;
     }
+    */
+
+    vector<vector<double>> Process::errorPolychords()
+    {
+        double E;
+        vector<vector<double>> polychordsError;
+
+        for (int i=0; i<P.getSize(); i++)
+        {
+            vector<double> ToSortQuadError;
+            for(vector<int>::const_iterator q = P.P[i].begin(); q != P.P[i].end(); ++q)
+            {
+                ToSortQuadError.push_back(errorQuads(*q));
+            }
+            std::sort(ToSortQuadError.begin(), ToSortQuadError.end(), std::greater<double>());
+            polychordsError.push_back(ToSortQuadError);
+        }
+        return polychordsError;
+    }
+
+    /* OLD VERSION
+     *
+    double maxError = 0;
+    int worstPolychord = -1;
+    for (unsigned int id=0; id<polychordsError.rows(); id++)
+    {
+        double currentError = polychordsError[id];
+        cout << "Error polychord["<<id<<"] :"<< currentError << endl;
+         if (currentError > maxError)
+        {
+            maxError = currentError;
+            worstPolychord = id;
+        }
+    }
+            */
+    int Process::getPolychordWithMaxError()
+    {
+        vector<vector<double>> polychordsError = errorPolychords();
+        vector<int> resultIdPolychord(polychordsError.size());
+        std::iota(resultIdPolychord.begin(), resultIdPolychord.end(), 0);
+        int level = 0;
+        do
+        {
+            double errorMax = 0;
+            vector<int> auxResult = resultIdPolychord;
+            for(int i = 0; i<resultIdPolychord.size(); ++i)
+            {
+                int idP = resultIdPolychord[i];
+                vector<double> p = polychordsError[idP];
+                if (errorMax < p[level]) 
+                {
+                    errorMax = p[level];// ---livello di errori 
+                    auxResult.clear();
+                    auxResult.push_back(idP);
+                    //cout << "ErrorMax: "<< errorMax;
+                    //cout << " -> found: "<<idP<< " Level:" << level << endl;
+                }
+                else if (errorMax <= p[level]) 
+                {
+                    auxResult.push_back(idP);
+                    //cout << "ErrorMax: "<< errorMax;
+                    //cout << " -> other: "<<idP<< " Level:" << level << endl;
+                }
+            }
+            resultIdPolychord = auxResult;
+            //cout << " ------------ FINISH --------------- "<<endl<<endl;
+            ++level;
+        }
+        while(resultIdPolychord.size() > 1);
+        
+        return (resultIdPolychord.size() == 0) ? -1 : resultIdPolychord[0];
+    }
+
     void Process::raffinementQuadLayout(int times)
     {
         int i = 0;
-        double max = errorQuads.maxCoeff();
         while(i < times )
         {
             cout << " -----------iteration Raffinement ---------------"<<endl;
             vector<int> newVertices;
 
-            VectorXd polychordsError = errorPolychords();
-            double maxError = 0;
-            int worstPolychord = -1;
+
             // Find polychord with the greatest error
-            for (unsigned int id=0; id<polychordsError.rows(); id++)
-            {
-                double currentError = polychordsError[id];
-                cout << "Error polychord["<<id<<"] :"<< currentError << endl;
-                 if (currentError > maxError)
-                {
-                    maxError = currentError;
-                    worstPolychord = id;
-                }
-            }
+            int worstPolychord = getPolychordWithMaxError();
             cout << "The worst Polychord error: "<< worstPolychord << endl;
             //worstPolychord = 2;
             // Split found polychord and cage 
+            if (worstPolychord == -1)
+                return;
             int q_next, q_start = P.P[worstPolychord][0];
             for(vector<int>::const_iterator q = P.P[worstPolychord].begin(); q != P.P[worstPolychord].end(); ++q)
             {
@@ -274,12 +340,10 @@
             
             // Reinitialize relation adj.
             initErrorsAndRelations();
-            // 8 => 7, 10 => 8, 9 => 11, 9 => 9
             // moveCage towards mesh triangle
-            movingVertexCageToMesh(newVertices);
-            max = errorQuads.maxCoeff();
+            movingVertexCageToMesh(newVertices); 
 
-            cout << " ----------- End  ---------------"<<endl;
+            cout << " ----------- Cycle End ---------------"<<endl;
             
             /*
             for (int i=0; i<C.Q.rows(); i++)

@@ -60,6 +60,8 @@ void display()
         drawing.drawMesh(mesh_draw_mode);
     if (drawing.showCage)
         drawing.drawCage(cage_draw_mode);
+    if (drawing.showDebug)
+        drawing.drawDebug(cage_draw_mode);
 
     camera.display_end();
     // draw GUI
@@ -163,6 +165,7 @@ void TW_CALL getFocalLength (void *value, void *)
 void TW_CALL setIDPolychord (const void *value, void *)
 {
     drawing.IDPolychord = *(const double *) value;
+    p.IDPolychord = drawing.IDPolychord;
     glutPostRedisplay();
 }
 
@@ -279,9 +282,10 @@ void TW_CALL call_quit(void *clientData)
 
 char filename[200];
 
-void TW_CALL resetRaffinament (void *value)
+void TW_CALL resetRaffinement (void *value)
 {
     drawing.IDPolychord = -1;
+    p.IDPolychord = -1;
     drawing.IDQuad = -1;
     p.initAll(filename);
     times = 0;
@@ -430,7 +434,7 @@ int main (int argc, char *argv[])
                 "group = 'Debug' label='step 0 raffinement'");
     
 
-    TwAddButton(cBar, "reset", resetRaffinament, NULL, 
+    TwAddButton(cBar, "reset", resetRaffinement, NULL, 
                   "group = 'Debug' label='--> Reset'");
     
     /*TwAddVarCB(cBar, "threshold min", TW_TYPE_DOUBLE, setThresholdMin, getThresholdMin,
