@@ -220,30 +220,9 @@
             //cout << i <<" Err: "<< errorQuads(i) << " with: "<<orphanSample.size()<<endl;
         }
     }
-    /*          
-     * OLD VERSION
-     *
-    VectorXd Process::errorPolychords()
-    {
-        double E;
-        VectorXd polychordsError(P.getSize());
-
-        for (int i=0; i<P.getSize(); i++)
-        {
-            E = 0;
-            for(vector<int>::const_iterator q = P.P[i].begin(); q != P.P[i].end(); ++q)
-            {
-                E += errorQuads(*q);
-            }
-            polychordsError[i] = E*((double) P.P[i].size() / (double) C.Q.rows() );
-        }
-        return polychordsError;
-    }
-    */
 
     vector<vector<double>> Process::errorPolychords()
     {
-        double E;
         vector<vector<double>> polychordsError;
 
         for (int i=0; i<P.getSize(); i++)
@@ -255,25 +234,18 @@
             }
             std::sort(ToSortQuadError.begin(), ToSortQuadError.end(), std::greater<double>());
             polychordsError.push_back(ToSortQuadError);
+            // ------------------------ PRINT DEBUG --------------------------
+            /*int level = 0;
+            cout << "idP: "<<i<<endl;
+            for(vector<double>::const_iterator q = ToSortQuadError.begin(); q != ToSortQuadError.end(); ++level, ++q)
+            {
+                cout << "\t"<<level <<": "<<*q << endl;
+            }*/
+            // ------------------------ END DEBUG ---------------------------
         }
         return polychordsError;
     }
 
-    /* OLD VERSION
-     *
-    double maxError = 0;
-    int worstPolychord = -1;
-    for (unsigned int id=0; id<polychordsError.rows(); id++)
-    {
-        double currentError = polychordsError[id];
-        cout << "Error polychord["<<id<<"] :"<< currentError << endl;
-         if (currentError > maxError)
-        {
-            maxError = currentError;
-            worstPolychord = id;
-        }
-    }
-            */
     int Process::getPolychordWithMaxError()
     {
         vector<vector<double>> polychordsError = errorPolychords();
@@ -288,26 +260,24 @@
             {
                 int idP = resultIdPolychord[i];
                 vector<double> p = polychordsError[idP];
+
+                if (p.size() <= level) continue;
+
                 if (errorMax < p[level]) 
                 {
-                    errorMax = p[level];// ---livello di errori 
+                    errorMax = p[level];
                     auxResult.clear();
                     auxResult.push_back(idP);
-                    //cout << "ErrorMax: "<< errorMax;
-                    //cout << " -> found: "<<idP<< " Level:" << level << endl;
                 }
                 else if (errorMax <= p[level]) 
                 {
                     auxResult.push_back(idP);
-                    //cout << "ErrorMax: "<< errorMax;
-                    //cout << " -> other: "<<idP<< " Level:" << level << endl;
                 }
             }
             resultIdPolychord = auxResult;
-            //cout << " ------------ FINISH --------------- "<<endl<<endl;
             ++level;
         }
-        while(resultIdPolychord.size() > 1);
+        while(resultIdPolychord.size() > 1 && resultIdPolychord.size() < polychordsError.size());
         
         return (resultIdPolychord.size() == 0) ? -1 : resultIdPolychord[0];
     }
@@ -441,8 +411,6 @@
                              j,i,C.Q(i,j),(int)C.V.rows());
         fclose (fp);
         r=r; // remove warnings
-        C.computeQQ();
-        
     }
 
     void Process::readPLY (char* meshfile)

@@ -2,6 +2,7 @@
 #include <Eigen/Geometry>
 #include <iostream>
 
+#define DEBUG
 using namespace Eigen;
 using namespace std;
 

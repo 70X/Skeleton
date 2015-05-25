@@ -253,21 +253,6 @@ void TW_CALL setPartialTriangle (const void *value, void *)
     drawing.IDPartialTriangle = *it;
 }
 
-/*
-void TW_CALL setCageSubDomain (const void *value, void *)
-{
-    int choiceIDSubCage = *(const double *) value;
-    /*int i = choiceIDSubCage;
-    for(map<int, CageSubDomain>::const_iterator it = p.storeSubC.begin(); it != p.storeSubC.end(); ++it, --i)
-    {
-        if(i==0)
-             drawing.IDCageSubDomain = it->first;
-    }
-    char str[100];
-    sprintf(str, "Camera_Rendering/LabelIDCageSubDomain value=%d ",  (int)(drawing.IDCageSubDomain));
-    TwDefine(str);*/
-//}
-
 void TW_CALL getCageSubDomain (void *value, void *)
 {
     *(double *) value = drawing.IDCageSubDomain;
@@ -329,7 +314,7 @@ int main (int argc, char *argv[])
     drawing.setProcess(p);
     drawing.bb(p.M.V, p.M.F);
     
-    //p.raffinementQuadLayout(3);
+    p.raffinementQuadLayout(20);
     #define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG
 

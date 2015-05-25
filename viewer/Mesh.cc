@@ -35,7 +35,12 @@
 // Initialize TT-VT*
     void Mesh::initTT()
     {
-        assert(isManifold());
+        //assert(isManifold());
+        if (!isManifold())
+        {
+            cout << "ERROR: Mesh is not manifold!"<<endl;
+            return;
+        }
         VT.resize(V.rows());
         vector<vector<int> > TTT;
         for(int f=0;f<F.rows();++f)

@@ -208,7 +208,12 @@ Vector3d Cage::getVMapping(int q, Vector2d p)
 
     void Cage::computeQQ()
     {
-        assert(isManifold());
+        //assert(isManifold());
+        if (!isManifold())
+        {
+            cout << "ERROR: Cage is not manifold!"<<endl;
+            return;
+        }
         QQ_QV_flag = true;
         _QV = VectorXi(V.rows());
         //cout << "isManifold(): "<<isManifold() << endl;

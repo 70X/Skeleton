@@ -16,13 +16,13 @@ void Polychords::clear()
 void Polychords::computePolychords()
 {
 	clear();
-	int count, q_prec, q, ei;
+	int count, q_prec, ei;
 	for(unsigned int q=0; q<C->Q.rows(); q++)
 	{
 		count = counter[q];
 		vector<int> tmpp;
 		if (count == 2) continue;
-		if (count == 1)
+		else if (count == 1)
 		{
 			q_prec = from[q];
 			ei = C->getEdgeQuadAdjacent(q, q_prec);
@@ -32,7 +32,7 @@ void Polychords::computePolychords()
 
 			P.push_back(tmpp);
 		}
-		if (count == 0)
+		else if (count == 0)
 		{
 			tmpp.push_back(q);
 			expandPolychords(&tmpp, q, C->QQ(q, 0));
