@@ -46,6 +46,6 @@ private:
 	double errorSample(int q, Vector2d s);
 	double computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap);
 
-	vector<vector<double>> errorPolychords();
+	vector<pair<int, pair<int, int> > > errorPolychords();
 };
 #endif

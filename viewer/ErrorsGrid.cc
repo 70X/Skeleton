@@ -141,63 +141,53 @@
 		return errorQuads;
 	}
 
-	vector<vector<double>> ErrorsGrid::errorPolychords()
+	vector<pair<int, pair<int, int> > > ErrorsGrid::errorPolychords()
     {
-        vector<vector<double>> polychordsError;
-
-        for (int i=0; i<Env->P.getSize(); i++)
+        vector<pair<int, pair<int, int> > > polychordsError;
+        // idP, < qSx, qDx> 
+		double errorMax = Env->errorQuads.maxCoeff();
+        for (int idP=0; idP<Env->P.getSize(); idP++)
         {
-            vector<double> ToSortQuadError;
-            for(vector<int>::const_iterator q = Env->P.P[i].begin(); q != Env->P.P[i].end(); ++q)
+        	int i=0;
+            vector<double> storePolychordsWithMaxError;
+            for(vector<int>::const_iterator q = Env->P.P[idP].begin(); q != Env->P.P[idP].end(); ++i, ++q)
             {
-                ToSortQuadError.push_back(Env->errorQuads(*q));
+            	if (Env->errorQuads(*q) == errorMax)
+            	{
+            		int iQsx = (i==0) ? Env->P.P[idP].size()-1 : i-1;
+            		int iQdx = (i>=Env->P.P[idP].size()-1) ? 0 : i+1;
+
+            		int qSx = Env->P.P[idP][iQsx];
+            		int qDx = Env->P.P[idP][iQdx];
+                	polychordsError.push_back(make_pair(idP, make_pair(qSx, qDx)) );
+            	}
             }
-            std::sort(ToSortQuadError.begin(), ToSortQuadError.end(), std::greater<double>());
-            polychordsError.push_back(ToSortQuadError);
-            // ------------------------ PRINT DEBUG --------------------------
-            /*int level = 0;
-            cout << "idP: "<<i<<endl;
-            for(vector<double>::const_iterator q = ToSortQuadError.begin(); q != ToSortQuadError.end(); ++level, ++q)
-            {
-                cout << "\t"<<level <<": "<<*q << endl;
-            }*/
-            // ------------------------ END DEBUG ---------------------------
         }
         return polychordsError;
     }
 
     int ErrorsGrid::getPolychordWithMaxError()
     {
-        vector<vector<double>> polychordsError = errorPolychords();
-        vector<int> resultIdPolychord(polychordsError.size());
-        std::iota(resultIdPolychord.begin(), resultIdPolychord.end(), 0);
-        int level = 0;
-        do
-        {
-            double errorMax = 0;
-            vector<int> auxResult = resultIdPolychord;
-            for(int i = 0; i<resultIdPolychord.size(); ++i)
-            {
-                int idP = resultIdPolychord[i];
-                vector<double> p = polychordsError[idP];
-
-                if (p.size() <= level) continue;
-
-                if (errorMax < p[level]) 
-                {
-                    errorMax = p[level];
-                    auxResult.clear();
-                    auxResult.push_back(idP);
-                }
-                else if (errorMax <= p[level]) 
-                {
-                    auxResult.push_back(idP);
-                }
-            }
-            resultIdPolychord = auxResult;
-            ++level;
-        }
-        while(resultIdPolychord.size() > 1 && resultIdPolychord.size() < polychordsError.size());
+        vector<pair<int, pair<int, int> > > polychordsError = errorPolychords();
+        if (polychordsError.size() == 1)
+        	return (polychordsError[0]).first;
         
-        return (resultIdPolychord.size() == 0) ? -1 : resultIdPolychord[0];
+        if (polychordsError.size() == 2)
+        {
+        	int idP0 = polychordsError[0].first;
+        	double ESx_0 = Env->errorQuads(polychordsError[0].second.first);
+        	double EDx_0 = Env->errorQuads(polychordsError[0].second.second);
+        	
+        	int idP1 = polychordsError[1].first;
+        	double ESx_1 = Env->errorQuads(polychordsError[1].second.first);
+        	double EDx_1 = Env->errorQuads(polychordsError[1].second.second);
+        	
+        	if (ESx_0 + EDx_0 > ESx_1 + EDx_1)
+        		return polychordsError[0].first;
+        	else return polychordsError[1].first;
+        }
+
+        cout << "WARNING: found "<< polychordsError.size() <<" polychords" <<endl;
+        
+        return -1;
     }

@@ -31,8 +31,8 @@ public:
     void setQVmesh(MatrixXi QVmesh)  { this->QVmesh = QVmesh;};
 
 
-            Vector3d getV(int Vi);
-            Vector3d getVMapping(int q, Vector2d p);
+    Vector3d getV(int Vi);
+    Vector3d getVMapping(int q, Vector2d p);
     virtual MatrixXd getTMapping(Vector3i ABC);
 
     void computeQQ();

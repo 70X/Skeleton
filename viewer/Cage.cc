@@ -232,15 +232,9 @@ Vector3d Cage::getVMapping(int q, Vector2d p)
                 r[2] = q;  r[3] = i;
                 QQT.push_back(r);
             }
+            
         sort(QQT.begin(), QQT.end());
-
         QQ = MatrixXi::Constant(Q.rows(), 4, -1);
-
-        /*for (int i=0; i<QQT.size(); i++)
-        {
-            cout << "["<<i<<"] (" << QQT[i][0] <<
-            ", "<<QQT[i][1]<<", "<<QQT[i][2]<<","<<QQT[i][3]<<")"<<endl;
-        }*/
 
         for (unsigned int i=1; i<QQT.size(); i++)
         {
