@@ -25,19 +25,13 @@
 #include <stdio.h>
 #include <map>
 
-
+class ErrorsGrid;
 #ifndef _PROCESS_CLASS
 #define _PROCESS_CLASS
 
 class Process
 {
 public:
-
-    struct classcomp {
-  		bool operator() (const Vector2d& v0, const Vector2d& v1) const
-  		{return std::tie(v0(0), v0(1)) < std::tie(v1(0), v1(1));}
-	};
-
 	Process(){};
 	~Process(){};
 	void read(char *str);
@@ -50,21 +44,9 @@ public:
 private:
 	void distancesBetweenMeshCage();
 	
-
-	//VectorXd errorPolychords();
-	vector<vector<double>> errorPolychords();
 	void updateTQ();
-
-	void getTrianglesInExpMapping(int Vi, CageSubDomain &sC);
-    /******************************************************/
-    /*            raffinement cage                        */
-    /******************************************************/
-	double errorsGrid(int q);
-	double errorAvarageSamples(Vector2d s, double step_x, double step_y, map<Vector2d, double, classcomp> storeErrorSample);
-	double errorSample(int q, Vector2d s);
-	double computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap);
-	int getPolychordWithMaxError();
 public:
+	void getTrianglesInExpMapping(int Vi, CageSubDomain &sC);
 	void raffinementQuadLayout(int times = 1);
 private:
 	
@@ -78,6 +60,7 @@ public:
 	Mesh M;
 	Cage C;
 	Polychords P;
+	ErrorsGrid *ErrGrid;
     // #dist.Vx1: in the ith row, stores the distance of the vertices of the ith vertex
     VectorXd distancesMeshCage;
     VectorXd errorQuads;
@@ -85,7 +68,7 @@ public:
     vector<int> debugTsQ;
     vector<vector<int>> TQ;
     // -- ONLY FOR DEBUG
-    vector<map<Vector2d, vector<int>, classcomp> > storeSampleTriangles;
+    vector<map<Vector2d, vector<int>,  Utility::classcomp> > storeSampleTriangles;
     vector<Vector2d> orphanSample;
     
     int IDPolychord = -1;

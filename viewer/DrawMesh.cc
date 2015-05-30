@@ -700,7 +700,7 @@ void DrawMesh::drawMesh (draw_mode_t mode)
         {
             if(IDQuad != q) continue;
             
-            map<Vector2d, vector<int>, Process::classcomp>::iterator it = p->storeSampleTriangles[q].begin();
+            map<Vector2d, vector<int>, Utility::classcomp>::iterator it = p->storeSampleTriangles[q].begin();
             for (it=p->storeSampleTriangles[q].begin(); it!=p->storeSampleTriangles[q].end(); ++it)
             {
                 if((it->second).size() == 0)
