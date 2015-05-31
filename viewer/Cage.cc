@@ -75,8 +75,7 @@ void Cage::split(int q, int e0, int e1, vector<int> &collectV)
 
     if (find(collectV.begin(), collectV.end(), iP1) == collectV.end())
         collectV.push_back(iP1);
-
-    //cout << " QUI " << _QV(iP0) << " /// " << _QV.size() << endl;
+    
     int q_new;
     if (e0 == 0 || e0 == 2)
     {
@@ -88,7 +87,7 @@ void Cage::split(int q, int e0, int e1, vector<int> &collectV)
         Q.row(q) =      Vector4i(relQ(0), relQ(1), iP0, iP1)  ;
         q_new = appendQ(Vector4i(iP1, iP0, relQ(2), relQ(3)) );
     }
-    //cout << q << " - " << q_new << " to " << e0 << endl;
+    
     updateQVmesh(q, q_new, e0);
 
 }
@@ -98,10 +97,7 @@ void Cage::split(int q, int e0, int e1, vector<int> &collectV)
     {
         Vector4i ABCD = Q.row(q);
         VectorXd min = VectorXd::Constant(Vmesh.cols(),0.0);
-        VectorXd max = VectorXd::Constant(Vmesh.cols(),0.0);
-        
-        //min = Vmesh.colwise().minCoeff(); //(0, 0)
-        max = Vmesh.colwise().maxCoeff(); //(1, 1)
+        VectorXd max = VectorXd::Constant(Vmesh.cols(), DOMAIN_PARAMETER_SPACE);
 
         double x = s(0);
         double y = s(1);

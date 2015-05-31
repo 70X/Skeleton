@@ -1,18 +1,4 @@
-#include "Process.hh"
 #include "ErrorsGrid.hh"
-	
-	
-    double ErrorsGrid::computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap)
-    {
-        double distance = 0;
-        for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
-        {
-            Vector3d Vs = Utility::getCoordBarycentricTriangle(domain.getTMapping(M->F.row(*idT)), M->getT(*idT), examVertex);
-            distance += Utility::computeDistance(Vs, smap);
-
-        }
-         return distance/triangles.size();
-    }
 
     double ErrorsGrid::errorSample(int q, Vector2d s)
     {
@@ -26,16 +12,16 @@
             Env->getTrianglesInExpMapping(Vi, sC);
             if (sC.triangles.size() == 0)
             {
-                //cout << " Sample: non trovo niente" <<endl;
+                //cout << " Sample: not found" <<endl;
                 orphanSample.push_back(s);
                 return 0;
             }
             
             orphanSample.push_back(s);
-            distance = computeErrorFromListTriangle(sC.triangles, sC, sC.examVertex,  C->getVMapping(q, s));
+            distance = Env->computeErrorFromListTriangle(sC.triangles, sC, sC.examVertex,  C->getVMapping(q, s));
         }
         else
-            distance = computeErrorFromListTriangle(triangles, *C, s,  C->getVMapping(q, s));
+            distance = Env->computeErrorFromListTriangle(triangles, *C, s,  C->getVMapping(q, s));
       
         return distance;
     }
@@ -87,7 +73,7 @@
 	double ErrorsGrid::errorsGridByQuadID(int q)
     {
         double tmpE, E = 0;
-        double domain = GRID_SAMPLE;
+        double domain = DOMAIN_PARAMETER_SPACE;
         double diagonal = C->bb();
         double spacing = diagonal * (1.0/20.0);
 
@@ -130,29 +116,28 @@
         return E * Utility::areaQuad(_A, _B, _C, _D ) / (m*n);
     }
 
-	VectorXd ErrorsGrid::computeErrorsGrid()
+	void ErrorsGrid::computeErrorsGrid()
 	{
-		VectorXd errorQuads = VectorXd(C->Q.rows());
+		errorQuads = VectorXd(C->Q.rows());
 		for (int i=0; i<C->Q.rows(); i++)
 		{
 		    errorQuads(i) = errorsGridByQuadID(i);
 		    //cout << i <<" Err: "<< errorQuads(i) << " with: "<<orphanSample.size()<<endl;
 		}
-		return errorQuads;
 	}
 
+	// idP, < qSx, qDx >
 	vector<pair<int, pair<int, int> > > ErrorsGrid::errorPolychords()
     {
         vector<pair<int, pair<int, int> > > polychordsError;
-        // idP, < qSx, qDx> 
-		double errorMax = Env->errorQuads.maxCoeff();
+		double errorMax = errorQuads.maxCoeff();
         for (int idP=0; idP<Env->P.getSize(); idP++)
         {
         	int i=0;
             vector<double> storePolychordsWithMaxError;
             for(vector<int>::const_iterator q = Env->P.P[idP].begin(); q != Env->P.P[idP].end(); ++i, ++q)
             {
-            	if (Env->errorQuads(*q) == errorMax)
+            	if (errorQuads(*q) == errorMax)
             	{
             		int iQsx = (i==0) ? Env->P.P[idP].size()-1 : i-1;
             		int iQdx = (i>=Env->P.P[idP].size()-1) ? 0 : i+1;
@@ -175,12 +160,12 @@
         if (polychordsError.size() == 2)
         {
         	int idP0 = polychordsError[0].first;
-        	double ESx_0 = Env->errorQuads(polychordsError[0].second.first);
-        	double EDx_0 = Env->errorQuads(polychordsError[0].second.second);
+        	double ESx_0 = errorQuads(polychordsError[0].second.first);
+        	double EDx_0 = errorQuads(polychordsError[0].second.second);
         	
         	int idP1 = polychordsError[1].first;
-        	double ESx_1 = Env->errorQuads(polychordsError[1].second.first);
-        	double EDx_1 = Env->errorQuads(polychordsError[1].second.second);
+        	double ESx_1 = errorQuads(polychordsError[1].second.first);
+        	double EDx_1 = errorQuads(polychordsError[1].second.second);
         	
         	if (ESx_0 + EDx_0 > ESx_1 + EDx_1)
         		return polychordsError[0].first;

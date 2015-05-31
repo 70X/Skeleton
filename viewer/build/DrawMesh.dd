@@ -116,4 +116,4 @@ build/DrawMesh.oo build/DrawMesh.dd : DrawMesh.cc DrawMesh.hh Process.hh Utility
  ../eigen3/Eigen/src/Geometry/AlignedBox.h \
  ../eigen3/Eigen/src/Geometry/Umeyama.h \
  ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Mesh.hh Cage.hh \
- CageSubDomain.hh Polychords.hh
+ CageSubDomain.hh Polychords.hh IError.hh

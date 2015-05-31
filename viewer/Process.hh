@@ -7,13 +7,12 @@
 #define ON 1
 #define OFF 0
 
-#define GRID_SAMPLE 1
-
 #include "Utility.hh"
 #include "Mesh.hh"
 #include "Cage.hh"
 #include "CageSubDomain.hh"
 #include "Polychords.hh"
+#include "IError.hh"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -25,7 +24,6 @@
 #include <stdio.h>
 #include <map>
 
-class ErrorsGrid;
 #ifndef _PROCESS_CLASS
 #define _PROCESS_CLASS
 
@@ -48,6 +46,7 @@ private:
 public:
 	void getTrianglesInExpMapping(int Vi, CageSubDomain &sC);
 	void raffinementQuadLayout(int times = 1);
+	double computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap);
 private:
 	
     /******************************************************/
@@ -60,10 +59,9 @@ public:
 	Mesh M;
 	Cage C;
 	Polychords P;
-	ErrorsGrid *ErrGrid;
+	IError *E;
     // #dist.Vx1: in the ith row, stores the distance of the vertices of the ith vertex
     VectorXd distancesMeshCage;
-    VectorXd errorQuads;
 
     vector<int> debugTsQ;
     vector<vector<int>> TQ;

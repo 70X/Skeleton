@@ -2,7 +2,8 @@
 #include <Eigen/Geometry>
 #include <iostream>
 
-#define DEBUG
+#define DOMAIN_PARAMETER_SPACE 1.0
+
 using namespace Eigen;
 using namespace std;
 

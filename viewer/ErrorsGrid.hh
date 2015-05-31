@@ -4,47 +4,45 @@
 #include <map>
 #include <math.h>
 
+#include "IError.hh"
 #include "Utility.hh"
 #include "Cage.hh"
 #include "Mesh.hh"
 #include "CageSubDomain.hh"
+#include "Process.hh"
 
-
-	//VectorXd errorPolychords();
-	vector<vector<double>> errorPolychords();
-#define GRID_SAMPLE 1
+#define DOMAIN_PARAMETER_SPACE 1.0
 
 using namespace Eigen;
 using namespace std;
 
-class Process;
-
 #ifndef _ERRORSGRID_CLASS
 #define _ERRORSGRID_CLASS
 
-class ErrorsGrid
+class ErrorsGrid : public IError
 {
-private:
+protected:
 	Process *Env;
 	Mesh *M;
 	Cage *C;
 	vector<Vector2d> orphanSample;
+    VectorXd errorQuads;
 public:
+	ErrorsGrid(){};
 	ErrorsGrid(Process &process)
 	{
 		Env = &process;
 		M = &(Env->M);
 		C = &(Env->C);
-		Env->errorQuads = computeErrorsGrid();
+		computeErrorsGrid();
 	};
 
-	VectorXd computeErrorsGrid();
-	int getPolychordWithMaxError();
-private:
+	virtual int getPolychordWithMaxError();
+protected:
+	virtual void computeErrorsGrid();
 	double errorsGridByQuadID(int q);
 	double errorAvarageSamples( Vector2d s, double step_x, double step_y, map<Vector2d, double, Utility::classcomp> storeErrorSample);
 	double errorSample(int q, Vector2d s);
-	double computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap);
 
 	vector<pair<int, pair<int, int> > > errorPolychords();
 };

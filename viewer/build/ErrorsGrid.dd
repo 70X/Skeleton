@@ -1,4 +1,4 @@
-build/ErrorsGrid.oo build/ErrorsGrid.dd : ErrorsGrid.cc Process.hh Utility.hh ../eigen3/Eigen/Core \
+build/ErrorsGrid.oo build/ErrorsGrid.dd : ErrorsGrid.cc ErrorsGrid.hh ../eigen3/Eigen/Core \
  ../eigen3/Eigen/src/Core/util/DisableStupidWarnings.h \
  ../eigen3/Eigen/src/Core/util/Macros.h \
  ../eigen3/Eigen/src/Core/util/MKL_support.h \
@@ -114,5 +114,5 @@ build/ErrorsGrid.oo build/ErrorsGrid.dd : ErrorsGrid.cc Process.hh Utility.hh ..
  ../eigen3/Eigen/src/Geometry/ParametrizedLine.h \
  ../eigen3/Eigen/src/Geometry/AlignedBox.h \
  ../eigen3/Eigen/src/Geometry/Umeyama.h \
- ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h Mesh.hh Cage.hh \
- CageSubDomain.hh Polychords.hh ErrorsGrid.hh
+ ../eigen3/Eigen/src/Geometry/arch/Geometry_SSE.h IError.hh Utility.hh \
+ Cage.hh Mesh.hh CageSubDomain.hh Process.hh Polychords.hh

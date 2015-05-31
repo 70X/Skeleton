@@ -1,5 +1,6 @@
 #include "Process.hh"
 #include "ErrorsGrid.hh"
+#include "ErrorsHalfEdgeQuad.hh"
 
     vector<int> Process::getBorderTrianglesSubDomainQ(vector<int> subQ)
     {
@@ -37,6 +38,18 @@
         TQ = listTQ;
     }
     
+    double Process::computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap)
+    {
+        double distance = 0;
+        for(vector<int>::const_iterator idT = triangles.begin(); idT != triangles.end(); ++idT)
+        {
+            Vector3d Vs = Utility::getCoordBarycentricTriangle(domain.getTMapping(M.F.row(*idT)), M.getT(*idT), examVertex);
+            distance += Utility::computeDistance(Vs, smap);
+
+        }
+         return distance/triangles.size();
+    }
+
     void Process::getTrianglesInExpMapping(int Vi, CageSubDomain &sC)
     {
         sC.initAll(C);
@@ -89,7 +102,8 @@
         storeSampleTriangles.clear();
         storeSubC.clear();
 
-        ErrGrid = new ErrorsGrid(*this);
+        //E = new ErrorsGrid(*this);
+        E = new ErrorsHalfEdgeQuad(*this);
     }
 
     void Process::raffinementQuadLayout(int times)
@@ -102,7 +116,7 @@
 
 
             // Find polychord with the greatest error
-            int worstPolychord = ErrGrid->getPolychordWithMaxError();
+            int worstPolychord = E->getPolychordWithMaxError();
             cout << "The worst Polychord error: "<< worstPolychord << endl;
             //worstPolychord = 2;
             // Split found polychord and cage 
