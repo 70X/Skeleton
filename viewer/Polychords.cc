@@ -6,6 +6,13 @@ Polychords::Polychords(Cage *c)
 	clear();
 }
 
+Polychords::Polychords(Cage *c, vector<vector<int>> P)
+{
+	C = c;
+	clear();
+	this->P = P;
+}
+
 void Polychords::clear()
 {
 	P.clear(); counter.clear(); from.clear();
@@ -56,7 +63,6 @@ void Polychords::expandPolychords(vector<int> *polychord, int q_start, int q)
 		polychord->push_back(q);
 		from[q] = q_prec;
 		counter[q]++;
-		
 		ei = C->getEdgeQuadAdjacent(q, q_prec);
 		q_prec = q;
 		q = C->QQ(q, (ei+2)%4);

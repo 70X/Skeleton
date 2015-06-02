@@ -6,7 +6,7 @@
         map<Vector2d, double, Utility::classcomp> storeErrorSample;
 
 		orphanSample.clear();
-        Env->storeSampleTriangles.push_back(map<Vector2d, vector<int>, Utility::classcomp>());
+        //Env->storeSampleTriangles.push_back(map<Vector2d, vector<int>, Utility::classcomp>());
         for (int i=1; i<m; i++)
 	        for (int j=1; j<n; j++)
 	        {
@@ -34,13 +34,13 @@
     {
         double E_directionX = 0, E_directionY = 0;
         double domain = DOMAIN_PARAMETER_SPACE;
-        double diagonal = C->bb();
+        double diagonal = Env->C.bb();
         double spacing = diagonal * (1.0/20.0);
 
-        Vector3d _A = C->V.row(C->Q(q,0));
-        Vector3d _B = C->V.row(C->Q(q,1));
-        Vector3d _C = C->V.row(C->Q(q,2));
-        Vector3d _D = C->V.row(C->Q(q,3));
+        Vector3d _A = Env->C.V.row(Env->C.Q(q,0));
+        Vector3d _B = Env->C.V.row(Env->C.Q(q,1));
+        Vector3d _C = Env->C.V.row(Env->C.Q(q,2));
+        Vector3d _D = Env->C.V.row(Env->C.Q(q,3));
         double m = ceil( (Utility::computeDistance((_B-_A), (_D-_C))/2.0) / spacing)+1;
         double n = ceil( (Utility::computeDistance((_A-_D), (_C-_B))/2.0) / spacing)+1;
         // m = n = 2;
@@ -55,8 +55,8 @@
         int e2 = 2;
         int e3 = 3;
 
-        E_directionX = errorsQuadAlongDirection(q, halfX, step_y, 2, n) * Utility::areaQuad(_A, _B, _C, _D ) / (m*n);
-        E_directionY = errorsQuadAlongDirection(q, step_x, halfY, m, 2) * Utility::areaQuad(_A, _B, _C, _D ) / (m*n);
+        E_directionX = Utility::computeError(errorsQuadAlongDirection(q, halfX, step_y, 2, n), m+n, _A, _B, _C, _D);
+        E_directionY = Utility::computeError(errorsQuadAlongDirection(q, step_x, halfY, m, 2), m+n, _A, _B, _C, _D);
        
         errorQuadsByDirection.insert(make_pair(make_pair(q, e0), E_directionY) );
         errorQuadsByDirection.insert(make_pair(make_pair(q, e2), E_directionY) );
@@ -67,10 +67,11 @@
 
 	void ErrorsHalfEdgeQuad::computeErrorsGrid()
 	{
-		for (int i=0; i<C->Q.rows(); i++)
+        updateTQ();
+		errorQuadsByDirection.clear();
+		for (int i=0; i<Env->C.Q.rows(); i++)
 		{
 		    errorsGridByQuadID(i);
-		    //cout << i <<" Err: "<< errorQuads(i) << " with: "<<orphanSample.size()<<endl;
 		}
 	}
 
@@ -88,8 +89,8 @@
             	if ((q+1) != Env->P.P[idP].end())
             		q_next = *(q+1);
             	else q_next = Env->P.P[idP][0];
-            	direction = C->getEdgeQuadAdjacent(*q, q_next);
-            	double errDoubleHlfEdges = errorQuadsByDirection[{*q, direction}]; //+ errorQuadsByDirection[{*q, (direction+2)%4}];
+            	direction = Env->C.getEdgeQuadAdjacent(*q, q_next);
+            	double errDoubleHlfEdges = errorQuadsByDirection[{*q, direction}];
             	//cout << "POLYCHORD "<<idP<<"("<<*q<<","<<q_next<<") : "<< errDoubleHlfEdges<<" -> direction: "<< direction<<endl;
             	if (errorMax < errDoubleHlfEdges)
             	{
@@ -99,4 +100,23 @@
             }
         }
         return worstPolychord;
+    }
+
+
+    double ErrorsHalfEdgeQuad::getErrorpolychordByID(int idP)
+    {
+    	int direction, q_next;
+    	double E =0, errorMax = 0;
+    	for(vector<int>::const_iterator q = Env->P.P[idP].begin(); q != Env->P.P[idP].end(); ++q)
+        {
+        	if ((q+1) != Env->P.P[idP].end())
+        		q_next = *(q+1);
+        	else q_next = Env->P.P[idP][0];
+        	direction = Env->C.getEdgeQuadAdjacent(*q, q_next);
+        	if (errorMax < (E = errorQuadsByDirection[{*q, direction}]) )
+        		errorMax = E;
+    		//cout << "POLYCHORD "<<idP<<"("<<*q<<","<<q_next<<") : "<< errorQuadsByDirection[{*q, direction}]<<" -> direction: "<< direction<<endl;
+    	}
+    	//cout << "POLYCHORD "<<idP<<" | "<<E * Env->P.P[idP].size() / C->Q.rows()<< direction<<endl;
+    	return errorMax;// * Env->P.P[idP].size() / C->Q.rows();
     }

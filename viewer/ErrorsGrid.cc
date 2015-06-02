@@ -1,14 +1,32 @@
 #include "ErrorsGrid.hh"
+	
+	 void ErrorsGrid::updateTQ()
+    {
+        //cout << "Q size: "<<Env->C.Q.rows() << endl;
+        vector<vector<int>> listTQ(Env->C.Q.rows());
+         for(int i=0; i<Env->M.F.rows(); i++)
+        {
+            int q0 = Env->C.QVmesh(Env->M.F(i,0));
+            int q1 = Env->C.QVmesh(Env->M.F(i,1));
+            int q2 = Env->C.QVmesh(Env->M.F(i,2));
+            if (q0==q1 && q1==q2)
+                listTQ[q0].push_back(i);
+        }
+        TQ = listTQ;
+    }
 
     double ErrorsGrid::errorSample(int q, Vector2d s)
     {
         double distance = 0;
-        vector<int> triangles = M->findTriangles(Env->TQ[q], s, *C);
-        Env->storeSampleTriangles[q].insert(std::make_pair(s, triangles) );
+        
+        vector<int> triangles = Env->M.findTriangles(TQ[q], s, Env->C);
+
+        //Env->storeSampleTriangles[q].insert(std::make_pair(s, triangles) );
         if (triangles.size() == 0)
         {
-            int Vi = C->getAreaQuad(q, s);
+            int Vi = Env->C.getAreaQuad(q, s);
             CageSubDomain sC;
+            sC.initAll(Env->C);
             Env->getTrianglesInExpMapping(Vi, sC);
             if (sC.triangles.size() == 0)
             {
@@ -18,10 +36,10 @@
             }
             
             orphanSample.push_back(s);
-            distance = Env->computeErrorFromListTriangle(sC.triangles, sC, sC.examVertex,  C->getVMapping(q, s));
+            distance = Env->computeErrorFromListTriangle(sC.triangles, sC, sC.examVertex,  Env->C.getVMapping(q, s));
         }
         else
-            distance = Env->computeErrorFromListTriangle(triangles, *C, s,  C->getVMapping(q, s));
+            distance = Env->computeErrorFromListTriangle(triangles, Env->C, s,  Env->C.getVMapping(q, s));
       
         return distance;
     }
@@ -74,13 +92,13 @@
     {
         double tmpE, E = 0;
         double domain = DOMAIN_PARAMETER_SPACE;
-        double diagonal = C->bb();
+        double diagonal = Env->C.bb();
         double spacing = diagonal * (1.0/20.0);
 
-        Vector3d _A = C->V.row(C->Q(q,0));
-        Vector3d _B = C->V.row(C->Q(q,1));
-        Vector3d _C = C->V.row(C->Q(q,2));
-        Vector3d _D = C->V.row(C->Q(q,3));
+        Vector3d _A = Env->C.V.row(Env->C.Q(q,0));
+        Vector3d _B = Env->C.V.row(Env->C.Q(q,1));
+        Vector3d _C = Env->C.V.row(Env->C.Q(q,2));
+        Vector3d _D = Env->C.V.row(Env->C.Q(q,3));
         double m = ceil( (Utility::computeDistance((_B-_A), (_D-_C))/2.0) / spacing)+1;
         double n = ceil( (Utility::computeDistance((_A-_D), (_C-_B))/2.0) / spacing)+1;
         //m = n = 5;
@@ -88,9 +106,8 @@
         double step_y = domain/n;
         
         map<Vector2d, double, Utility::classcomp> storeErrorSample;
-
         orphanSample.clear();
-        Env->storeSampleTriangles.push_back(map<Vector2d, vector<int>, Utility::classcomp>());
+        //Env->storeSampleTriangles.push_back(map<Vector2d, vector<int>, Utility::classcomp>());
         for (int i=1; i<m; i++)
             for (int j=1; j<n; j++)
             {
@@ -113,13 +130,14 @@
         }
         
        
-        return E * Utility::areaQuad(_A, _B, _C, _D ) / (m*n);
+        return Utility::computeError(E, m*n, _A, _B, _C, _D);
     }
 
 	void ErrorsGrid::computeErrorsGrid()
 	{
-		errorQuads = VectorXd(C->Q.rows());
-		for (int i=0; i<C->Q.rows(); i++)
+        updateTQ();
+		errorQuads = VectorXd(Env->C.Q.rows());
+		for (int i=0; i<Env->C.Q.rows(); i++)
 		{
 		    errorQuads(i) = errorsGridByQuadID(i);
 		    //cout << i <<" Err: "<< errorQuads(i) << " with: "<<orphanSample.size()<<endl;
@@ -175,4 +193,15 @@
         cout << "WARNING: found "<< polychordsError.size() <<" polychords" <<endl;
         
         return -1;
+    }
+
+    double ErrorsGrid::getErrorpolychordByID(int idP)
+    {
+    	double E=0;
+    	for(vector<int>::const_iterator q = Env->P.P[idP].begin(); q != Env->P.P[idP].end(); ++q)
+        {
+    		E += errorQuads(*q);
+    	}
+
+    	return E * Env->P.P[idP].size() / Env->C.Q.rows();
     }

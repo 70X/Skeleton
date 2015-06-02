@@ -12,7 +12,16 @@ using namespace std;
 class Cage
 {
 public:
-	Cage(){};
+    Cage(){};
+	Cage(MatrixXd V, MatrixXi Q, MatrixXd Vmesh, VectorXi QVmesh, MatrixXi QQ, VectorXi _QV)
+    {
+        this->V = V;
+        this->Q = Q;
+        this->Vmesh = Vmesh;
+        this->QVmesh = QVmesh;
+        this->QQ = QQ;
+        this->_QV = _QV;
+    };
 	~Cage(){};
 	// #Vx3: Stores the vertex coordinates, one vertex per row
     MatrixXd V;

@@ -6,6 +6,7 @@
 
 #define ON 1
 #define OFF 0
+#define ERROR_TYPE_NUM 3 
 
 #include "Utility.hh"
 #include "Mesh.hh"
@@ -14,6 +15,7 @@
 #include "Polychords.hh"
 #include "IError.hh"
 
+#include <sys/stat.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <iostream>
@@ -30,31 +32,34 @@
 class Process
 {
 public:
-	Process(){};
-	~Process(){};
+	Process(){ };
+	~Process(){ };
+	typedef enum {WITH_QUEUE, GRID_SIMPLE, GRID_HALFEDGE} error_t;
+
 	void read(char *str);
 	void readOFF (char* meshfile);
 	void readPLY (char* meshfile);
 
 	void initAll(char* filename);
-	void initErrorsAndRelations();
-	
-private:
-	void distancesBetweenMeshCage();
-	
-	void updateTQ();
-public:
+	void initErrorsAndRelations(Cage &C, Polychords &P);
+
 	void getTrianglesInExpMapping(int Vi, CageSubDomain &sC);
 	void raffinementQuadLayout(int times = 1);
+	int queueRaffinementQuadLayout(Cage &C, Polychords &P, int tryTimes = 2);
 	double computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap);
 private:
+	void distancesBetweenMeshCage();
+	double distancesBetweenMeshCage(Cage C);
+	vector<int> processToSplit(Cage &C, vector<int> listQ);
 	
     /******************************************************/
     /*            moving cage towards mesh                */
     /******************************************************/
     void initSubDomain(CageSubDomain &sC);
-	void movingVertexCageToMesh(vector<int> newVertices);
+	void movingVertexCageToMesh(vector<int> newVertices, Cage &C);
 	vector<int> getBorderTrianglesSubDomainQ(vector<int> subQ);
+	//------------------- OUTPUT FILE -----------------------/
+	void configurationFileOutput(ofstream &seqPolychord, ofstream &timePolychord);
 public:
 	Mesh M;
 	Cage C;
@@ -62,16 +67,19 @@ public:
 	IError *E;
     // #dist.Vx1: in the ith row, stores the distance of the vertices of the ith vertex
     VectorXd distancesMeshCage;
+    vector<Vector2d> orphanSample;
+	
+	// --- RAFFINEMENT GUI
+	error_t error_type_choice = GRID_SIMPLE;
+	int raffinementTimes = 0;
+	char filename[200];
 
-    vector<int> debugTsQ;
-    vector<vector<int>> TQ;
     // -- ONLY FOR DEBUG
     vector<map<Vector2d, vector<int>,  Utility::classcomp> > storeSampleTriangles;
-    vector<Vector2d> orphanSample;
-    
-    int IDPolychord = -1;
     map<int, CageSubDomain> storeSubC;
     map<int, vector<int>> debugPartialTQ;
+    // -- DEBUG GUI
+    int IDPolychord = -1;
 
 };
 

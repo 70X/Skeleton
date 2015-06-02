@@ -22,21 +22,6 @@
         }
         return TsQ;
     }
-
-     void Process::updateTQ()
-    {
-        cout << "Q size: "<<C.Q.rows() << endl;
-        vector<vector<int>> listTQ(C.Q.rows());
-         for(int i=0; i<M.F.rows(); i++)
-        {
-            int q0 = C.QVmesh(M.F(i,0));
-            int q1 = C.QVmesh(M.F(i,1));
-            int q2 = C.QVmesh(M.F(i,2));
-            if (q0==q1 && q1==q2)
-                listTQ[q0].push_back(i);
-        }
-        TQ = listTQ;
-    }
     
     double Process::computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap)
     {
@@ -52,10 +37,9 @@
 
     void Process::getTrianglesInExpMapping(int Vi, CageSubDomain &sC)
     {
-        sC.initAll(C);
         sC.computeDomain(Vi); 
         vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
-        debugPartialTQ[Vi] = TsQ;
+        //debugPartialTQ[Vi] = TsQ;
             
         sC.triangles = M.findTriangles(TsQ, sC.sV[ sC.iV[Vi] ], sC);
         sC.examVertex =  sC.sV[ sC.iV[Vi] ];
@@ -70,18 +54,20 @@
             //cout <<Vi <<". ALERT "<< sC.triangles.size()<<endl;
         }
     }
-    void Process::movingVertexCageToMesh(vector<int> newVertices)
+    void Process::movingVertexCageToMesh(vector<int> newVertices, Cage &C)
     {
         Vector3d Vs;
-        cout << "How many vertices? "<< newVertices.size() << endl;
+        //cout << "How many vertices? "<< newVertices.size() << endl;
         for(vector<int>::const_iterator Vi = newVertices.begin(); Vi != newVertices.end(); ++Vi )
         {  
             CageSubDomain sC;
+            sC.initAll(C);
             getTrianglesInExpMapping(*Vi, sC);
             if (sC.triangles.size() == 0)
             {
-                cout << "ALERT "<< *Vi << " niente"<<endl;
+                //cout << "ALERT "<< *Vi << " niente"<<endl;
             }
+
             for(vector<int>::const_iterator idT = sC.triangles.begin(); idT != sC.triangles.end(); ++idT)
             {
                 Vs = Utility::getCoordBarycentricTriangle(sC.getTMapping(M.F.row(*idT)), M.getT(*idT), sC.sV[ sC.iV[*Vi] ]);
@@ -89,65 +75,141 @@
                 break;
             }
             //if (storeSubC.size() == 0)
-            storeSubC[*Vi] = sC;
+            //storeSubC[*Vi] = sC;
         }
     }
 
-    void Process::initErrorsAndRelations()
+    void Process::initErrorsAndRelations(Cage &C, Polychords &P)
     {
         C.computeQQ();
+        P = Polychords(&(C));
         P.computePolychords(); 
-        updateTQ();
         distancesBetweenMeshCage();
-        storeSampleTriangles.clear();
-        storeSubC.clear();
+        //storeSampleTriangles.clear();
+        //storeSubC.clear();
+    }
 
-        //E = new ErrorsGrid(*this);
-        E = new ErrorsHalfEdgeQuad(*this);
+    double Process::distancesBetweenMeshCage(Cage C)
+    {
+        double E = 0;
+        for (unsigned int i = 0; i < M.V.rows(); i++)
+        {
+            int q = C.QVmesh(i);
+            Vector2d p = C.Vmesh.row(i);
+            E += Utility::computeDistance(M.V.row(i), C.getVMapping(q, p));
+        }
+        return E;
+    }
+
+    vector<int> Process::processToSplit(Cage &C, vector<int> listQ)
+    {
+        vector<int> newVertices;
+        int q_next, q_start = listQ[0];
+
+        for(vector<int>::const_iterator q = listQ.begin(); q != listQ.end(); ++q)
+        {
+            q_next = *(q+1);
+            if (q+1 == listQ.end())
+                q_next = q_start;
+            int e = C.getEdgeQuadAdjacent(*q, q_next);
+            C.split(*q, e, (e+2)%4, newVertices);
+        }
+        return newVertices;
+    }
+
+    int Process::queueRaffinementQuadLayout(Cage &C0, Polychords &P0, int tryTimes)
+    {
+        map<double, int>  queueE;
+        
+        Process process;
+        process.C = Cage(C0.V, C0.Q, C0.Vmesh, C0.QVmesh, C0.QQ, C0._QV);
+        process.P = Polychords(&(process.C), P0.P);
+        process.M = M;
+        
+        for(int idP = 0; idP<P0.getSize(); idP++)
+        {
+            Process fakeEnvironment = process;
+            map<double, int>  Etmp;
+            for(int i=0; i<tryTimes; i++)
+            {
+                IError *Err = new ErrorsHalfEdgeQuad(&fakeEnvironment);
+                double errBefore = Err->getErrorpolychordByID(idP);
+
+                vector<int> newVertices = processToSplit(fakeEnvironment.C, fakeEnvironment.P.P[idP]);
+                
+                // Reinitialize relation adj.
+                initErrorsAndRelations(fakeEnvironment.C, fakeEnvironment.P);
+        
+                // moveCage towards mesh triangle
+                movingVertexCageToMesh(newVertices, fakeEnvironment.C); 
+
+                Err->computeErrorsGrid();
+                double errAfter = Err->getErrorpolychordByID(idP);
+                Etmp.insert(make_pair(errAfter - errBefore, i));
+            }
+            
+            map<double, int>::const_iterator worstSplit = Etmp.begin();
+            queueE.insert(make_pair(worstSplit->first, idP));
+        }
+        map<double, int>::const_iterator worstPolychord = queueE.begin();
+        
+        for (map<double, int>::const_iterator it = queueE.begin(); it != queueE.end(); ++it)
+            cout << "["<<it->second<<"]"<<" "<<it->first <<endl;
+        
+        return worstPolychord->second;
     }
 
     void Process::raffinementQuadLayout(int times)
     {
-        int i = 0;
+        ofstream seqPolychord, timePolychord;
+        
+        configurationFileOutput(seqPolychord, timePolychord);
+
+        int i = 0, worstPolychord;
         while(i < times )
         {
-            cout << " -----------iteration Raffinement ---------------"<<endl;
-            vector<int> newVertices;
-
-
-            // Find polychord with the greatest error
-            int worstPolychord = E->getPolychordWithMaxError();
-            cout << "The worst Polychord error: "<< worstPolychord << endl;
-            //worstPolychord = 2;
-            // Split found polychord and cage 
-            if (worstPolychord == -1)
-                return;
-            int q_next, q_start = P.P[worstPolychord][0];
-            for(vector<int>::const_iterator q = P.P[worstPolychord].begin(); q != P.P[worstPolychord].end(); ++q)
+            raffinementTimes++;
+            cout << " -----------iteration Raffinement:"<<raffinementTimes<<" ---------------"<<endl<<endl;
+            chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
+            switch(error_type_choice)
             {
-                q_next = *(q+1);
-                if (q+1 == P.P[worstPolychord].end())
-                    q_next = q_start;
-                int e = C.getEdgeQuadAdjacent(*q, q_next);
-                C.split(*q, e, (e+2)%4, newVertices);
+                case WITH_QUEUE:
+                        cout <<"\t raffinament with queue "<<endl;
+                        worstPolychord = queueRaffinementQuadLayout(C, P);
+                        seqPolychord <<i<<" "<<worstPolychord <<endl;
+                        break;  
+                case GRID_SIMPLE:
+                        cout <<"\t raffinament with ErrorsGrid"<<endl;
+                        E = new ErrorsGrid(this);
+                        worstPolychord = E->getPolychordWithMaxError();
+                        seqPolychord <<i<<" "<< worstPolychord <<endl;
+                        break;
+                case GRID_HALFEDGE:
+                        cout <<"\t raffinament with ErrorsHalfEdgeQuad "<<endl;
+                        E = new ErrorsHalfEdgeQuad(this);
+                        worstPolychord = E->getPolychordWithMaxError();
+                        seqPolychord <<i<<" "<< worstPolychord <<endl;
+                        break;
+                default: 
+                        break;
             }
-            
-            // Reinitialize relation adj.
-            initErrorsAndRelations();
-            // moveCage towards mesh triangle
-            movingVertexCageToMesh(newVertices); 
 
-            cout << " ----------- Cycle End ---------------"<<endl;
+            cout << "The worst Polychord error: "<< worstPolychord << endl<<endl;
             
-            /*
-            for (int i=0; i<C.Q.rows(); i++)
-                cout << "["<<i<<"]"<< C.Q.row(i)<<endl;
-            cout << "QQ" <<endl;
-            for(int i=0; i<C.QQ.rows(); i++)
-                cout << "["<<i<<"]"<< C.QQ.row(i) << endl;
-            cout << endl;*/
+            vector<int> newVertices = processToSplit(C, P.P[worstPolychord]);
+            // Reinitialize relation adj.
+            initErrorsAndRelations(C, P);
+            // moveCage towards mesh triangle
+            movingVertexCageToMesh(newVertices, C); 
+            
+            chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
+            auto duration = chrono::duration_cast<chrono::microseconds>( t2 - t1 ).count();
+            cout << duration <<" microsec." <<endl<<endl;
+            timePolychord<<i<<" "<<duration<<endl;
             i++;
         }
+        seqPolychord.close();
+        timePolychord.close();
     }
 
 
@@ -159,10 +221,10 @@
 
         for (unsigned int i = 0; i < V.rows(); i++)
         {
-            int quality = C.QVmesh(i);
-            Vector2d p = C.Vmesh.row(i);
-            distancesMeshCage[i] = Utility::computeDistance(V.row(i), C.getVMapping(quality, p));
-        
+            int q = C.QVmesh(i);
+            Vector2d v = C.Vmesh.row(i);
+            distancesMeshCage[i] = Utility::computeDistance(V.row(i), C.getVMapping(q, v));
+            
         }
         
         min = distancesMeshCage.minCoeff();
@@ -181,12 +243,50 @@
         distancesBetweenMeshCage();
 
         P = Polychords(&(C));
-        initErrorsAndRelations();
+        initErrorsAndRelations(C, P);
 
         vector<int> indexVerticesCage(C.V.rows());
         std::iota(indexVerticesCage.begin(), indexVerticesCage.end(), 0);
-        movingVertexCageToMesh(indexVerticesCage);
+        movingVertexCageToMesh(indexVerticesCage, C);
     }
+
+
+    void Process::configurationFileOutput(ofstream &seqPolychord, ofstream &timePolychord)
+    {
+        string fileNameTime, fileNameSequence, introTime, introSeq;
+        //char *newF = strchr(filename, '.');
+        string newF(filename);
+        std::size_t found = newF.find_last_of("/\\");
+        newF = newF.substr(found+1);
+        newF = newF.substr(0, newF.find_last_of("."));
+
+        mkdir("analysisOutput", S_IRWXU);
+        mkdir( ("analysisOutput/"+newF).c_str(), S_IRWXU);
+
+        switch(error_type_choice)
+        {
+            case WITH_QUEUE:
+                            fileNameSequence = "analysisOutput/"+newF+"/WQ_seqPolychord_"+ newF +".txt";
+                            fileNameTime = "analysisOutput/"+newF+"/WQ_timePolychord_"+ newF +".txt";
+                            introTime = introSeq = "#Raff. with queue ";
+                            break;  
+            case GRID_SIMPLE:
+                            fileNameSequence = "analysisOutput/"+newF+"/EG_seqPolychord_"+ newF +".txt";
+                            fileNameTime = "analysisOutput/"+newF+"/EG_timePolychord_"+ newF +".txt";
+                            introTime = introSeq = "#Raff. with ErrorsGrid ";
+                            break;
+            case GRID_HALFEDGE: 
+                            fileNameSequence = "analysisOutput/"+newF+"/HE_seqPolychord_"+ newF +".txt";
+                            fileNameTime = "analysisOutput/"+newF+"/HE_timePolychord_"+ newF +".txt";
+                            introTime = introSeq = "#Raff. with ErrorsHalfEdgeQuad ";
+                            break;
+        }
+        timePolychord.open(fileNameTime);
+        seqPolychord.open(fileNameSequence);
+        //timePolychord << introTime << endl;
+        //seqPolychord << introSeq <<endl;
+    }
+
 /////////////////// I/O ///////////////////////////////////////
     void Process::read(char *str)
     {

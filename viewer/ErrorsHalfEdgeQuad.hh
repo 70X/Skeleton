@@ -3,6 +3,7 @@
 #include <iostream>
 #include <map>
 #include <math.h>
+#include <chrono>
 
 #include "ErrorsGrid.hh"
 #include "Utility.hh"
@@ -23,17 +24,16 @@ class ErrorsHalfEdgeQuad : public ErrorsGrid
 {
 	map<pair<int, int>, double> errorQuadsByDirection; // key: <idQ, edge> value: error
 public:
-	ErrorsHalfEdgeQuad(Process &process)
+	ErrorsHalfEdgeQuad(Process *process)
 	{
-		Env = &process;
-		M = &(Env->M);
-		C = &(Env->C);
-		computeErrorsGrid();
+		Env = process;
+		computeErrorsGrid();     
 	};
 
 	virtual int getPolychordWithMaxError();
-private:
+	virtual double getErrorpolychordByID(int idP);
 	virtual void computeErrorsGrid();
+private:
 	void errorsGridByQuadID(int q);
 	double errorsQuadAlongDirection(int q, double step_x, double step_y, int m, int n);
 };

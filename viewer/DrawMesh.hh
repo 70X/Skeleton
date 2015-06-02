@@ -6,13 +6,12 @@
 #include "Process.hh"
 
 #include <Eigen/Core>
-//#include <Eigen/Geometry>
 #include <iostream>
-//#include <fstream>
-//#include <vector>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#define MESH_DRAW_MODE_NUM 4 
 
 using namespace Eigen;
 using namespace std;
@@ -26,8 +25,7 @@ class DrawMesh
 public:
 	DrawMesh();
 	~DrawMesh();
-	#define MESH_DRAW_MODE_NUM 4 
-	    typedef enum {SMOOTH, FLAT, POINTS, WIRE} draw_mode_t;
+	typedef enum {SMOOTH, FLAT, POINTS, WIRE} draw_mode_t;
 
 	void bb(MatrixXd MeshV, MatrixXi MeshF);
 
@@ -56,7 +54,6 @@ private:
 	//--------------------DEBUG----------------------
 	void drawCageSubDomain();
 	void drawPolychords();
-
 	void drawGrid();
 	void drawLinesVmapping();
 	void drawSamplePointWithHisTriangle(int q, Vector2d s, int t);

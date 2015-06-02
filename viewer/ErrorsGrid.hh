@@ -23,23 +23,24 @@ class ErrorsGrid : public IError
 {
 protected:
 	Process *Env;
-	Mesh *M;
-	Cage *C;
 	vector<Vector2d> orphanSample;
     VectorXd errorQuads;
+    vector<vector<int>> TQ;
 public:
 	ErrorsGrid(){};
-	ErrorsGrid(Process &process)
+	ErrorsGrid(Process *process)
 	{
-		Env = &process;
-		M = &(Env->M);
-		C = &(Env->C);
+		Env = process;
 		computeErrorsGrid();
 	};
 
 	virtual int getPolychordWithMaxError();
-protected:
+	virtual double getErrorpolychordByID(int idP);
 	virtual void computeErrorsGrid();
+	virtual void debug(Process *f) { Env = f;cout << f->P.getSize() <<" = "<<Env->P.getSize()<<endl; };
+protected:
+	void updateTQ();
+	
 	double errorsGridByQuadID(int q);
 	double errorAvarageSamples( Vector2d s, double step_x, double step_y, map<Vector2d, double, Utility::classcomp> storeErrorSample);
 	double errorSample(int q, Vector2d s);

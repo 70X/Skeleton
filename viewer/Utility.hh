@@ -22,6 +22,7 @@ namespace Utility
 	typedef Eigen::MatrixXd Triangle2D;
 	typedef Eigen::Matrix3d Triangle3D;
 
+    double computeError(double E, double numberSample, Vector3d _A, Vector3d _B, Vector3d _C, Vector3d _D);
   	double areaTriangle(Vector2d A, Vector2d B, Vector2d C);
 	double areaTriangle_old(Vector2d A, Vector2d B, Vector2d C);
 	double areaQuad(Vector3d A,Vector3d B,Vector3d C, Vector3d D);

@@ -2,6 +2,12 @@
 
 namespace Utility
 {
+
+  double computeError(double E, double numberSample, Vector3d _A, Vector3d _B, Vector3d _C, Vector3d _D)
+  {
+    return pow(E, 2) / (numberSample); //Utility::areaQuad(_A, _B, _C, _D );
+  }
+
   double areaTriangle(Vector2d A, Vector2d B, Vector2d C)
   {
       double a = ( 

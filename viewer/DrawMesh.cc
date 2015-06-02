@@ -400,101 +400,61 @@ void DrawMesh::drawMesh (draw_mode_t mode)
         glBegin (GL_TRIANGLES); 
         glColor3f(0,1,0);
         
-                
-        if(IDQuad != -1 && IDQuad < p->TQ.size() )
+        for (int i = 0; i < F.rows(); i++)
         {
-            int q = IDQuad;
-            for(vector<int>::const_iterator idF = p->TQ[q].begin(); idF != p->TQ[q].end(); ++idF)
+
+                    
+            if(IDTriangle != -1 && IDTriangle < p->M.F.rows() && IDTriangle != i)
             {
-                int i = *idF;
+                continue;
+            }
 
-                i0 = F(i,0);
-                i1 = F(i,1);
-                i2 = F(i,2);
-                 Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
-                Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
-                Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
-                Vector3d u,v,n;
-                u = v1 - v0;
-                v = v2 - v0;
-                n = (u.cross(v));
-                glNormal3f (n(0), n(1), n(2));
+            if (F.cols() != 3 || V.cols() != 3)
+                fprintf (stderr, "VF:draw(): only triangles in 3D are supported\n");
 
-                double d0, d1, d2;
+            i0 = i1 = i2 = 0;
+            if (i0 < 0 || i0 >= V.rows())
+                fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
+                     i,0,F(i,0));
+            if (i1 < 0 || i1 >= V.rows())
+                fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
+                     i,1,F(i,1));
+            if (i2 < 0 || i2 >= V.rows())
+                fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
+                     i,2,F(i,2));
+            // indexes of vertices of face i
+            i0 = F(i,0);
+            i1 = F(i,1);
+            i2 = F(i,2);
 
-                d0 = distV(i0);
-                d1 = distV(i1);
-                d2 = distV(i2);
+            Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
+            Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
+            Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
+            //1684
+            //1701 = nV = 11
 
+            Vector3d u,v,n;
+            u = v1 - v0;
+            v = v2 - v0;
+            n = (u.cross(v));
+            glNormal3f (n(0), n(1), n(2));
+
+            double d0, d1, d2;
+
+            d0 = distV(i0);
+            d1 = distV(i1);
+            d2 = distV(i2);
                 //cout << d0 << " " << d1 << " " << d2 << endl;
-                setColorError(d0, colorError[0]);
-                setColorError(d1, colorError[1]);
-                setColorError(d2, colorError[2]);
-                glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);
-                glVertex3f (v0(0), v0(1), v0(2));
-                glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
-                glVertex3f (v1(0), v1(1), v1(2));
-                glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
-                glVertex3f (v2(0), v2(1), v2(2));
-                
-            }
+            setColorError(d0, colorError[0]);
+            setColorError(d1, colorError[1]);
+            setColorError(d2, colorError[2]);
+            glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);
+            glVertex3f (v0(0), v0(1), v0(2));
+            glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
+            glVertex3f (v1(0), v1(1), v1(2));
+            glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
+            glVertex3f (v2(0), v2(1), v2(2));
         }
-        else
-                for (int i = 0; i < F.rows(); i++)
-            {
-
-                        
-                if(IDTriangle != -1 && IDTriangle < p->M.F.rows() && IDTriangle != i)
-                {
-                    continue;
-                }
-
-                if (F.cols() != 3 || V.cols() != 3)
-                    fprintf (stderr, "VF:draw(): only triangles in 3D are supported\n");
-
-                i0 = i1 = i2 = 0;
-                if (i0 < 0 || i0 >= V.rows())
-                    fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
-                         i,0,F(i,0));
-                if (i1 < 0 || i1 >= V.rows())
-                    fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
-                         i,1,F(i,1));
-                if (i2 < 0 || i2 >= V.rows())
-                    fprintf (stderr, "VF::draw(): out of boundary F(%d,%d) = %d\n",
-                         i,2,F(i,2));
-                // indexes of vertices of face i
-                i0 = F(i,0);
-                i1 = F(i,1);
-                i2 = F(i,2);
-
-                Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
-                Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
-                Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
-                //1684
-                //1701 = nV = 11
-
-                Vector3d u,v,n;
-                u = v1 - v0;
-                v = v2 - v0;
-                n = (u.cross(v));
-                glNormal3f (n(0), n(1), n(2));
-
-                double d0, d1, d2;
-
-                d0 = distV(i0);
-                d1 = distV(i1);
-                d2 = distV(i2);
-                    //cout << d0 << " " << d1 << " " << d2 << endl;
-                setColorError(d0, colorError[0]);
-                setColorError(d1, colorError[1]);
-                setColorError(d2, colorError[2]);
-                glColor3f(colorError[0][0],colorError[0][1],colorError[0][2]);
-                glVertex3f (v0(0), v0(1), v0(2));
-                glColor3f(colorError[1][0],colorError[1][1],colorError[1][2]);
-                glVertex3f (v1(0), v1(1), v1(2));
-                glColor3f(colorError[2][0],colorError[2][1],colorError[2][2]);
-                glVertex3f (v2(0), v2(1), v2(2));
-            }
         glEnd(); 
     }
     drawLinesVmapping();
@@ -517,69 +477,6 @@ void DrawMesh::drawMesh (draw_mode_t mode)
     }
     if (mode == WIRE)
     {
-        
-
-        if(IDQuad != -1 && IDQuad < p->TQ.size() )
-        {
-            //int q = IDQuad;
-            vector<int> listQ;
-            listQ.push_back(IDQuad);
-            //listQ.push_back(0);
-            for (vector<int>::const_iterator q = listQ.begin(); q!=listQ.end(); q++)
-            for(vector<int>::const_iterator idF = p->TQ[*q].begin(); idF != p->TQ[*q].end(); ++idF)
-            {
-                drawTriangleAndShadow(*idF);
-                /*glDisable (GL_DEPTH_TEST);
-                glDisable (GL_LIGHTING);
-                glColor3f(color(0),color(1),color(2)); // same color for all edges
-                
-                glBegin (GL_LINES);
-
-                int i = *idF;
-
-
-                 int i0,i1,i2;
-                i0 = i1 = i2 = 0;
-
-                i0 = F(i,0);
-                i1 = F(i,1);
-                i2 = F(i,2);
-                
-                Vector3d v0 (V(i0,0), V(i0,1), V(i0,2));
-                Vector3d v1 (V(i1,0), V(i1,1), V(i1,2));
-                Vector3d v2 (V(i2,0), V(i2,1), V(i2,2));
-                
-                // triangle
-                glVertex3f (v0(0), v0(1), v0(2));
-                glVertex3f (v1(0), v1(1), v1(2));
-                glVertex3f (v0(0), v0(1), v0(2));
-                glVertex3f (v2(0), v2(1), v2(2));
-                glVertex3f (v1(0), v1(1), v1(2));
-                glVertex3f (v2(0), v2(1), v2(2));
-                glEnd(); 
-                */
-                /*Vector3d v0_map = p->C.getVMapping(*q, p->C.Vmesh.row(i0));
-                Vector3d v1_map = p->C.getVMapping(*q, p->C.Vmesh.row(i1));
-                Vector3d v2_map = p->C.getVMapping(*q, p->C.Vmesh.row(i2));
-
-                glDisable (GL_DEPTH_TEST);
-                    glDisable(GL_LIGHTING);
-                    glEnable(GL_BLEND);
-                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    glShadeModel(GL_FLAT); 
-                    glBegin (GL_TRIANGLES); 
-
-                    glColor4f(0.5,1,0.5, 0.4);
-                    glVertex3f (v0_map(0), v0_map(1), v0_map(2));
-                    glVertex3f (v1_map(0), v1_map(1), v1_map(2));
-                    glVertex3f (v2_map(0), v2_map(1), v2_map(2));
-            
-                glEnd();
-                */
-                
-            }
-        }
-        else
         for (int i = 0; i < F.rows(); i++)
         {
             glDisable (GL_DEPTH_TEST);

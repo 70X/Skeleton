@@ -12,7 +12,9 @@ class Polychords
 	public:
 	Polychords(){};
 	Polychords(Cage *c);
+	Polychords(Cage *c, vector<vector<int>> P);
 	~Polychords(){};
+	
 	int getSize()	{	return P.size();	};
 
 	void computePolychords();

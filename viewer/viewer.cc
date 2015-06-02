@@ -24,11 +24,9 @@
 Camera camera;
 int width = W;
 int height = H;
-int times = 0;
 
 DrawMesh::draw_mode_t mesh_draw_mode = DrawMesh::FLAT;
 DrawMesh::draw_mode_t cage_draw_mode = DrawMesh::WIRE;
-
 
 // Mesh:
 Process p;
@@ -177,10 +175,9 @@ void TW_CALL getIDPolychord (void *value, void *)
 
 void TW_CALL setRaffinementTimes (void *value)
 {
-    times++;
     p.raffinementQuadLayout(1);
     char str[100];
-    sprintf(str, "Camera_Rendering/raffinement label='step %d raffinement'",  (int) times);
+    sprintf(str, "Camera_Rendering/raffinement label='step %d raffinement'",  (int) p.raffinementTimes);
     TwDefine(str);
 
     sprintf(str, "Camera_Rendering/IDQuad max=%d ",  (int)(p.C.Q.rows() - 1));
@@ -265,16 +262,19 @@ void TW_CALL call_quit(void *clientData)
     quit();
 }
 
-char filename[200];
 
-void TW_CALL resetRaffinement (void *value)
+
+void resetAll()
 {
     drawing.IDPolychord = -1;
     p.IDPolychord = -1;
     drawing.IDQuad = -1;
-    p.initAll(filename);
-    times = 0;
-    
+    p.initAll(p.filename);
+    p.raffinementTimes = 0;
+}
+void TW_CALL resetRaffinement (void *value)
+{
+    resetAll();
     char str[50];
     TwDefine("Camera_Rendering/raffinement label='step 0 raffinement'");
 
@@ -309,12 +309,20 @@ int main (int argc, char *argv[])
 	exit (-1);
     }
 
-    strcpy(filename, argv[1]);
-    p.initAll(filename);
+    strcpy(p.filename, argv[1]);
+    p.initAll(p.filename);
     drawing.setProcess(p);
     drawing.bb(p.M.V, p.M.F);
     
-    //p.raffinementQuadLayout(20);
+    //p.error_type_choice = Process::GRID_SIMPLE;
+    //p.raffinementQuadLayout(30);
+    //resetAll();
+    p.error_type_choice = Process::GRID_HALFEDGE;
+    p.raffinementQuadLayout(30);
+    //resetAll();
+    //p.error_type_choice = Process::WITH_QUEUE;
+    //p.raffinementQuadLayout(30);
+    
     #define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG
 
@@ -358,6 +366,11 @@ int main (int argc, char *argv[])
 
     TwType draw_modeT = TwDefineEnum("drawModeType", draw_modeEV, MESH_DRAW_MODE_NUM);
     TwType draw_modeC = TwDefineEnum("drawCageModeType", draw_modeEV, MESH_DRAW_MODE_NUM);
+    
+    TwEnumVal errorTypeEnum[ERROR_TYPE_NUM] = {
+        { Process::WITH_QUEUE, "With queue" }, { Process::GRID_SIMPLE, "Simple Grid" }, { Process::GRID_HALFEDGE, "Half edge Grid" } }; 
+    
+    TwType error_type = TwDefineEnum("errorType", errorTypeEnum, ERROR_TYPE_NUM);
     
     // info
     TwAddVarRW(cBar, "show camera help", TW_TYPE_BOOLCPP, &camera.gShowHelp, "group = 'Scene'");
@@ -405,28 +418,19 @@ int main (int argc, char *argv[])
     TwAddVarCB(cBar, "IDCageSubDomain", TW_TYPE_DOUBLE, setCageSubDomain, getCageSubDomain,
            NULL, strcat(str, " label='ID CageSubDomain'"));
 
-    /*sprintf(str, "group = 'Debug' min=-1 step=1");
-    TwAddVarCB(cBar, "IDPartialTriangle", TW_TYPE_DOUBLE, setPartialTriangle, getPartialTriangle,
-           NULL, strcat(str, " label='ID P. Triangle'"));
+    /*TwAddVarRW(cBar, "with queue", TW_TYPE_BOOLCPP, &p.raffinamentQueue, 
+        "group = 'Debug' label='with queue'");
     */
-    //sprintf(str, "group = 'Debug' ");
-    //TwAddVarRO(cBar, "LabelIDCageSubDomain", TW_TYPE_FLOAT, &(drawing.IDCageSubDomain), strcat(str, "label='which sC: '"));
-   
+    TwAddVarRW(cBar, "ErrorType", error_type, &p.error_type_choice,
+           "group = 'Raffinement'" " keyIncr='<' keyDecr='>'"); 
 
-
-
+    sprintf(str, "group = 'Raffinement' label='step %d raffinement'",  (int) p.raffinementTimes);
     TwAddButton(cBar, "raffinement", setRaffinementTimes, NULL, 
-                "group = 'Debug' label='step 0 raffinement'");
-    
+                str);
 
     TwAddButton(cBar, "reset", resetRaffinement, NULL, 
-                  "group = 'Debug' label='--> Reset'");
+                  "group = 'Raffinement' label='--> Reset'");
     
-    /*TwAddVarCB(cBar, "threshold min", TW_TYPE_DOUBLE, setThresholdMin, getThresholdMin,
-           NULL, "min=0.00 max=1.00 step=0.001");
-
-    TwAddVarCB(cBar, "threshold max", TW_TYPE_DOUBLE, setThresholdMax, getThresholdMax,
-           NULL, "min=0.00 max=1.00 step=0.001");*/
     glutMainLoop();
     
     exit (-1);

@@ -1,0 +1,53 @@
+#set terminal postscript landscape color solid "Helvetica" 14
+set terminal postscript landscape monochrome dashed "Helvetica" 14
+set output 'cactus_SEQ.ps'
+#set output 'matmul_2.ps'
+#set output 'matmul_3.ps'
+set noclip points
+set clip one
+set noclip two
+set border
+set boxwidth
+set dummy x,y
+set format x "%g"
+set format y "%g"
+set nogrid
+set nolabel
+set noarrow
+set nologscale
+set nopolar
+set angles radians
+set noparametric
+set offsets 0, 0, 0, 0
+set view 60, 30, 1, 1
+set samples 100, 100
+set isosamples 10, 10
+set surface
+set nocontour
+set clabel
+set nohidden3d
+set cntrparam order 4
+set cntrparam linear
+set cntrparam levels auto 5
+set cntrparam points 5
+set xzeroaxis
+set yzeroaxis
+set tics in
+set ticslevel 0.5
+set xtics
+set ytics
+set notime
+set size 1.1,1.1
+set style data lines
+set style function dots
+set xlabel "matrix size" offset -1,0
+#set xrange [10 : 1200]
+set ylabel "performance (MFLOPS)" offset 0,-1
+#set yrange [0 : 4100]
+set key vertical right Left
+set noautoscale   
+set zero 1e-08
+plot \
+"EG_seqPolychord_cactus.txt" t "Error Grid Simple",\
+"HE_seqPolychord_cactus.txt" t "Error Grid With Half Edge",\
+"WQ_seqPolychord_cactus.txt" t "Error With Queue "
