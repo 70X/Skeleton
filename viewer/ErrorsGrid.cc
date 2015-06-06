@@ -21,7 +21,10 @@
         
         vector<int> triangles = Env->M.findTriangles(TQ[q], s, Env->C);
 
-        //Env->storeSampleTriangles[q].insert(std::make_pair(s, triangles) );
+		#ifdef __MODE_DEBUG
+        Env->storeSampleTriangles[q].insert(std::make_pair(s, triangles) );
+        #endif
+        
         if (triangles.size() == 0)
         {
             int Vi = Env->C.getAreaQuad(q, s);
@@ -107,7 +110,11 @@
         
         map<Vector2d, double, Utility::classcomp> storeErrorSample;
         orphanSample.clear();
-        //Env->storeSampleTriangles.push_back(map<Vector2d, vector<int>, Utility::classcomp>());
+        
+        #ifdef __MODE_DEBUG
+        Env->storeSampleTriangles.push_back(map<Vector2d, vector<int>, Utility::classcomp>());
+        #endif
+        
         for (int i=1; i<m; i++)
             for (int j=1; j<n; j++)
             {

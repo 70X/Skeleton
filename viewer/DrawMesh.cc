@@ -96,6 +96,7 @@
         glEnd();
         }
     }
+
     void DrawMesh::drawCageSubDomain()
     {
 
@@ -354,6 +355,7 @@ void DrawMesh::drawLinesVmapping()
 
 void DrawMesh::drawDebug(draw_mode_t mode)
 {
+    #ifdef __MODE_DEBUG
     glColor3f (0.0,0.0,0.0);
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
@@ -366,7 +368,8 @@ void DrawMesh::drawDebug(draw_mode_t mode)
         drawGrid();
 
     glPopMatrix();
-    
+    #endif
+
     return; 
 }
 
@@ -457,7 +460,11 @@ void DrawMesh::drawMesh (draw_mode_t mode)
         }
         glEnd(); 
     }
+    
+    #ifdef __MODE_DEBUG
     drawLinesVmapping();
+    #endif
+
     if (mode == POINTS)
     {
         glDisable (GL_DEPTH_TEST);

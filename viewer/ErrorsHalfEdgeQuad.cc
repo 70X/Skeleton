@@ -6,7 +6,11 @@
         map<Vector2d, double, Utility::classcomp> storeErrorSample;
 
 		orphanSample.clear();
-        //Env->storeSampleTriangles.push_back(map<Vector2d, vector<int>, Utility::classcomp>());
+        
+        #ifdef __MODE_DEBUG
+        Env->storeSampleTriangles.push_back(map<Vector2d, vector<int>, Utility::classcomp>());
+        #endif
+
         for (int i=1; i<m; i++)
 	        for (int j=1; j<n; j++)
 	        {

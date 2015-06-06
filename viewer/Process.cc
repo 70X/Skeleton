@@ -39,7 +39,10 @@
     {
         sC.computeDomain(Vi); 
         vector<int> TsQ = getBorderTrianglesSubDomainQ(sC.sQ);
-        //debugPartialTQ[Vi] = TsQ;
+        
+        #ifdef __MODE_DEBUG
+        debugPartialTQ[Vi] = TsQ;
+        #endif
             
         sC.triangles = M.findTriangles(TsQ, sC.sV[ sC.iV[Vi] ], sC);
         sC.examVertex =  sC.sV[ sC.iV[Vi] ];
@@ -74,8 +77,10 @@
                 C.V.row(*Vi) = Vs; // new Mapping :)
                 break;
             }
-            //if (storeSubC.size() == 0)
-            //storeSubC[*Vi] = sC;
+            
+            #ifdef __MODE_DEBUG
+            storeSubC[*Vi] = sC;
+            #endif
         }
     }
 
@@ -85,8 +90,11 @@
         P = Polychords(&(C));
         P.computePolychords(); 
         distancesBetweenMeshCage();
-        //storeSampleTriangles.clear();
-        //storeSubC.clear();
+        
+        #ifdef __MODE_DEBUG
+        storeSampleTriangles.clear();
+        storeSubC.clear();
+        #endif
     }
 
     double Process::distancesBetweenMeshCage(Cage C)
@@ -162,12 +170,19 @@
     void Process::raffinementQuadLayout(int times)
     {
         ofstream seqPolychord, timePolychord;
-        
         configurationFileOutput(seqPolychord, timePolychord);
 
+        bool condition = false;
+        if (QuadMax != -1 || ErrMax != 0)
+            condition = true;
+
         int i = 0, worstPolychord;
-        while(i < times )
+        while( condition || i < times )
         {
+            if (QuadMax != -1 && C.Q.rows() > QuadMax)
+                break;
+            // Reinitialize relation adj.
+            initErrorsAndRelations(C, P);
             raffinementTimes++;
             cout << " -----------iteration Raffinement:"<<raffinementTimes<<" ---------------"<<endl<<endl;
             chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
@@ -175,6 +190,7 @@
             {
                 case WITH_QUEUE:
                         cout <<"\t raffinament with queue "<<endl;
+                        E = new ErrorsHalfEdgeQuad(this);
                         worstPolychord = queueRaffinementQuadLayout(C, P);
                         seqPolychord <<i<<" "<<worstPolychord <<endl;
                         break;  
@@ -193,12 +209,12 @@
                 default: 
                         break;
             }
-
-            cout << "The worst Polychord error: "<< worstPolychord << endl<<endl;
+            LastError = E->getErrorpolychordByID(worstPolychord);
+            cout << "The worst Polychord ID: "<< worstPolychord << " error: "<< LastError <<" error"<< endl<<endl;
+            if (LastError < ErrMax)
+                break;
             
             vector<int> newVertices = processToSplit(C, P.P[worstPolychord]);
-            // Reinitialize relation adj.
-            initErrorsAndRelations(C, P);
             // moveCage towards mesh triangle
             movingVertexCageToMesh(newVertices, C); 
             
@@ -242,6 +258,8 @@
         read(strcat(buf, ".domain.off"));
         distancesBetweenMeshCage();
 
+        raffinementTimes = 0;
+        LastError = 0;
         P = Polychords(&(C));
         initErrorsAndRelations(C, P);
 
@@ -281,8 +299,8 @@
                             introTime = introSeq = "#Raff. with ErrorsHalfEdgeQuad ";
                             break;
         }
-        timePolychord.open(fileNameTime);
-        seqPolychord.open(fileNameSequence);
+        timePolychord.open(fileNameTime, std::ios_base::app);
+        seqPolychord.open(fileNameSequence, std::ios_base::app);
         //timePolychord << introTime << endl;
         //seqPolychord << introSeq <<endl;
     }

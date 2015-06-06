@@ -7,6 +7,7 @@
 #define ON 1
 #define OFF 0
 #define ERROR_TYPE_NUM 3 
+//#define __MODE_DEBUG
 
 #include "Utility.hh"
 #include "Mesh.hh"
@@ -65,22 +66,25 @@ public:
 	Cage C;
 	Polychords P;
 	IError *E;
+
     // #dist.Vx1: in the ith row, stores the distance of the vertices of the ith vertex
     VectorXd distancesMeshCage;
     vector<Vector2d> orphanSample;
 	
 	// --- RAFFINEMENT GUI
-	error_t error_type_choice = GRID_SIMPLE;
+	int QuadMax = -1;
+	int numberOfRaff = -1;
+	double ErrMax = 0;
+	double LastError = 0;
+
+	error_t error_type_choice = GRID_HALFEDGE;
 	int raffinementTimes = 0;
 	char filename[200];
 
-    // -- ONLY FOR DEBUG
+    // -- ONLY FOR DEBUG - When is defined MODE_DEBUG
     vector<map<Vector2d, vector<int>,  Utility::classcomp> > storeSampleTriangles;
     map<int, CageSubDomain> storeSubC;
     map<int, vector<int>> debugPartialTQ;
-    // -- DEBUG GUI
-    int IDPolychord = -1;
-
 };
 
 #endif

@@ -160,36 +160,69 @@ void TW_CALL getFocalLength (void *value, void *)
     *(double *) value = camera.gCamera.focalLength;
 }
 
-void TW_CALL setIDPolychord (const void *value, void *)
-{
-    drawing.IDPolychord = *(const double *) value;
-    p.IDPolychord = drawing.IDPolychord;
-    glutPostRedisplay();
-}
-
-void TW_CALL getIDPolychord (void *value, void *)
-{
-    *(double *) value = drawing.IDPolychord;
-}
-
 
 void TW_CALL setRaffinementTimes (void *value)
 {
-    p.raffinementQuadLayout(1);
+    int times = 1;
+    if (p.numberOfRaff != -1)
+        times = p.numberOfRaff;
+    p.raffinementQuadLayout(times);
     char str[100];
     sprintf(str, "Camera_Rendering/raffinement label='step %d raffinement'",  (int) p.raffinementTimes);
     TwDefine(str);
 
+    sprintf(str, "Camera_Rendering/Info1.1 label='1) Num Quad: %d'",  (int) p.C.Q.rows() - 1);
+    TwDefine(str);
+
+    sprintf(str, "Camera_Rendering/Info1.2 label='2) Last Error: %f'", p.LastError );
+    TwDefine(str);
+
+    #ifdef __MODE_DEBUG
     sprintf(str, "Camera_Rendering/IDQuad max=%d ",  (int)(p.C.Q.rows() - 1));
     TwDefine(str);
     
     sprintf(str, "Camera_Rendering/IDPolychord max=%d ",  (int)(p.P.getSize() - 1));
     TwDefine(str);
+    #endif 
+
     glutPostRedisplay();
 }
 
+void TW_CALL setNumMax (const void *value, void *)
+{
+    p.numberOfRaff = *(const double *) value;
+    //glutPostRedisplay();
+}
+
+void TW_CALL getNumMax (void *value, void *)
+{
+    *(double *) value = p.numberOfRaff;
+}
+
+void TW_CALL setQuadMax (const void *value, void *)
+{
+    p.QuadMax = *(const double *) value;
+    //glutPostRedisplay();
+}
+
+void TW_CALL getQuadMax (void *value, void *)
+{
+    *(double *) value = p.QuadMax;
+}
+
+void TW_CALL setErrMax (const void *value, void *)
+{
+    p.ErrMax = *(const double *) value;
+    //glutPostRedisplay();
+}
+
+void TW_CALL getErrMax (void *value, void *)
+{
+    *(double *) value = p.ErrMax;
+}
 
 
+// ---------------------------- MODE DEBUG ----------------------------------
 void TW_CALL setEnableCageFace (const void *value, void *)
 {
     drawing.IDQuad = *(const double *) value;
@@ -210,6 +243,17 @@ void TW_CALL setTriangleView (const void *value, void *)
 void TW_CALL getTriangleView (void *value, void *)
 {
     *(double *) value = drawing.IDTriangle;
+}
+
+void TW_CALL setIDPolychord (const void *value, void *)
+{
+    drawing.IDPolychord = *(const double *) value;
+    glutPostRedisplay();
+}
+
+void TW_CALL getIDPolychord (void *value, void *)
+{
+    *(double *) value = drawing.IDPolychord;
 }
 
 int choiceIDSubCage = -1;
@@ -255,7 +299,7 @@ void TW_CALL getCageSubDomain (void *value, void *)
     *(double *) value = drawing.IDCageSubDomain;
 }
 
-
+// ---------------------------- END DEBUG ----------------------------------
 
 void TW_CALL call_quit(void *clientData)
 { 
@@ -267,34 +311,29 @@ void TW_CALL call_quit(void *clientData)
 void resetAll()
 {
     drawing.IDPolychord = -1;
-    p.IDPolychord = -1;
     drawing.IDQuad = -1;
     p.initAll(p.filename);
-    p.raffinementTimes = 0;
 }
 void TW_CALL resetRaffinement (void *value)
 {
     resetAll();
-    char str[50];
+    char str[100];
     TwDefine("Camera_Rendering/raffinement label='step 0 raffinement'");
 
+    sprintf(str, "Camera_Rendering/Info1.1 label='1) Num Quad: %d'",  (int) p.C.Q.rows() - 1);
+    TwDefine(str);
+
+    sprintf(str, "Camera_Rendering/Info1.2 label='2) Last Error: %f'", p.LastError );
+    TwDefine(str);
+    #ifdef __MODE_DEBUG
     sprintf(str, "Camera_Rendering/IDQuad max=%d ",  (int)(p.C.Q.rows() - 1));
     TwDefine(str);
     
     sprintf(str, "Camera_Rendering/IDPolychord max=%d ",  (int)(p.P.getSize() - 1));
     TwDefine(str);
-    glutPostRedisplay();
-}
+    #endif
 
-void debug()
-{
-    Vector3d A(2,3,1);
-    Vector3d B(0,-1,4);
-    Vector3d C = (B-A);
-    cout << (B-A)/(B-A).norm() << endl<<endl;
-    cout << C/(sqrt(
-        pow(C(0), 2)+pow(C(1),2) + pow(C(2),2) 
-        )) << endl;
+    glutPostRedisplay();
 }
 
 //////////
@@ -317,8 +356,8 @@ int main (int argc, char *argv[])
     //p.error_type_choice = Process::GRID_SIMPLE;
     //p.raffinementQuadLayout(30);
     //resetAll();
-    p.error_type_choice = Process::GRID_HALFEDGE;
-    p.raffinementQuadLayout(30);
+    //p.error_type_choice = Process::GRID_HALFEDGE;
+    //p.raffinementQuadLayout(30);
     //resetAll();
     //p.error_type_choice = Process::WITH_QUEUE;
     //p.raffinementQuadLayout(30);
@@ -388,8 +427,6 @@ int main (int argc, char *argv[])
     
     TwAddVarRW(cBar, "show mesh", TW_TYPE_BOOLCPP, &drawing.showMesh, 
         "group = 'Mesh'");
-    TwAddVarRW(cBar, "show lines mapping cage", TW_TYPE_BOOLCPP, &drawing.showLines, 
-        "group = 'Mesh'");
     
     TwAddVarRW(cBar, "DrawMeshMode", draw_modeT, &mesh_draw_mode,
            "group = 'Mesh'" " keyIncr='<' keyDecr='>'"); 
@@ -398,7 +435,45 @@ int main (int argc, char *argv[])
     TwAddVarRW(cBar, "DrawCageMode", draw_modeC, &cage_draw_mode,
            "group = 'Cage'" " keyIncr='<' keyDecr='>'");
     
-  char str[100];
+    char str[100];
+    sprintf(str, "group = 'Raffinement' label='1) Num Quad: %d'",  (int) p.C.Q.rows() - 1);
+    TwAddButton(cBar, "Info1.1", NULL, NULL, str);
+
+    sprintf(str, "group = 'Raffinement' label='2) Last Error: %f'", p.LastError );
+    TwAddButton(cBar, "Info1.2", NULL, NULL, str);
+
+    TwAddButton(cBar, "Blank1", NULL, NULL, "group = 'Raffinement' label=' ' ");
+    
+    TwAddVarRW(cBar, "ErrorType", error_type, &p.error_type_choice,
+           "group = 'Raffinement'" " keyIncr='<' keyDecr='>'"); 
+
+    sprintf(str, "group = 'Raffinement' min=-1 step=1");
+    TwAddVarCB(cBar, "RaffNumMax", TW_TYPE_DOUBLE, setNumMax, getNumMax,
+           NULL, strcat(str, " label='Iterations: '"));
+    
+    sprintf(str, "group = 'Raffinement' min=-1 step=1");
+    TwAddVarCB(cBar, "RaffQuadMax", TW_TYPE_DOUBLE, setQuadMax, getQuadMax,
+           NULL, strcat(str, " label='Threshold Quad: '"));
+
+    sprintf(str, "group = 'Raffinement' min=-1 step=0.0001");
+    TwAddVarCB(cBar, "RaffErrMax", TW_TYPE_DOUBLE, setErrMax, getErrMax,
+           NULL, strcat(str, "min=0.00 max=1.00 label='Threshold Error: '"));
+
+    sprintf(str, "group = 'Raffinement' label='step %d raffinement'",  (int) p.raffinementTimes);
+    TwAddButton(cBar, "raffinement", setRaffinementTimes, NULL, 
+                str);
+
+    TwAddButton(cBar, "Blank2", NULL, NULL, "group = 'Raffinement' label=' ' ");
+    
+     TwAddSeparator(cBar, "Sep1", "group = 'Raffinement'");
+
+    TwAddButton(cBar, "reset", resetRaffinement, NULL, 
+                  "group = 'Raffinement' label='--> Reset'");
+    
+    #ifdef __MODE_DEBUG
+    TwAddVarRW(cBar, "show lines mapping cage", TW_TYPE_BOOLCPP, &drawing.showLines, 
+        "group = 'Mesh'");
+
   sprintf(str, "group = 'Debug' min=-1 max=%d step=1", (int)(p.C.Q.rows() - 1));
     TwAddVarCB(cBar, "IDQuad", TW_TYPE_DOUBLE, setEnableCageFace, getEnableCageFace,
            NULL, strcat(str, " label='ID quad'") );
@@ -421,16 +496,8 @@ int main (int argc, char *argv[])
     /*TwAddVarRW(cBar, "with queue", TW_TYPE_BOOLCPP, &p.raffinamentQueue, 
         "group = 'Debug' label='with queue'");
     */
-    TwAddVarRW(cBar, "ErrorType", error_type, &p.error_type_choice,
-           "group = 'Raffinement'" " keyIncr='<' keyDecr='>'"); 
+    #endif
 
-    sprintf(str, "group = 'Raffinement' label='step %d raffinement'",  (int) p.raffinementTimes);
-    TwAddButton(cBar, "raffinement", setRaffinementTimes, NULL, 
-                str);
-
-    TwAddButton(cBar, "reset", resetRaffinement, NULL, 
-                  "group = 'Raffinement' label='--> Reset'");
-    
     glutMainLoop();
     
     exit (-1);
