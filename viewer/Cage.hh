@@ -65,8 +65,8 @@ public:
     // e0, e1 = [0,1,2,3] edge positions in Q
     // collectV = collection of new Vertices
     //
-    // return update of collectV
-    void split(int q, int e0, int e1, vector<int> &collectV);
+    // return id new quad | update of collectV
+    int split(int q, int e0, int e1, vector<int> &collectV);
 
     int getAreaQuad(int q, Vector2d s);
     double bb();

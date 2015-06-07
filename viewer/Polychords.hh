@@ -1,5 +1,6 @@
 #include <Eigen/Core>
 #include <vector>
+#include <map>
 #include "Cage.hh"
 
 using namespace std;
@@ -18,16 +19,19 @@ class Polychords
 	int getSize()	{	return P.size();	};
 
 	void computePolychords();
-	void expandPolychords(vector<int> *polychord, int q_start, int q_next);
+	void expandPolychords(vector<int> *polychord, int q_start, int q_next, int it);
 
 	vector<vector<int>> P;
 	Cage *C;
+
+	// key: id quad  value: two polychord across quad
+	map<int , pair<int, int> > PQ;
 	private:
 	void clear();
+	void updatePQ(int q, int it);
 
 	vector<int> counter;
 	vector<int> from;
-
 
 };
 #endif

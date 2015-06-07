@@ -54,56 +54,62 @@
         double halfX = domain/2.0;
         double halfY = domain/2.0;
 
-        int e0 = 0; // direction
-        int e1 = 1;
-        int e2 = 2;
-        int e3 = 3;
+        pair<int, int> p0 = make_pair(q, 0); // direction
+        pair<int, int> p1 = make_pair(q, 1);
+        pair<int, int> p2 = make_pair(q, 2);
+        pair<int, int> p3 = make_pair(q, 3);
 
         E_directionX = Utility::computeError(errorsQuadAlongDirection(q, halfX, step_y, 2, n), m+n, _A, _B, _C, _D);
         E_directionY = Utility::computeError(errorsQuadAlongDirection(q, step_x, halfY, m, 2), m+n, _A, _B, _C, _D);
-       
-        errorQuadsByDirection.insert(make_pair(make_pair(q, e0), E_directionY) );
-        errorQuadsByDirection.insert(make_pair(make_pair(q, e2), E_directionY) );
 
-		errorQuadsByDirection.insert(make_pair(make_pair(q, e1), E_directionX) );
-        errorQuadsByDirection.insert(make_pair(make_pair(q, e3), E_directionX) );
+        //cout << "N : "<<q << "  "<<E_directionY << " | "<< E_directionX<< endl;
+        if (errorQuadsByDirection.find(make_pair(q, 0)) == errorQuadsByDirection.end())
+        {
+        	errorQuadsByDirection.insert(make_pair(p0, E_directionY) );
+        	errorQuadsByDirection.insert(make_pair(p2, E_directionY) );
+        	errorQuadsByDirection.insert(make_pair(p1, E_directionX) );
+        	errorQuadsByDirection.insert(make_pair(p3, E_directionX) );
+        	return;
+        }
+       
+        errorQuadsByDirection[p0] = E_directionY;
+        errorQuadsByDirection[p2] = E_directionY;
+        errorQuadsByDirection[p1] = E_directionX;
+        errorQuadsByDirection[p3] = E_directionX;
     }
 
-	void ErrorsHalfEdgeQuad::computeErrorsGrid()
+	void ErrorsHalfEdgeQuad::computeErrorsGrid(vector<int> listQuad)
 	{
         updateTQ();
-		errorQuadsByDirection.clear();
-		for (int i=0; i<Env->C.Q.rows(); i++)
-		{
-		    errorsGridByQuadID(i);
-		}
+
+        vector<int> recomputePolychord;
+		for(vector<int>::const_iterator q = listQuad.begin(); q != listQuad.end(); ++q)
+        {
+		    errorsGridByQuadID(*q);
+
+            pair<int, int> polychords = Env->P.PQ[*q];
+		    if (find(recomputePolychord.begin(), recomputePolychord.end(), polychords.first) == recomputePolychord.end())
+		    	recomputePolychord.push_back(polychords.first);
+		    if (find(recomputePolychord.begin(), recomputePolychord.end(), polychords.second) == recomputePolychord.end())
+		    	recomputePolychord.push_back(polychords.second);
+		}	
+		errorPolychords(recomputePolychord);
 	}
 
 	int ErrorsHalfEdgeQuad::getPolychordWithMaxError()
     {
-    	int direction, q_next;
     	double errorMax = 0;
-    	int worstPolychord = 0;
-    	for (int idP=0; idP<Env->P.getSize(); idP++)
+    	int worstPolychord = -1;
+    	for (map<int, double>::const_iterator it = storeErrorPolychords.begin(); it != storeErrorPolychords.end(); ++it)
         {
-            vector<double> storePolychordsWithMaxError;
-            
-            for(vector<int>::const_iterator q = Env->P.P[idP].begin(); q != Env->P.P[idP].end(); ++q)
-            {
-            	if ((q+1) != Env->P.P[idP].end())
-            		q_next = *(q+1);
-            	else q_next = Env->P.P[idP][0];
-            	direction = Env->C.getEdgeQuadAdjacent(*q, q_next);
-            	double errDoubleHlfEdges = errorQuadsByDirection[{*q, direction}];
-            	//cout << "POLYCHORD "<<idP<<"("<<*q<<","<<q_next<<") : "<< errDoubleHlfEdges<<" -> direction: "<< direction<<endl;
-            	if (errorMax < errDoubleHlfEdges)
-            	{
-            		errorMax = errDoubleHlfEdges;
-            		worstPolychord = idP;
-            	}
-            }
+        	if (errorMax < it->second)
+        	{
+        		errorMax = it->second;
+        		worstPolychord = it->first;
+        	}
         }
-        return worstPolychord;
+        Env->info.LastError = errorMax;
+    	return worstPolychord;
     }
 
 
@@ -123,4 +129,21 @@
     	}
     	//cout << "POLYCHORD "<<idP<<" | "<<E * Env->P.P[idP].size() / C->Q.rows()<< direction<<endl;
     	return errorMax;// * Env->P.P[idP].size() / C->Q.rows();
+    }
+
+    void ErrorsHalfEdgeQuad::errorPolychords(vector<int> listPolychord)
+    {
+    	for(vector<int>::const_iterator idP = listPolychord.begin(); idP != listPolychord.end(); ++idP)
+        {
+        	if (storeErrorPolychords.find(*idP) == storeErrorPolychords.end())
+        	{
+        		storeErrorPolychords.insert(make_pair(*idP, getErrorpolychordByID(*idP) ) );
+        		continue;
+        	}
+        	storeErrorPolychords[*idP] = getErrorpolychordByID(*idP);
+        }
+
+        //for (map<int, double>::const_iterator it = storeErrorPolychords.begin(); it != storeErrorPolychords.end(); ++it)
+        //    cout << "["<<it->first<<"]"<<" "<<it->second <<endl;
+        //cout << "END "<<endl;
     }

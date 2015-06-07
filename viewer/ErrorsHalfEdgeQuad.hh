@@ -22,20 +22,41 @@ using namespace std;
 
 class ErrorsHalfEdgeQuad : public ErrorsGrid
 {
-	map<pair<int, int>, double> errorQuadsByDirection; // key: <idQ, edge> value: error
+	// key: <idQ, edge> value: error
+	map<pair<int, int>, double> errorQuadsByDirection; 
+	map<int, double> storeErrorPolychords;
 public:
+	ErrorsHalfEdgeQuad(Process *process, map<int, double> sEP, map<pair<int, int>, double>  eQBD)
+	{
+		Env = process;
+		storeErrorPolychords = sEP;
+		errorQuadsByDirection = eQBD;
+	}
+
 	ErrorsHalfEdgeQuad(Process *process)
 	{
 		Env = process;
-		computeErrorsGrid();     
-	};
 
+		vector<int> listQuad(Env->C.Q.rows());
+        std::iota(listQuad.begin(), listQuad.end(), 0);
+		computeErrorsGrid(listQuad);  
+		/*
+		vector<int> listPolychord(Env->P.getSize());
+        std::iota(listPolychord.begin(), listPolychord.end(), 0);
+		errorPolychords(listPolychord);
+		*/
+	};
+	virtual map<pair<int, int>, double> getErrorsQuad() { return errorQuadsByDirection; }
+	virtual map<int, double> getErrorPolychords(){ return storeErrorPolychords; }
+	
 	virtual int getPolychordWithMaxError();
 	virtual double getErrorpolychordByID(int idP);
-	virtual void computeErrorsGrid();
+	virtual void computeErrorsGrid(vector<int> listQuad);
+	virtual void debug(Process *f) { Env = f; }
 private:
 	void errorsGridByQuadID(int q);
 	double errorsQuadAlongDirection(int q, double step_x, double step_y, int m, int n);
+	void errorPolychords(vector<int> listPolychord);
 };
 
 #endif

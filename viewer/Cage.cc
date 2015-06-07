@@ -53,7 +53,7 @@ int Cage::appendQ(Vector4i q)
     return i;
 }
 
-void Cage::split(int q, int e0, int e1, vector<int> &collectV)
+int Cage::split(int q, int e0, int e1, vector<int> &collectV)
 {
     e0 = (e0 == 0 || e0 == 2) ? 0 : 1;
     e1 = (e0 == 0 || e0 == 2) ? 2 : 3;
@@ -89,7 +89,7 @@ void Cage::split(int q, int e0, int e1, vector<int> &collectV)
     }
     
     updateQVmesh(q, q_new, e0);
-
+    return q_new;
 }
 
 

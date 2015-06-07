@@ -114,7 +114,7 @@
         #ifdef __MODE_DEBUG
         Env->storeSampleTriangles.push_back(map<Vector2d, vector<int>, Utility::classcomp>());
         #endif
-        
+
         for (int i=1; i<m; i++)
             for (int j=1; j<n; j++)
             {
@@ -140,13 +140,13 @@
         return Utility::computeError(E, m*n, _A, _B, _C, _D);
     }
 
-	void ErrorsGrid::computeErrorsGrid()
+	void ErrorsGrid::computeErrorsGrid(vector<int> listQuad)
 	{
         updateTQ();
 		errorQuads = VectorXd(Env->C.Q.rows());
-		for (int i=0; i<Env->C.Q.rows(); i++)
-		{
-		    errorQuads(i) = errorsGridByQuadID(i);
+		for(vector<int>::const_iterator q = listQuad.begin(); q != listQuad.end(); ++q)
+        {
+		    errorQuads(*q) = errorsGridByQuadID(*q);
 		    //cout << i <<" Err: "<< errorQuads(i) << " with: "<<orphanSample.size()<<endl;
 		}
 	}
@@ -193,8 +193,14 @@
         	double EDx_1 = errorQuads(polychordsError[1].second.second);
         	
         	if (ESx_0 + EDx_0 > ESx_1 + EDx_1)
+        	{
+				Env->info.LastError = ESx_0 + EDx_0;
         		return polychordsError[0].first;
-        	else return polychordsError[1].first;
+        	}
+        	else{
+        		Env->info.LastError = ESx_1 + EDx_1;
+        		return polychordsError[1].first;
+        	}
         }
 
         cout << "WARNING: found "<< polychordsError.size() <<" polychords" <<endl;

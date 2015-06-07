@@ -3,6 +3,7 @@
 #include <iostream>
 #include <map>
 #include <math.h>
+#include <vector>
 
 #include "IError.hh"
 #include "Utility.hh"
@@ -31,12 +32,18 @@ public:
 	ErrorsGrid(Process *process)
 	{
 		Env = process;
-		computeErrorsGrid();
+		
+		vector<int> listQuad(Env->C.Q.rows());
+        std::iota(listQuad.begin(), listQuad.end(), 0);
+		computeErrorsGrid(listQuad);
 	};
 
+	virtual map<pair<int, int>, double> getErrorsQuad() { }
+	virtual map<int, double> getErrorPolychords(){ }
+	
 	virtual int getPolychordWithMaxError();
 	virtual double getErrorpolychordByID(int idP);
-	virtual void computeErrorsGrid();
+	virtual void computeErrorsGrid(vector<int> listQuad);
 	virtual void debug(Process *f) { Env = f;cout << f->P.getSize() <<" = "<<Env->P.getSize()<<endl; };
 protected:
 	void updateTQ();

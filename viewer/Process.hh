@@ -30,6 +30,26 @@
 #ifndef _PROCESS_CLASS
 #define _PROCESS_CLASS
 
+class LastIteration
+{
+public:
+    LastIteration(){};
+    ~LastIteration(){};
+
+	double LastError = 0;
+    vector<int> newQuads;
+    vector<int> newVertices;
+	int worstPolychord = -1;
+	
+	void clean()
+	{
+        LastError = 0;
+        worstPolychord = -1;
+        newQuads.clear();
+        newVertices.clear();
+	}
+};
+
 class Process
 {
 public:
@@ -51,7 +71,7 @@ public:
 private:
 	void distancesBetweenMeshCage();
 	double distancesBetweenMeshCage(Cage C);
-	vector<int> processToSplit(Cage &C, vector<int> listQ);
+	void processToSplit(Cage &C, vector<int> listQ, vector<int> &newVertices, vector<int> &newQuads);
 	
     /******************************************************/
     /*            moving cage towards mesh                */
@@ -67,15 +87,18 @@ public:
 	Polychords P;
 	IError *E;
 
+	bool reopenFile = true;
     // #dist.Vx1: in the ith row, stores the distance of the vertices of the ith vertex
     VectorXd distancesMeshCage;
     vector<Vector2d> orphanSample;
 	
+
+	LastIteration info;
 	// --- RAFFINEMENT GUI
 	int QuadMax = -1;
+    double ErrMax = 0;
 	int numberOfRaff = -1;
-	double ErrMax = 0;
-	double LastError = 0;
+
 
 	error_t error_type_choice = GRID_HALFEDGE;
 	int raffinementTimes = 0;

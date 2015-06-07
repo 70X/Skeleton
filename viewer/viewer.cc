@@ -174,7 +174,7 @@ void TW_CALL setRaffinementTimes (void *value)
     sprintf(str, "Camera_Rendering/Info1.1 label='1) Num Quad: %d'",  (int) p.C.Q.rows() - 1);
     TwDefine(str);
 
-    sprintf(str, "Camera_Rendering/Info1.2 label='2) Last Error: %f'", p.LastError );
+    sprintf(str, "Camera_Rendering/Info1.2 label='2) Last Error: %f'", p.info.LastError );
     TwDefine(str);
 
     #ifdef __MODE_DEBUG
@@ -323,7 +323,7 @@ void TW_CALL resetRaffinement (void *value)
     sprintf(str, "Camera_Rendering/Info1.1 label='1) Num Quad: %d'",  (int) p.C.Q.rows() - 1);
     TwDefine(str);
 
-    sprintf(str, "Camera_Rendering/Info1.2 label='2) Last Error: %f'", p.LastError );
+    sprintf(str, "Camera_Rendering/Info1.2 label='2) Last Error: %f'", p.info.LastError );
     TwDefine(str);
     #ifdef __MODE_DEBUG
     sprintf(str, "Camera_Rendering/IDQuad max=%d ",  (int)(p.C.Q.rows() - 1));
@@ -439,7 +439,7 @@ int main (int argc, char *argv[])
     sprintf(str, "group = 'Raffinement' label='1) Num Quad: %d'",  (int) p.C.Q.rows() - 1);
     TwAddButton(cBar, "Info1.1", NULL, NULL, str);
 
-    sprintf(str, "group = 'Raffinement' label='2) Last Error: %f'", p.LastError );
+    sprintf(str, "group = 'Raffinement' label='2) Last Error: %f'", p.info.LastError );
     TwAddButton(cBar, "Info1.2", NULL, NULL, str);
 
     TwAddButton(cBar, "Blank1", NULL, NULL, "group = 'Raffinement' label=' ' ");

@@ -109,60 +109,61 @@
         return E;
     }
 
-    vector<int> Process::processToSplit(Cage &C, vector<int> listQ)
+    void Process::processToSplit(Cage &C, vector<int> listQ, vector<int> &newVertices, vector<int> &newQuads)
     {
-        vector<int> newVertices;
         int q_next, q_start = listQ[0];
-
+        newQuads.clear();
+        newVertices.clear();
         for(vector<int>::const_iterator q = listQ.begin(); q != listQ.end(); ++q)
         {
             q_next = *(q+1);
             if (q+1 == listQ.end())
                 q_next = q_start;
             int e = C.getEdgeQuadAdjacent(*q, q_next);
-            C.split(*q, e, (e+2)%4, newVertices);
+            newQuads.push_back(C.split(*q, e, (e+2)%4, newVertices));
         }
-        return newVertices;
     }
 
     int Process::queueRaffinementQuadLayout(Cage &C0, Polychords &P0, int tryTimes)
     {
         map<double, int>  queueE;
-        
+        vector<int> newVertices, newQuads;
+
         Process process;
         process.C = Cage(C0.V, C0.Q, C0.Vmesh, C0.QVmesh, C0.QQ, C0._QV);
-        process.P = Polychords(&(process.C), P0.P);
+        process.P = Polychords(&(process.C));
+        process.P.computePolychords();
         process.M = M;
         
         for(int idP = 0; idP<P0.getSize(); idP++)
         {
             Process fakeEnvironment = process;
             map<double, int>  Etmp;
+            IError *Err = new ErrorsHalfEdgeQuad(&fakeEnvironment, E->getErrorPolychords(), E->getErrorsQuad());
+            double errBefore = Err->getErrorpolychordByID(idP);
+
             for(int i=0; i<tryTimes; i++)
             {
-                IError *Err = new ErrorsHalfEdgeQuad(&fakeEnvironment);
-                double errBefore = Err->getErrorpolychordByID(idP);
-
-                vector<int> newVertices = processToSplit(fakeEnvironment.C, fakeEnvironment.P.P[idP]);
-                
+                processToSplit(fakeEnvironment.C, fakeEnvironment.P.P[idP], newVertices, newQuads);
+                newQuads.insert( newQuads.end(), fakeEnvironment.P.P[idP].begin(), fakeEnvironment.P.P[idP].end());
                 // Reinitialize relation adj.
                 initErrorsAndRelations(fakeEnvironment.C, fakeEnvironment.P);
         
                 // moveCage towards mesh triangle
                 movingVertexCageToMesh(newVertices, fakeEnvironment.C); 
 
-                Err->computeErrorsGrid();
+                Err->computeErrorsGrid(newQuads);
                 double errAfter = Err->getErrorpolychordByID(idP);
                 Etmp.insert(make_pair(errAfter - errBefore, i));
+                errBefore = errAfter;
             }
-            
             map<double, int>::const_iterator worstSplit = Etmp.begin();
             queueE.insert(make_pair(worstSplit->first, idP));
         }
         map<double, int>::const_iterator worstPolychord = queueE.begin();
         
-        for (map<double, int>::const_iterator it = queueE.begin(); it != queueE.end(); ++it)
-            cout << "["<<it->second<<"]"<<" "<<it->first <<endl;
+        //for (map<double, int>::const_iterator it = queueE.begin(); it != queueE.end(); ++it)
+        //    cout << "["<<it->second<<"]"<<" "<<it->first <<endl;
         
         return worstPolychord->second;
     }
@@ -176,7 +177,7 @@
         if (QuadMax != -1 || ErrMax != 0)
             condition = true;
 
-        int i = 0, worstPolychord;
+        int i = 0;
         while( condition || i < times )
         {
             if (QuadMax != -1 && C.Q.rows() > QuadMax)
@@ -190,33 +191,44 @@
             {
                 case WITH_QUEUE:
                         cout <<"\t raffinament with queue "<<endl;
-                        E = new ErrorsHalfEdgeQuad(this);
-                        worstPolychord = queueRaffinementQuadLayout(C, P);
-                        seqPolychord <<i<<" "<<worstPolychord <<endl;
+                        if (E == NULL)
+                            E = new ErrorsHalfEdgeQuad(this);
+                        else
+                            E->computeErrorsGrid(info.newQuads);
+                        
+                        info.worstPolychord = queueRaffinementQuadLayout(C, P);
+                        seqPolychord <<i<<" "<<info.worstPolychord <<endl;
                         break;  
                 case GRID_SIMPLE:
                         cout <<"\t raffinament with ErrorsGrid"<<endl;
                         E = new ErrorsGrid(this);
-                        worstPolychord = E->getPolychordWithMaxError();
-                        seqPolychord <<i<<" "<< worstPolychord <<endl;
+                        info.worstPolychord = E->getPolychordWithMaxError();
+                        seqPolychord <<i<<" "<< info.worstPolychord <<endl;
                         break;
                 case GRID_HALFEDGE:
                         cout <<"\t raffinament with ErrorsHalfEdgeQuad "<<endl;
-                        E = new ErrorsHalfEdgeQuad(this);
-                        worstPolychord = E->getPolychordWithMaxError();
-                        seqPolychord <<i<<" "<< worstPolychord <<endl;
+
+                        if (E == NULL)
+                            E = new ErrorsHalfEdgeQuad(this);
+                        else
+                            E->computeErrorsGrid(info.newQuads);
+                        
+                        info.worstPolychord = E->getPolychordWithMaxError();
+                        seqPolychord <<i<<" "<< info.worstPolychord <<endl;
                         break;
                 default: 
                         break;
             }
-            LastError = E->getErrorpolychordByID(worstPolychord);
-            cout << "The worst Polychord ID: "<< worstPolychord << " error: "<< LastError <<" error"<< endl<<endl;
-            if (LastError < ErrMax)
+            cout << "The worst Polychord ID: "<< info.worstPolychord << " error: "<< info.LastError <<" error"<< endl<<endl;
+            if (info.LastError < ErrMax)
                 break;
-            
-            vector<int> newVertices = processToSplit(C, P.P[worstPolychord]);
+
+            processToSplit(C, P.P[info.worstPolychord], info.newVertices, info.newQuads);
+            info.newQuads.insert( info.newQuads.end(), P.P[info.worstPolychord].begin(), P.P[info.worstPolychord].end());
+
             // moveCage towards mesh triangle
-            movingVertexCageToMesh(newVertices, C); 
+            movingVertexCageToMesh(info.newVertices, C); 
+            
             
             chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
             auto duration = chrono::duration_cast<chrono::microseconds>( t2 - t1 ).count();
@@ -227,7 +239,6 @@
         seqPolychord.close();
         timePolychord.close();
     }
-
 
     void Process::distancesBetweenMeshCage()
     {
@@ -259,7 +270,11 @@
         distancesBetweenMeshCage();
 
         raffinementTimes = 0;
-        LastError = 0;
+        reopenFile = true;
+        info.clean();
+
+        E = NULL;
+
         P = Polychords(&(C));
         initErrorsAndRelations(C, P);
 
@@ -299,8 +314,15 @@
                             introTime = introSeq = "#Raff. with ErrorsHalfEdgeQuad ";
                             break;
         }
-        timePolychord.open(fileNameTime, std::ios_base::app);
-        seqPolychord.open(fileNameSequence, std::ios_base::app);
+        std::ios_base::openmode mode = std::ios_base::app;
+        if (reopenFile)
+        {
+            mode = std::ofstream::out | std::ofstream::trunc;
+            reopenFile = false;
+        }   
+
+        timePolychord.open(fileNameTime, mode);
+        seqPolychord.open(fileNameSequence, mode);
         //timePolychord << introTime << endl;
         //seqPolychord << introSeq <<endl;
     }
