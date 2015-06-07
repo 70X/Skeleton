@@ -236,7 +236,7 @@
             chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
             auto duration = chrono::duration_cast<chrono::microseconds>( t2 - t1 ).count();
             cout << duration <<" microsec." <<endl<<endl;
-            timePolychord<<i<<" "<<duration<<endl;
+            timePolychord<<raffinementTimes<<" "<<duration<<endl;
             i++;
         }
         seqPolychord.close();
