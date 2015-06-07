@@ -199,14 +199,12 @@
                             E->computeErrorsGrid(info.newQuads);
                         
                         info.worstPolychord = queueRaffinementQuadLayout(C, P);
-                        seqPolychord <<i<<" "<<info.worstPolychord <<endl;
                         info.error_mode = LastIteration::WITH_QUEUE;
                         break;  
                 case GRID_SIMPLE:
                         cout <<"\t raffinament with ErrorsGrid"<<endl;
                         E = new ErrorsGrid(this);
                         info.worstPolychord = E->getPolychordWithMaxError();
-                        seqPolychord <<i<<" "<< info.worstPolychord <<endl;
                         info.error_mode = LastIteration::GRID_SIMPLE;
                         break;
                 case GRID_HALFEDGE:
@@ -218,12 +216,12 @@
                             E->computeErrorsGrid(info.newQuads);
                         
                         info.worstPolychord = E->getPolychordWithMaxError();
-                        seqPolychord <<i<<" "<< info.worstPolychord <<endl;
                         info.error_mode = LastIteration::GRID_HALFEDGE;
                         break;
                 default: 
                         break;
             }
+            seqPolychord <<raffinementTimes<<" "<< info.worstPolychord <<endl;
             cout << "The worst Polychord ID: "<< info.worstPolychord << " error: "<< info.LastError <<" error"<< endl<<endl;
             if (info.LastError < ErrMax)
                 break;
