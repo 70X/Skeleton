@@ -191,30 +191,35 @@
             {
                 case WITH_QUEUE:
                         cout <<"\t raffinament with queue "<<endl;
-                        if (E == NULL)
+                        if (E == NULL || info.error_mode != LastIteration::WITH_QUEUE)
+                        {
                             E = new ErrorsHalfEdgeQuad(this);
+                        }
                         else
                             E->computeErrorsGrid(info.newQuads);
                         
                         info.worstPolychord = queueRaffinementQuadLayout(C, P);
                         seqPolychord <<i<<" "<<info.worstPolychord <<endl;
+                        info.error_mode = LastIteration::WITH_QUEUE;
                         break;  
                 case GRID_SIMPLE:
                         cout <<"\t raffinament with ErrorsGrid"<<endl;
                         E = new ErrorsGrid(this);
                         info.worstPolychord = E->getPolychordWithMaxError();
                         seqPolychord <<i<<" "<< info.worstPolychord <<endl;
+                        info.error_mode = LastIteration::GRID_SIMPLE;
                         break;
                 case GRID_HALFEDGE:
                         cout <<"\t raffinament with ErrorsHalfEdgeQuad "<<endl;
 
-                        if (E == NULL)
+                        if (E == NULL || info.error_mode != LastIteration::GRID_HALFEDGE)
                             E = new ErrorsHalfEdgeQuad(this);
                         else
                             E->computeErrorsGrid(info.newQuads);
                         
                         info.worstPolychord = E->getPolychordWithMaxError();
                         seqPolychord <<i<<" "<< info.worstPolychord <<endl;
+                        info.error_mode = LastIteration::GRID_HALFEDGE;
                         break;
                 default: 
                         break;

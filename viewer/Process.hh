@@ -35,12 +35,13 @@ class LastIteration
 public:
     LastIteration(){};
     ~LastIteration(){};
+    typedef enum {WITH_QUEUE, GRID_SIMPLE, GRID_HALFEDGE} error_t;
 
 	double LastError = 0;
     vector<int> newQuads;
     vector<int> newVertices;
 	int worstPolychord = -1;
-	
+	error_t error_mode;
 	void clean()
 	{
         LastError = 0;

@@ -5,7 +5,7 @@ set style data lines
 set xlabel "number iteration" offset -1,0
 set xrange [0 : 70]
 set ylabel "performance (microsec.)" offset 0,-1
-set yrange [0 : 9271962]
+set yrange [0 : 5238705]
 set key left box
 plot \
 "EG_timePolychord_Loctopus.txt" t "Error Grid Simple",\
