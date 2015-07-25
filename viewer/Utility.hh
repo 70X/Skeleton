@@ -28,7 +28,7 @@ namespace Utility
 	double areaQuad(Vector3d A,Vector3d B,Vector3d C, Vector3d D);
 	double getLeft(Vector2d P0, Vector2d P1, Vector2d V);
 	bool isLeft(Vector2d P0, Vector2d P1, Vector2d V);
-	bool is_inside(Vector2d A, Vector2d B, Vector2d C, Vector2d V);
+	bool isInside(Vector2d A, Vector2d B, Vector2d C, Vector2d V);
 	Vector3d getCoordBarycentricTriangle(Triangle2D ABCMapping, Triangle3D ABC, Vector2d V);
 	double normalizeDistance(double d, double min, double max);
 	double computeDistance(Vector3d v, Vector3d v_map);

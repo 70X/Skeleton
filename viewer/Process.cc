@@ -34,7 +34,8 @@
         }
          return distance/triangles.size();
     }
-
+    //TODO: When a triangle is not found for specific point map
+    //      return with no action. It's temporarily wrong.
     void Process::getTrianglesInExpMapping(int Vi, CageSubDomain &sC)
     {
         sC.computeDomain(Vi); 
@@ -170,8 +171,8 @@
 
     void Process::raffinementQuadLayout(int times)
     {
-        ofstream seqPolychord, timePolychord;
-        configurationFileOutput(seqPolychord, timePolychord);
+        ofstream WfileSeqPolychord, WfileTimePolychord;
+        configurationFileOutput(WfileSeqPolychord, WfileTimePolychord);
 
         bool condition = false;
         if (QuadMax != -1 || ErrMax != 0)
@@ -221,7 +222,7 @@
                 default: 
                         break;
             }
-            seqPolychord <<raffinementTimes<<" "<< info.worstPolychord <<endl;
+            WfileSeqPolychord <<raffinementTimes<<" "<< info.worstPolychord <<endl;
             cout << "The worst Polychord ID: "<< info.worstPolychord << " error: "<< info.LastError <<" error"<< endl<<endl;
             if (info.LastError < ErrMax)
                 break;
@@ -236,11 +237,11 @@
             chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
             auto duration = chrono::duration_cast<chrono::microseconds>( t2 - t1 ).count();
             cout << duration <<" microsec." <<endl<<endl;
-            timePolychord<<raffinementTimes<<" "<<duration<<endl;
+            WfileTimePolychord<<raffinementTimes<<" "<<duration<<endl;
             i++;
         }
-        seqPolychord.close();
-        timePolychord.close();
+        WfileSeqPolychord.close();
+        WfileSimePolychord.close();
     }
 
     void Process::distancesBetweenMeshCage()

@@ -11,25 +11,23 @@ using namespace std;
 class Polychords
 {
 	public:
+	vector<vector<int>> P;
+	// key: id quad  value: ids two polychord across quad
+	map<int , pair<int, int> > PQ;
+	
 	Polychords(){};
 	Polychords(Cage *c);
-	Polychords(Cage *c, vector<vector<int>> P);
 	~Polychords(){};
 	
 	int getSize()	{	return P.size();	};
 
 	void computePolychords();
-	void expandPolychords(vector<int> *polychord, int q_start, int q_next, int it);
-
-	vector<vector<int>> P;
-	Cage *C;
-
-	// key: id quad  value: two polychord across quad
-	map<int , pair<int, int> > PQ;
 	private:
 	void clear();
 	void updatePQ(int q, int it);
+	void expandPolychords(vector<int> *polychord, int q_start, int q_next, int it);
 
+	Cage *C;
 	vector<int> counter;
 	vector<int> from;
 

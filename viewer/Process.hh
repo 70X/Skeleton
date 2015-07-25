@@ -64,7 +64,9 @@ public:
 
 	void initAll(char* filename);
 	void initErrorsAndRelations(Cage &C, Polychords &P);
-
+	
+	//TODO: When a triangle is not found for specific point map
+    //      return with no action. It's temporarily wrong.
 	void getTrianglesInExpMapping(int Vi, CageSubDomain &sC);
 	void raffinementQuadLayout(int times = 1);
 	int queueRaffinementQuadLayout(Cage &C, Polychords &P, int tryTimes = 2);

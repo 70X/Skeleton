@@ -41,7 +41,7 @@ namespace Utility
       return m.determinant() > 0;
   }
 
-  bool is_inside(Vector2d A, Vector2d B, Vector2d C, Vector2d V)
+  bool isInside(Vector2d A, Vector2d B, Vector2d C, Vector2d V)
   {
       return (  
                 isLeft(A, B, V) &&

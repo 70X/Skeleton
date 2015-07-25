@@ -6,13 +6,6 @@ Polychords::Polychords(Cage *c)
 	clear();
 }
 
-Polychords::Polychords(Cage *c, vector<vector<int>> P)
-{
-	C = c;
-	clear();
-	this->P = P;
-}
-
 void Polychords::clear()
 {
 	P.clear(); counter.clear(); from.clear();

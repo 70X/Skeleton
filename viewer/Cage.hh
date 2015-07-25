@@ -59,13 +59,13 @@ public:
     // return edge of the quad d from the quad s
     int getEdgeQuadAdjacent(int s, int d);
 
-    // Split q along half two edge
-    //
-    // q = id quad
-    // e0, e1 = [0,1,2,3] edge positions in Q
-    // collectV = collection of new Vertices
-    //
-    // return id new quad | update of collectV
+    // Split q along half two parallel edges
+    // input:
+    //      q = id quad
+    //      e0, e1: contain { 0,1,2,3 } edge positions in Q
+    // output:
+    //      id new quad 
+    //      collectV = collection of new Vertices
     int split(int q, int e0, int e1, vector<int> &collectV);
 
     int getAreaQuad(int q, Vector2d s);
@@ -73,10 +73,6 @@ public:
 private:
 	void updateQVmesh(int q, int q_new, int to_axis);
 public:
-    void printV(int Vi)
-    {
-        cout << "V["<<Vi<<"]"<< V(Vi,0) <<","<< V(Vi, 1) <<","<< V(Vi, 2) <<endl;
-    }
     bool QQ_QV_flag = false;
 };
 #endif

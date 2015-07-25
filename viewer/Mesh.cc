@@ -138,7 +138,7 @@ VectorXi Mesh::getVT(int i) // returns VT relation of the i-th vertex
             Vector2d _A = ABC.row(0);
             Vector2d _B = ABC.row(1);
             Vector2d _C = ABC.row(2);
-            if (Utility::is_inside(_A,_B,_C, V) )
+            if (Utility::isInside(_A,_B,_C, V) )
             {
                 listTriangleIDs.push_back(*idT);
             }
