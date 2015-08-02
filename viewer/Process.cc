@@ -232,7 +232,7 @@
 
             // moveCage towards mesh triangle
             movingVertexCageToMesh(info.newVertices, C); 
-            
+            distancesBetweenMeshCage();
             
             chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
             auto duration = chrono::duration_cast<chrono::microseconds>( t2 - t1 ).count();

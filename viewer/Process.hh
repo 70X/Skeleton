@@ -7,7 +7,7 @@
 #define ON 1
 #define OFF 0
 #define ERROR_TYPE_NUM 3 
-//#define __MODE_DEBUG
+#define __MODE_DEBUG
 
 #include "Utility.hh"
 #include "Mesh.hh"
