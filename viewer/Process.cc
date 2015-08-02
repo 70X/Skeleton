@@ -241,7 +241,7 @@
             i++;
         }
         WfileSeqPolychord.close();
-        WfileSimePolychord.close();
+        WfileTimePolychord.close();
     }
 
     void Process::distancesBetweenMeshCage()
