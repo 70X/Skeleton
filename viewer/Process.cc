@@ -211,10 +211,10 @@
                 case GRID_HALFEDGE:
                         cout <<"\t raffinament with ErrorsHalfEdgeQuad "<<endl;
 
-                        if (E == NULL || info.error_mode != LastIteration::GRID_HALFEDGE)
+                        //if (E == NULL || info.error_mode != LastIteration::GRID_HALFEDGE)
                             E = new ErrorsHalfEdgeQuad(this);
-                        else
-                            E->computeErrorsGrid(info.newQuads);
+                        //else
+                        //    E->computeErrorsGrid(info.newQuads);
                         
                         info.worstPolychord = E->getPolychordWithMaxError();
                         info.error_mode = LastIteration::GRID_HALFEDGE;
