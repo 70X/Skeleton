@@ -161,14 +161,14 @@ void TW_CALL getFocalLength (void *value, void *)
 }
 
 
-void TW_CALL setRaffinementTimes (void *value)
+void TW_CALL setRefinementTimes (void *value)
 {
     int times = 1;
     if (p.numberOfRaff != -1)
         times = p.numberOfRaff;
-    p.raffinementQuadLayout(times);
+    p.refinementQuadLayout(times);
     char str[100];
-    sprintf(str, "Camera_Rendering/raffinement label='step %d raffinement'",  (int) p.raffinementTimes);
+    sprintf(str, "Camera_Rendering/RefinementStep label='step %d refinement'",  (int) p.refinementTimes);
     TwDefine(str);
 
     sprintf(str, "Camera_Rendering/Info1.1 label='1) Num Quad: %d'",  (int) p.C.Q.rows() - 1);
@@ -314,11 +314,11 @@ void resetAll()
     drawing.IDQuad = -1;
     p.initAll(p.filename);
 }
-void TW_CALL resetRaffinement (void *value)
+void TW_CALL resetRefinement (void *value)
 {
     resetAll();
     char str[100];
-    TwDefine("Camera_Rendering/raffinement label='step 0 raffinement'");
+    TwDefine("Camera_Rendering/RefinementStep label='step 0 refinement'");
 
     sprintf(str, "Camera_Rendering/Info1.1 label='1) Num Quad: %d'",  (int) p.C.Q.rows() - 1);
     TwDefine(str);
@@ -352,15 +352,6 @@ int main (int argc, char *argv[])
     p.initAll(p.filename);
     drawing.setProcess(p);
     drawing.bb(p.M.V, p.M.F);
-    
-    //p.error_type_choice = Process::GRID_SIMPLE;
-    //p.raffinementQuadLayout(30);
-    //resetAll();
-    //p.error_type_choice = Process::GRID_HALFEDGE;
-    //p.raffinementQuadLayout(30);
-    //resetAll();
-    //p.error_type_choice = Process::WITH_QUEUE;
-    //p.raffinementQuadLayout(30);
     
     #define __VIEWER__DEBUG
     #ifdef __VIEWER__DEBUG
@@ -436,39 +427,39 @@ int main (int argc, char *argv[])
            "group = 'Cage'" " keyIncr='<' keyDecr='>'");
     
     char str[100];
-    sprintf(str, "group = 'Raffinement' label='1) Num Quad: %d'",  (int) p.C.Q.rows() - 1);
+    sprintf(str, "group = 'Refinement' label='1) Num Quad: %d'",  (int) p.C.Q.rows() - 1);
     TwAddButton(cBar, "Info1.1", NULL, NULL, str);
 
-    sprintf(str, "group = 'Raffinement' label='2) Last Error: %f'", p.info.LastError );
+    sprintf(str, "group = 'Refinement' label='2) Last Error: %f'", p.info.LastError );
     TwAddButton(cBar, "Info1.2", NULL, NULL, str);
 
-    TwAddButton(cBar, "Blank1", NULL, NULL, "group = 'Raffinement' label=' ' ");
+    TwAddButton(cBar, "Blank1", NULL, NULL, "group = 'Refinement' label=' ' ");
     
     TwAddVarRW(cBar, "ErrorType", error_type, &p.error_type_choice,
-           "group = 'Raffinement'" " keyIncr='<' keyDecr='>'"); 
+           "group = 'Refinement'" " keyIncr='<' keyDecr='>'"); 
 
-    sprintf(str, "group = 'Raffinement' min=-1 step=1");
+    sprintf(str, "group = 'Refinement' min=-1 step=1");
     TwAddVarCB(cBar, "RaffNumMax", TW_TYPE_DOUBLE, setNumMax, getNumMax,
            NULL, strcat(str, " label='Iterations: '"));
     
-    sprintf(str, "group = 'Raffinement' min=-1 step=1");
+    sprintf(str, "group = 'Refinement' min=-1 step=1");
     TwAddVarCB(cBar, "RaffQuadMax", TW_TYPE_DOUBLE, setQuadMax, getQuadMax,
            NULL, strcat(str, " label='Threshold Quad: '"));
 
-    sprintf(str, "group = 'Raffinement' min=-1 step=0.0001");
+    sprintf(str, "group = 'Refinement' min=-1 step=0.0001");
     TwAddVarCB(cBar, "RaffErrMax", TW_TYPE_DOUBLE, setErrMax, getErrMax,
            NULL, strcat(str, "min=0.00 max=1.00 label='Threshold Error: '"));
 
-    sprintf(str, "group = 'Raffinement' label='step %d raffinement'",  (int) p.raffinementTimes);
-    TwAddButton(cBar, "raffinement", setRaffinementTimes, NULL, 
+    sprintf(str, "group = 'Refinement' label='step %d Refinement'",  (int) p.refinementTimes);
+    TwAddButton(cBar, "RefinementStep", setRefinementTimes, NULL, 
                 str);
 
-    TwAddButton(cBar, "Blank2", NULL, NULL, "group = 'Raffinement' label=' ' ");
+    TwAddButton(cBar, "Blank2", NULL, NULL, "group = 'Refinement' label=' ' ");
     
-     TwAddSeparator(cBar, "Sep1", "group = 'Raffinement'");
+     TwAddSeparator(cBar, "Step1", "group = 'Refinement'");
 
-    TwAddButton(cBar, "reset", resetRaffinement, NULL, 
-                  "group = 'Raffinement' label='--> Reset'");
+    TwAddButton(cBar, "reset", resetRefinement, NULL, 
+                  "group = 'Refinement' label='--> Reset'");
     
     #ifdef __MODE_DEBUG
     TwAddVarRW(cBar, "show lines mapping cage", TW_TYPE_BOOLCPP, &drawing.showLines, 
@@ -493,9 +484,6 @@ int main (int argc, char *argv[])
     TwAddVarCB(cBar, "IDCageSubDomain", TW_TYPE_DOUBLE, setCageSubDomain, getCageSubDomain,
            NULL, strcat(str, " label='ID CageSubDomain'"));
 
-    /*TwAddVarRW(cBar, "with queue", TW_TYPE_BOOLCPP, &p.raffinamentQueue, 
-        "group = 'Debug' label='with queue'");
-    */
     #endif
 
     glutMainLoop();

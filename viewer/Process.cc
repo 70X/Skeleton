@@ -125,7 +125,7 @@
         }
     }
 
-    int Process::queueRaffinementQuadLayout(Cage &C0, Polychords &P0, int tryTimes)
+    int Process::queueRefinementQuadLayout(Cage &C0, Polychords &P0, int tryTimes)
     {
         map<double, int>  queueE;
         vector<int> newVertices, newQuads;
@@ -169,7 +169,7 @@
         return worstPolychord->second;
     }
 
-    void Process::raffinementQuadLayout(int times)
+    void Process::refinementQuadLayout(int times)
     {
         ofstream WfileSeqPolychord, WfileTimePolychord;
         configurationFileOutput(WfileSeqPolychord, WfileTimePolychord);
@@ -185,13 +185,13 @@
                 break;
             // Reinitialize relation adj.
             initErrorsAndRelations(C, P);
-            raffinementTimes++;
-            cout << " -----------iteration Raffinement:"<<raffinementTimes<<" ---------------"<<endl<<endl;
+            refinementTimes++;
+            cout << " -----------iteration Refinement:"<<refinementTimes<<" ---------------"<<endl<<endl;
             chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
             switch(error_type_choice)
             {
                 case WITH_QUEUE:
-                        cout <<"\t raffinament with queue "<<endl;
+                        cout <<"\t refinement with queue "<<endl;
                         if (E == NULL || info.error_mode != LastIteration::WITH_QUEUE)
                         {
                             E = new ErrorsHalfEdgeQuad(this);
@@ -199,18 +199,18 @@
                         else
                             E->computeErrorsGrid(info.newQuads);
                         
-                        info.worstPolychord = queueRaffinementQuadLayout(C, P);
+                        info.worstPolychord = queueRefinementQuadLayout(C, P);
                         info.error_mode = LastIteration::WITH_QUEUE;
                         break;  
                 case GRID_SIMPLE:
-                        cout <<"\t raffinament with ErrorsGrid"<<endl;
+                        cout <<"\t refinement with ErrorsGrid"<<endl;
                         E = new ErrorsGrid(this);
                         info.worstPolychord = E->getPolychordWithMaxError();
                         info.error_mode = LastIteration::GRID_SIMPLE;
                         break;
                 case GRID_HALFEDGE:
-                        cout <<"\t raffinament with ErrorsHalfEdgeQuad "<<endl;
-
+                        cout <<"\t refinement with ErrorsHalfEdgeQuad "<<endl;
+                        
                         //if (E == NULL || info.error_mode != LastIteration::GRID_HALFEDGE)
                             E = new ErrorsHalfEdgeQuad(this);
                         //else
@@ -222,7 +222,7 @@
                 default: 
                         break;
             }
-            WfileSeqPolychord <<raffinementTimes<<" "<< info.worstPolychord <<endl;
+            WfileSeqPolychord <<refinementTimes<<" "<< info.worstPolychord <<endl;
             cout << "The worst Polychord ID: "<< info.worstPolychord << " error: "<< info.LastError <<" error"<< endl<<endl;
             if (info.LastError < ErrMax)
                 break;
@@ -237,7 +237,7 @@
             chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
             auto duration = chrono::duration_cast<chrono::microseconds>( t2 - t1 ).count();
             cout << duration <<" microsec." <<endl<<endl;
-            WfileTimePolychord<<raffinementTimes<<" "<<duration<<endl;
+            WfileTimePolychord<<refinementTimes<<" "<<duration<<endl;
             i++;
         }
         WfileSeqPolychord.close();
@@ -273,7 +273,7 @@
         read(strcat(buf, ".domain.off"));
         distancesBetweenMeshCage();
 
-        raffinementTimes = 0;
+        refinementTimes = 0;
         reopenFile = true;
         info.clean();
 

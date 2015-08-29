@@ -68,8 +68,8 @@ public:
 	//TODO: When a triangle is not found for specific point map
     //      return with no action. It's temporarily wrong.
 	void getTrianglesInExpMapping(int Vi, CageSubDomain &sC);
-	void raffinementQuadLayout(int times = 1);
-	int queueRaffinementQuadLayout(Cage &C, Polychords &P, int tryTimes = 2);
+	void refinementQuadLayout(int times = 1);
+	int queueRefinementQuadLayout(Cage &C, Polychords &P, int tryTimes = 2);
 	double computeErrorFromListTriangle(vector<int> triangles, Cage &domain, Vector2d examVertex, Vector3d smap);
 private:
 	void distancesBetweenMeshCage();
@@ -97,14 +97,14 @@ public:
 	
 
 	LastIteration info;
-	// --- RAFFINEMENT GUI
+	// --- refinement GUI
 	int QuadMax = -1;
     double ErrMax = 0;
 	int numberOfRaff = -1;
 
 
 	error_t error_type_choice = GRID_HALFEDGE;
-	int raffinementTimes = 0;
+	int refinementTimes = 0;
 	char filename[200];
 
     // -- ONLY FOR DEBUG - When is defined MODE_DEBUG

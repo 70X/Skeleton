@@ -159,7 +159,6 @@
         for (int idP=0; idP<Env->P.getSize(); idP++)
         {
         	int i=0;
-            vector<double> storePolychordsWithMaxError;
             for(vector<int>::const_iterator q = Env->P.P[idP].begin(); q != Env->P.P[idP].end(); ++i, ++q)
             {
             	if (errorQuads(*q) == errorMax)
